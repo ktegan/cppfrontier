@@ -1,0 +1,34 @@
+// Source: LANGUAGE.md "Moves and last use" (design:
+// experiments/contract-uses-never-move.md): a mention in an assertion is a use that is never
+// moved, so the assertion in `asserted` copies, and moves do not depend on
+// whether contracts are checked.
+#include <iostream>
+
+noisy: type = {
+    operator=: (out this) = { }
+    operator=: (out this, that) = { std::cout << "copy "; }
+    operator=: (out this, move that) = { std::cout << "move "; }
+}
+
+valid: (copy n: noisy) -> bool = { _ = n; return true; }
+use: (copy n: noisy) = { _ = n; }
+
+// The assertion is the last use of `n`.
+asserted: (copy n: noisy) = {
+    use(n);
+    assert(valid(n));
+}
+
+// The call after the assertion is the last use of `n` in both.
+used: (copy n: noisy) = {
+    assert(valid(n));
+    use(n);
+}
+
+main: () = {
+    n: noisy = ();
+    asserted(n);
+    std::cout << "\n";
+    used(n);
+    std::cout << "\n";
+}

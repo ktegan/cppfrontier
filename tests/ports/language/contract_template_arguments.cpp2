@@ -1,0 +1,15 @@
+// Source: a Cpp1 function template guarded by
+// `static_assert(std::is_same_v<T, int>)`, ported as runtime contracts.
+// contracts.md: a contract is `pre(condition)` or `pre(condition, message)`;
+// commas inside template argument lists belong to the condition.
+twice: <T> (x: T) -> T
+    pre(std::is_same_v<T, int>, "twice takes an int")
+    post(std::is_convertible_v<T, long>)
+= {
+    assert(std::is_same_v<std::pair<T, T>, std::pair<int, int>>);
+    assert(std::is_same_v<T, int>, "still an int");
+    return x * 2;
+}
+main: () = {
+    std::cout << twice(21) << "\n";
+}

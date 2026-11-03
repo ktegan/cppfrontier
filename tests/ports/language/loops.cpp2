@@ -1,0 +1,96 @@
+// Source: the functions.md loop examples (`while ... next`, `do ... next ...
+// while`, `for ... next ... do`, named break/continue, the Cpp1 counted-for
+// equivalent) and the cppreference "for loop"/"break"/"continue" examples
+// (searching a 2D grid and leaving both loops at once).
+// Exercises: statement-local `(copy i := 0)` parameters, `next` clauses on all
+// three loops, `for ... do (inout x)`, a loop body that is a single `if`,
+// `continue name` and `break name`, a range over `..<`, nested loops over a
+// std::vector of vectors initialized from nested parenthesized lists (upstream
+// emits comma operators there, #1037), and a do-while that runs once.
+#include <iostream>
+#include <string>
+#include <vector>
+
+main: () = {
+    words: std::vector<std::string> = ("Adam", "Betty", "Carl");
+    i := 0;
+
+    while i < words.ssize()
+    next  i++
+    {
+        std::cout << "word: (words[i])$\n";
+    }
+
+    do {
+        std::cout << "**\n";
+    }
+    next  i--
+    while i > 1;
+    std::cout << "i is now (i)$\n";
+
+    i = 0;
+    for  words
+    next i++
+    do   (inout word)
+    {
+        word = "[" + word + "]";
+        std::cout << "counter: (i)$, word: (word)$\n";
+    }
+
+    i = 0;
+    for  words
+    next i++
+    do   (word)
+    if   i % 2 == 1
+    {
+        std::cout << "odd counter: (i)$, word: (word)$\n";
+    }
+
+    // The equivalent of `for (int j = 0; j < 5; ++j)`.
+    (copy j := 0)
+    while j < 5
+    next  j++ {
+        std::cout << j;
+    }
+    std::cout << "\n";
+
+    // Find the first negative value in a grid, leaving both loops.
+    grid: std::vector<std::vector<int>> = ((1, 2, 3), (4, -5, 6), (-7, 8, 9));
+    found_row := -1;
+    found_col := -1;
+    (copy r := 0)
+    rows: while r < grid.ssize() next r++ {
+        (copy c := 0)
+        cols: while c < grid[r].ssize() next c++ {
+            if grid[r][c] >= 0 {
+                continue cols;
+            }
+            found_row = r;
+            found_col = c;
+            break rows;
+        }
+    }
+    std::cout << "first negative at (found_row)$,(found_col)$\n";
+
+    // Skip a whole row with a named continue on the outer loop.
+    sum := 0;
+    outer: for grid do (row) {
+        for row do (v) {
+            if v < 0 { continue outer; }
+            sum += v;
+        }
+        std::cout << "row complete\n";
+    }
+    std::cout << "sum of rows up to their first negative: (sum)$\n";
+
+    for 2 ..< 5 do (n) {
+        std::cout << n << "^2=" << n * n << " ";
+    }
+    std::cout << "\n";
+
+    // A do-while body always runs once.
+    k := 10;
+    do {
+        std::cout << "once with k=(k)$\n";
+    } while k < 5;
+}

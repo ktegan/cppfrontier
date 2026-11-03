@@ -1,0 +1,11 @@
+// Source: a Cpp1 member function moved out of its class but keeping its
+// object parameter. functions.md: `this` is the first parameter of a
+// type-scope function only.
+// expect-error: 'this' must be the first parameter of a type-scope function
+// expect-error: 'this' must be the first parameter
+show: (this) = { }
+counter: type = {
+    value: int = 0;
+    add: (amount: int, inout this) = { value += amount; }
+}
+main: () = { }

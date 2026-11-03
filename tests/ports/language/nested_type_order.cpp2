@@ -1,0 +1,32 @@
+// Source: hello-world.md "Order-independent by default": a member signature
+// may name a nested type declared after it, including a nested template with
+// a default template argument, and a member may name a type alias or `==`
+// constant declared after it.
+outer: <T> type requires std::is_arithmetic_v<T> = {
+    inner: <U> type = {
+        public u: U = 1;
+        get: <V> (this, v: V) -> V = v + u;
+        nest: (this) -> deep = ();
+        deep: type = { public d: T = 3; }
+    }
+    make: (this) -> inner<long> = ();
+    boxed: (this) -> box<> = ();
+    pick: <U> (this, b: box<U>) -> U = b.v;
+    box: <V: type = T> type = { public v: V = 2; }
+}
+aliased: <T> type = {
+    public v: Vec = ();
+    get: (this) -> Elem = v[0] + N;
+    inner: type = { public w: Elem = 2; }
+    Vec: type == std::array<Elem, N>;
+    Elem: type == T;
+    N: std::size_t == M + 1;
+    M: std::size_t == 1;
+}
+main: () = {
+    o: outer<int> = ();
+    i := o.make();
+    std::cout << i.get(2.5) << i.nest().d << o.boxed().v << o.pick(outer<int>::box<long>()) << "\n";
+    a: aliased<std::size_t> = ();
+    std::cout << a.v.size() << a.get() << aliased<int>::inner().w << "\n";
+}

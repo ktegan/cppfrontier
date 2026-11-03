@@ -1,0 +1,27 @@
+// Experiment linear (docs/EXPERIMENTS.md): a @linear value that some path
+// does not consume, that is consumed twice, or that is assigned over before
+// it is consumed, is rejected; reading a part of a value does not consume it.
+// flags: -experiment=linear
+// expect-error: Handle h is not consumed on every path
+// expect-error: Handle a is not consumed on every path
+// expect-error: b was consumed on line 21 and is consumed again here
+// expect-error: Handle c is assigned before it is consumed
+
+Handle: @linear type = {
+    public id: int;
+    operator=: (out this, id_: int) = { id = id_; }
+}
+
+close: (move h: Handle) = { _ = h.id; }
+
+main: (args) -> int = {
+    a := Handle(1);
+    if args.ssize() > 1 { close(move a); }
+    b := Handle(2);
+    close(move b);
+    close(move b);
+    c := Handle(3);
+    c = Handle(4);
+    close(c);
+    return 0;
+}

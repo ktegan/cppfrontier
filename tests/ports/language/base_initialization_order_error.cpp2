@@ -1,0 +1,19 @@
+// Source: types.md "memberwise operator=": the body begins with a
+// `member = value;` statement for each base and data member, in declaration
+// order. A base set after a data member's statement has no other meaning.
+// expect-error: in operator=, 'Base = ...' must be among the statements that begin the body
+Base: type = {
+    public q: int = 1;
+    operator=: (out this) = { }
+    operator=: (out this, that) = { }
+}
+Derived: type = {
+    this: Base = ();
+    public a: int = 0;
+    operator=: (out this) = { }
+    operator=: (out this, that) = {
+        a = 1;
+        Base = that;
+    }
+}
+main: () = { }

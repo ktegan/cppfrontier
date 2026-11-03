@@ -1,0 +1,20 @@
+// Experiments try-operator and destructuring (docs/EXPERIMENTS.md): a `?` in a
+// destructuring initializer returns the failure before the names are bound.
+// flags: -experiment=try-operator -experiment=destructuring
+// cxx-std: c++23
+#include <expected>
+
+pair_of: (ok: bool) -> std::expected<std::pair<int, int>, std::string> = {
+    if ok { return std::pair(1, 2); }
+    return std::unexpected<std::string>("no pair");
+}
+
+sum: (ok: bool) -> std::expected<int, std::string> = {
+    (a, b) := pair_of(ok)?;
+    return a + b;
+}
+
+main: () = {
+    std::cout << sum(true).value() << "\n";
+    std::cout << sum(false).error() << "\n";
+}

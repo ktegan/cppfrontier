@@ -1,0 +1,33 @@
+// Source: cppreference "Requires expression" (simple, type, compound and
+// nested requirements). Requires-expression parameters use Cpp2 syntax
+// (`c: T` is `T const& c`, `inout m: T` is `T& m`); their requirements are
+// Cpp2 expressions, so `c.size()` is a UFCS call. Exercises each requirement kind,
+// `noexcept` in a compound requirement, a requires-expression without
+// parameters that names a function parameter (whose UFCS call is false, not an
+// error, for an argument without the function), and a requires-expression as
+// an operand of `&&`.
+#include <iostream>
+#include <list>
+#include <string>
+#include <vector>
+
+container: <T> concept = requires (c: T, inout m: T) {
+    c.begin();
+    m.clear();
+    typename T::value_type;
+    { c.size() } noexcept -> std::convertible_to<std::size_t>;
+    requires std::is_default_constructible_v<typename T::value_type>;
+};
+
+addable: <T> (x: T) -> bool = requires { x + x; };
+
+sized: <T> (x: T) -> bool = requires { x.size(); };
+
+contiguous: <T> concept = container<T> && requires (c: T) { c.data(); };
+
+main: () = {
+    std::cout << container<std::string> << container<std::vector<int>> << container<int> << "\n";
+    std::cout << addable(std::string("x")) << addable(std::vector<int>()) << "\n";
+    std::cout << sized(std::string("x")) << sized(1) << "\n";
+    std::cout << contiguous<std::vector<int>> << contiguous<std::list<int>> << "\n";
+}

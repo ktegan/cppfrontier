@@ -1,0 +1,56 @@
+// Source: metafunctions.md "union" (name_or_number), with a cppreference
+// "std::variant" style lifetime trace.
+// Exercises: the special members `@union` generates, traced by an alternative
+// that prints its constructions, assignments and destructions: copy and move
+// construction, assignment within one alternative and across alternatives,
+// which destroys the old one, and destruction of the active alternative.
+// Upstream copies the alternative where this moves it (UPSTREAM_DIFFERENCES.md).
+#include <iostream>
+#include <string>
+
+Tracker: type = {
+    public id: std::string = "?";
+    operator=: (out this, s: std::string) = { id = s; std::cout << "make " << id << "\n"; }
+    operator=: (out this, that) = { id = that.id + "c"; std::cout << "copy " << id << "\n"; }
+    operator=: (out this, move that) = {
+        id = that.id + "m";
+        that.id = "moved";
+        std::cout << "move " << id << "\n";
+    }
+    operator=: (inout this, that) = { id = that.id + "=c"; std::cout << "assign " << id << "\n"; }
+    operator=: (inout this, move that) = {
+        id = that.id + "=m";
+        that.id = "moved";
+        std::cout << "move-assign " << id << "\n";
+    }
+    operator=: (move this) = { std::cout << "destroy " << id << "\n"; }
+}
+
+V: @union type = {
+    t: Tracker;
+    n: int;
+}
+
+main: () = {
+    v: V = ();
+    v.set_t("A");
+    std::cout << "-- copy\n";
+    w: V = v;
+    std::cout << "-- move\n";
+    x: V = (move w);
+    std::cout << w.t().id << " " << x.t().id << "\n";
+    std::cout << "-- assign across alternatives\n";
+    y: V = ();
+    y.set_n(3);
+    y = x;
+    std::cout << x.t().id << "\n";
+    std::cout << "-- assign within one\n";
+    y = v;
+    std::cout << y.t().id << "\n";
+    std::cout << "-- replace\n";
+    y.set_n(4);
+    std::cout << y.n() << " " << v.is_t() << "\n";
+    std::cout << "-- move assign\n";
+    y = (move x);
+    std::cout << "-- end\n";
+}

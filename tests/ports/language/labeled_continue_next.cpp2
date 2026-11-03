@@ -1,0 +1,20 @@
+// Source: functions.md "Loops": a `next` clause runs at the end of each
+// iteration, so a labeled `continue` from a nested loop runs it too, and a
+// labeled `break` does not.
+main: () = {
+    v: std::vector<int> = (1, 2, 3);
+    n := 0;
+    outer: for v next n++ do (x) {
+        for v do (y) {
+            if y == 2 { continue outer; }
+        }
+        std::cout << x;
+    }
+    m := 0;
+    stop: for v next m++ do (x) {
+        for v do (y) {
+            if x == 2 && y == 1 { break stop; }
+        }
+    }
+    std::cout << n << " " << m << "\n";
+}

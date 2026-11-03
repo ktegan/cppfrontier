@@ -1,0 +1,28 @@
+// Source: functions.md captures and types.md `operator=`: capturing `that`
+// whole by value copies it, which in a copy constructor calls that same
+// constructor again. Its members can be captured, and `that$` in a copy
+// assignment or a move constructor calls the copy constructor
+// (that_whole_captures.cpp2). A capture inside a string interpolation is
+// reported at the function.
+// expect-error: (14,29): error: capturing 'that' copies it with this copy constructor, which recurses; capture its members instead, as 'that.member$'
+// expect-error: (22,5): error: capturing 'that' copies it with this copy constructor, which recurses; capture its members instead, as 'that.member$'
+
+widget: type = {
+    public n: int = 0;
+    operator=: (out this) = { }
+    operator=: (out this, that) = {
+        get := :() -> int = that$.n + that.n$;
+        n = get();
+    }
+}
+
+gadget: type = {
+    public n: int = 0;
+    operator=: (out this) = { }
+    operator=: (out this, that) = {
+        show := :() -> std::string = "(that$.n)$";
+        std::cout << show();
+    }
+}
+
+main: () = { }

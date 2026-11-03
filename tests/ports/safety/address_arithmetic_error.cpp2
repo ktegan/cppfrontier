@@ -1,0 +1,9 @@
+// Source: upstream's pointer rules (pure2-bounds-safety-pointer-arithmetic-error):
+// an address `x&` is a pointer, so arithmetic on it is pointer arithmetic.
+// Upstream accepts `a& + 1`.
+// expect-error: + - pointer arithmetic is illegal - use std::span or gsl::span instead
+main: () = {
+    a := 1;
+    q := a& + 1;
+    _ = q;
+}

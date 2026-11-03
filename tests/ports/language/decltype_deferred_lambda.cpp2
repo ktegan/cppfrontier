@@ -1,0 +1,10 @@
+// Source: declarations.md "deferred initialization": `decltype(x)` of a local
+// declared without an initializer is its declared type, also in the signature
+// and `requires` clause of a function expression.
+main: () = {
+    x: int;
+    f := :(a: decltype(x)) -> decltype(x) = a * 2;
+    g := :<T> (t: T) -> bool requires std::is_same_v<T, decltype(x)> = t > 0;
+    x = 21;
+    std::cout << f(x) << " " << g(x) << "\n";
+}

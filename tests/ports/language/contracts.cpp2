@@ -1,0 +1,128 @@
+// Source: the contracts.md examples (insert_at with a bounds_safety
+// precondition and a postcondition capturing `container.ssize()$`, custom
+// contract groups, predicates, a violation handler) and the C++26 contracts
+// paper P2900 "pre/post/contract_assert" motivating examples (a checked stack).
+// Exercises: `pre`, `post` with `$` captures, `assert`, `<group>` and
+// `<group, predicate>`, messages with an interpolation, local and global
+// contract_group objects with handlers that throw so the program can
+// continue, `unevaluated` contracts that are never evaluated, and a type whose
+// member functions use `<this>` as the contract group.
+#include <functional>
+#include <iostream>
+#include <source_location>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+audit: cpp2::contract_group = ();
+audit_enabled: bool = false;
+
+// contracts.md documents a handler as `* (* const char)`, but cpp2util.h's
+// handler also takes a std::source_location when the library has one.
+throw_violation: (msg: * const char, copy _: std::source_location) = {
+    throw(std::runtime_error(msg));
+}
+
+insert_at: (inout container: std::vector<int>, where: int, val: int)
+    pre<cpp2::bounds_safety>(0 <= where <= container.ssize(), "position (where)$ is outside 'container'")
+    post(container.ssize() == container.ssize()$ + 1)
+= {
+    _ = container.insert(container.begin() + where, val);
+}
+
+// Postconditions are checked in a noexcept destructor, so a handler that
+// throws would terminate the program (contracts.md suggests a handler may
+// throw); this group's handler logs instead.
+post_log: cpp2::contract_group = ();
+log_violation: (msg: * const char, copy _: std::source_location) = {
+    std::cout << "logged violation: " << msg << "\n";
+}
+
+// The postcondition is wrong on purpose: it claims the size is unchanged.
+broken_push: (inout container: std::vector<int>, val: int)
+    post<post_log>(container.ssize() == container.ssize()$, "size must not change")
+= {
+    container.push_back(val);
+}
+
+side_effect_count: int = 0;
+noisy: () -> bool = {
+    side_effect_count++;
+    return true;
+}
+
+checked_stack: type = {
+    items: std::vector<int> = ();
+
+    report_violation: (this, msg: * const char) = {
+        throw(std::logic_error("stack: " + std::string(msg)));
+    }
+    is_active: (this) -> bool = true;
+
+    push: (inout this, v: int)
+        post<this>(items.ssize() == items.ssize()$ + 1)
+    = {
+        items.push_back(v);
+    }
+    pop: (inout this) -> int
+        pre<this>(!items.empty(), "pop from an empty stack")
+    = {
+        v := items.back();
+        items.pop_back();
+        return v;
+    }
+    size: (this) -> i64 = items.ssize();
+}
+
+attempt: (name: std::string, f: std::function<() -> void>) = {
+    try {
+        f();
+        std::cout << name << ": ok\n";
+    }
+    catch (e: std::exception) {
+        std::cout << name << ": violation: " << e.what() << "\n";
+    }
+}
+
+main: () = {
+    cpp2::bounds_safety.set_handler(throw_violation&);
+    cpp2::default.set_handler(throw_violation&);
+    post_log.set_handler(log_violation&);
+
+    v: std::vector<int> = (1, 2, 3);
+    attempt("insert at 1", :() = insert_at(v&$*, 1, 42));
+    attempt("insert at 9", :() = insert_at(v&$*, 9, 42));
+    attempt("insert at -1", :() = insert_at(v&$*, -1, 42));
+    attempt("broken push", :() = broken_push(v&$*, 7));
+    std::cout << "size now (v.ssize())$\n";
+
+    attempt("assert true", :() = { assert(1 + 1 == 2); });
+    attempt("assert false", :() = { assert(1 + 1 == 3, "arithmetic is broken"); });
+
+    // A group with no handler is inactive: its conditions are not evaluated.
+    attempt("inactive group", :() = { assert<audit>(noisy() && false); });
+    audit.set_handler(throw_violation&);
+    // A false predicate skips the check, and the condition is not evaluated.
+    attempt("predicate off", :() = { assert<audit, audit_enabled>(noisy() && false); });
+    audit_enabled = true;
+    attempt("predicate on", :() = { assert<audit, audit_enabled>(noisy() && false, "audit failed"); });
+    attempt("unevaluated", :() = { assert<unevaluated>(noisy() && false); });
+    std::cout << "noisy() was called (side_effect_count)$ time(s)\n";
+
+    local: cpp2::contract_group = ();
+    local.set_handler(throw_violation&);
+    try {
+        assert<local>(false, "local says no");
+    }
+    catch (e: std::exception) {
+        std::cout << "local group: violation: " << e.what() << "\n";
+    }
+
+    s: checked_stack = ();
+    s.push(10);
+    s.push(20);
+    attempt("pop", :() = { std::cout << "popped " << s&$*.pop() << "\n"; });
+    attempt("pop", :() = { std::cout << "popped " << s&$*.pop() << "\n"; });
+    attempt("pop empty", :() = { _ = s&$*.pop(); });
+    std::cout << "stack size (s.size())$\n";
+}

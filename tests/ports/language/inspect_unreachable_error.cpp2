@@ -1,0 +1,15 @@
+// Source: a Cpp1 `switch` whose `default:` label comes before other cases,
+// ported to an `inspect` expression. Alternatives are tested in order
+// (expressions.md "inspect"), so one after the `is _` wildcard can never be
+// chosen, and it is an error rather than being dropped; a nested inspect's
+// wildcard does not end the outer one.
+// expect-error: this alternative follows 'is _', which matches anything, so it can never be chosen
+describe: (v: int) -> std::string = inspect v -> std::string {
+    is 1 = inspect v -> std::string { is _ = "one"; };
+    is _ = "other";
+    is 2 = "two";
+};
+
+main: () = {
+    std::cout << describe(1) << "\n";
+}

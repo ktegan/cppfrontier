@@ -1,0 +1,6 @@
+shared_line_locations.cpp2(27): out of bounds access attempt detected - attempted access at index 5, [min,max] range is [0,1]
+shared_line_locations.cpp2(28): empty
+shared_line_locations.cpp2(29): std::unique_ptr is empty
+shared_line_locations.cpp2(33): out of bounds access attempt detected - attempted access at index 3, [min,max] range is [0,1]
+shared_line_locations.cpp2(46): x is not 2
+shared_line_locations.cpp2(50): out of bounds access attempt detected - attempted access at index 2, [min,max] range is [0,1]

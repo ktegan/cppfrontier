@@ -1,0 +1,20 @@
+// Source: Cpp1 `static_cast<Derived const&>(b)`, `std::vector<const char*>`
+// and `std::is_same_v<T&&, U>`. common.md: Cpp2 types put the `const` and `*`
+// qualifiers before the type, and template arguments are types or expressions.
+// expect-error: 'Derived const&' is a Cpp1 declarator; write the Cpp2 type 'const Derived'; Cpp2 types have no references
+// expect-error: 'const char*' is a Cpp1 declarator; write the Cpp2 type '*const char'
+// expect-error: 'int&&' is a Cpp1 declarator; write the Cpp2 type 'int'; Cpp2 types have no references
+#include <type_traits>
+#include <vector>
+
+Base: @polymorphic_base type = { }
+Derived: type = { this: Base = (); }
+
+main: () = {
+    d: Derived = ();
+    b: *Base = d&;
+    _ = unchecked_cast<Derived const&>(b*);
+    names: std::vector<const char*> = ();
+    _ = names;
+    _ = std::is_same_v<int&&, int>;
+}

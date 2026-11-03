@@ -1,0 +1,22 @@
+make A
+-- copy
+copy Ac
+-- move
+move Acm
+moved Acm
+-- assign across alternatives
+copy Acmc
+Acm
+-- assign within one
+assign A=c
+A=c
+-- replace
+destroy A=c
+4 1
+-- move assign
+move Acmm
+-- end
+destroy Acmm
+destroy moved
+destroy moved
+destroy A

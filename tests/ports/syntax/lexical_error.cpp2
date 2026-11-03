@@ -1,0 +1,15 @@
+// Source: Cpp1 habits and typos that are not Cpp2 tokens: a stray backtick,
+// a `#` inside an expression, a non-ASCII character, an escaped `\(`
+// interpolation (expressions.md: `(expr)$`), and an unterminated string.
+// expect-error: unexpected text '`'
+// expect-error: unexpected text '#'
+// expect-error: unexpected text 'é'
+// expect-error: no matching ( for string interpolation ending in )$
+// expect-error: string literal is missing its closing "
+main: () = {
+    x := 1 ` 2;
+    y := 1 # 2;
+    z := 1 é 2;
+    s := "\(x)$";
+    t := "open;
+}

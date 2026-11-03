@@ -1,0 +1,23 @@
+// Source: contracts.md: a postcondition captures `x$` inside and outside a
+// string interpolation, in its condition and its message. Upstream ends an
+// interpolation at the first `)$`, so it rejects `(v.ssize()$)$`.
+#include <source_location>
+
+sizes: cpp2::contract_group = ();
+log_violation: (msg: * const char, copy _: std::source_location) = {
+    std::cout << "violation: " << msg << "\n";
+}
+
+grow: (inout v: std::vector<int>, x: int)
+    post<sizes>(std::to_string(v.ssize()) == "(v.ssize()$ + 1)$")
+    post<sizes>(v.ssize() == v.ssize()$, "size was (v.ssize()$)$, now (v.ssize())$")
+= {
+    v.push_back(x);
+}
+
+main: () = {
+    _ = sizes.set_handler(log_violation);
+    v: std::vector<int> = (1, 2);
+    grow(v, 3);
+    std::cout << v.ssize() << "\n";
+}

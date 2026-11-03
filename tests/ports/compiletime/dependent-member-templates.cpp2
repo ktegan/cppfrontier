@@ -1,0 +1,26 @@
+// A member template named through a dependent scope takes the `template`
+// keyword in an expression, as it does in a type: a template parameter, a
+// scope with a dependent template argument, or a `decltype` scope.
+base: <T> type = {
+    f: <U> () -> int = sizeof(U) == sizeof(T);
+    v: <U> int == 3;
+}
+S: type = {
+    g: <U> () -> int = 7;
+    h: <U> (this) -> int = 8;
+    k: <N: int> (this) -> int = N;
+}
+user: <T> (x: T) -> int = base<T>::f<char>() + T::g<int>() + base<T>::v<long> + x.h<int>() +
+    x.k<2>() + std::remove_cvref_t<decltype(x)>::g<char>();
+local: <T> () -> int = {
+    v: T = ();
+    return decltype(v)::g<int>();
+}
+holder: <T> type = {
+    t: T = ();
+    run: (this) -> int = t.h<long>() + T::g<int>() + this.t.k<1>();
+}
+main: () = {
+    s: S = ();
+    std::cout << user(s) << " " << local<S>() << " " << holder<S>().run() << "\n";
+}

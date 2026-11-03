@@ -1,0 +1,8 @@
+start: 3-4
+start empty: 2-3
+not start: no
+not start ba: 1-2
+end: 1-2
+end before newline: 1-2
+end of string: no
+end of string b: 1-2

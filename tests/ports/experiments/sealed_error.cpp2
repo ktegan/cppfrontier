@@ -1,0 +1,8 @@
+// Experiment sealed: an inspect of a @sealed type that misses a derived type.
+// flags: -experiment=sealed
+// expect-error: inspect of 'Shape' does not cover Square - add alternatives or 'is _'
+Shape: @sealed @polymorphic_base type = { area: (virtual this) -> double; }
+Circle: type = { this: Shape = (); area: (override this) -> double = 1.0; }
+Square: type = { this: Shape = (); area: (override this) -> double = 2.0; }
+name: (s: Shape) -> int = inspect s -> int { is Circle = 1; };
+main: () = { }

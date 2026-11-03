@@ -1,0 +1,13 @@
+c1 is a circle with area 3.14
+r1 is a rectangle with area 6.00
+s1 is a square with area 4.00
+total 13.142
+c1 is a circle
+r1 is a rectangle
+s1 is a rectangle is a square
+radius 1.000000
+via interface: square
+~named_shape(s1)
+end of main
+~named_shape(c1)
+~named_shape(r1)

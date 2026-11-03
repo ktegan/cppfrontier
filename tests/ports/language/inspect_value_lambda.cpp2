@@ -1,0 +1,14 @@
+// Source: expressions.md "inspect". An alternative's value may hold a
+// function expression that captures, or another inspect expression.
+describe: <T> (x: T) -> std::string = inspect x -> std::string {
+    is int = :() -> std::string = "int " + std::to_string(x$);();
+    is _ = "other";
+};
+
+main: () = {
+    n := 1;
+    m := 5;
+    std::cout << inspect n -> int { is 1 = (inspect n -> int { is 2 = 0; is _ = 10; }); is _ = 2; } << "\n";
+    std::cout << inspect n -> int { is 1 = :() -> int = m$ + 1;(); is _ = 2; } << "\n";
+    std::cout << describe(3) << " " << describe(2.5) << "\n";
+}

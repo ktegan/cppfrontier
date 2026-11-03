@@ -1,0 +1,29 @@
+// Source: Cpp1 [class.base.init]: members are initialized in declaration
+// order, a member with a default initializer included, after a
+// constructor's preconditions are checked (types.md: the leading statements
+// of `operator=` initialize the members in declaration order). A read of a
+// member not yet initialized there reads an uninitialized object. Upstream
+// emits the reads.
+// expect-error: (17,17): error: member height is used before it was initialized
+// expect-error: (21,29): error: member offset is used before it was initialized
+// expect-error: (24,45): error: member scale is used before it was initialized
+// expect-error: (26,17): error: member width is used before it was initialized
+rectangle: type = {
+    scale: int = 2;
+    width: int;
+    height: int;
+    offset: int = 1;
+    operator=: (out this, h: int) = {
+        width = height * scale;
+        height = h;
+    }
+    operator=: (out this, w: int, h: int) = {
+        width = w * scale + offset;
+        height = h + width;
+    }
+    operator=: (out this, s: bool) pre(s || scale > 0) = { width = 1; height = 2; }
+    operator=: (out this, that) = {
+        width = this.width + 1;
+    }
+}
+main: () = { r: rectangle = (1, 2); }

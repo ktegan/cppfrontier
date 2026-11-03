@@ -1,0 +1,20 @@
+// Source: Cpp1 examples that read a variable in its own initializer.
+// A declaration's name is in scope in its initializer, where it names the
+// object being initialized; using it there is an error at every scope.
+// expect-error: 'x' cannot be used in its own initializer
+// expect-error: 'g' cannot be used in its own initializer
+// expect-error: 'm' cannot be used in its own initializer
+// expect-error: 'z' cannot be used in its own initializer
+// expect-error: 'f' cannot be used in its own initializer
+g: int = g + 1;
+S: type = { public m: int = m + 1; }
+
+main: () = {
+    x := 1;
+    {
+        x: int = x + 1;
+        std::cout << x << "\n";
+    }
+    (z := z + 1) { std::cout << z << "\n"; }
+    f := :() -> int = f$();
+}

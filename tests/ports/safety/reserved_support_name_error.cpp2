@@ -1,0 +1,17 @@
+// Source: expressions.md "unchecked_*" and objects.md: the support names
+// (`unchecked_*`, `finally`, `cpp1_ref`, `cpp1_rvalue_ref`) always name the
+// runtime's `cpp2::` functions, so declaring one, at any scope, is an error.
+// expect-error: 'unchecked_div' is a Cpp2 support name (cpp2::unchecked_div) and cannot be declared
+// expect-error: 'cpp1_ref' is a Cpp2 support name (cpp2::cpp1_ref) and cannot be declared
+// expect-error: 'unchecked_cast' is a Cpp2 support name (cpp2::unchecked_cast) and cannot be declared
+// expect-error: 'finally' is a Cpp2 support name (cpp2::finally) and cannot be declared
+unchecked_div: (a: int, b: int) -> int = a / b;
+S: type = {
+    unchecked_div: (this, d: int) -> int = d;
+}
+f: <unchecked_cast: int> () = { }
+main: () = {
+    cpp1_ref: int = 3;
+    (copy finally := 1) { std::cout << finally; }
+    std::cout << cpp1_ref << "\n";
+}

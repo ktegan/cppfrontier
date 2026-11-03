@@ -1,0 +1,14 @@
+// Experiment given: a given defines every function of its trait, also when it
+// names the trait qualified.
+// flags: -experiment=given
+// expect-error: the given of 'lib::Show' for 'int' does not define 'size'
+lib: namespace = {
+    Show: @trait type = {
+        show: (this) -> std::string;
+        size: (this) -> int;
+    }
+    Show_int: @given<lib::Show, int> type = {
+        show: (x: int) -> std::string = "int";
+    }
+}
+main: () = { }

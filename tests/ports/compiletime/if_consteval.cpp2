@@ -1,0 +1,15 @@
+// Source: cppreference "if consteval" (C++23), which Cpp2 spells as Cpp1 does:
+// `if consteval` and `if !consteval` take no parentheses in the lowered Cpp1.
+where: () -> int == {
+    if consteval { return 1; } else { return 2; }
+}
+runtime_only: () -> int == {
+    if !consteval { return 3; }
+    return 4;
+}
+
+main: () = {
+    static_assert(where() == 1);
+    static_assert(runtime_only() == 4);
+    std::cout << where() << runtime_only() << "\n";
+}

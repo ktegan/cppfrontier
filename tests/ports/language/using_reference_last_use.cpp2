@@ -1,0 +1,25 @@
+// Source: last-use moves (functions.md "definite last use"): a local whose
+// type is named by a using-declaration of a Cpp1 reference alias refers to
+// another object, so its last use forwards it; a qualified type of this
+// translation unit is an object type and is moved.
+#include <string>
+#include <vector>
+namespace M { using R = std::string&; template<class T> using TR = T&; }
+N: namespace = {
+    X: @value type = { public s: std::string = "x"; }
+}
+using M::R;
+using M::TR;
+show: (copy x: _) = { std::cout << "[" << x << "]"; }
+show: (copy x: N::X) = { std::cout << "[" << x.s << "]"; }
+main: () = {
+    v: std::vector<std::string> = ("a", "b");
+    a: R = v[0];
+    show(a);
+    b: TR<std::string> = v[1];
+    show(b);
+    x: N::X = ();
+    y := x;
+    show(x);
+    std::cout << " " << v[0] << v[1] << " " << y.s << "\n";
+}

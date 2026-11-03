@@ -1,0 +1,4 @@
+// A pack is declared with `...` on the name (declarations.md), not on the type.
+// expect-error: xs...
+f: <Ts...: type> (xs: Ts...) = { }
+main: () = { }

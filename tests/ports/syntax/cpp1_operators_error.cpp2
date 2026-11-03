@@ -1,0 +1,23 @@
+// Source: Cpp1 bit manipulation, pointer and conversion code ported
+// literally (`~mask`, `*p`, `c ? a : b`, `static_cast<int>(x)`) and a type
+// test chained into a conversion. common.md: the only prefix operators are
+// `!`, `+` and `-`; `~` and `*` are postfix, and there is no conditional
+// operator. expressions.md: conversions are written `x as T`.
+// expect-error: prefix '~var' is not valid Cpp2; use postfix 'var~' instead
+// expect-error: prefix '*ptr' dereference is not valid Cpp2; use postfix 'ptr*' instead
+// expect-error: the conditional operator 'c ? a : b' is not valid Cpp2
+// expect-error: 'static_cast<T>(expr)' is not supported in Cpp2
+// expect-error: 'reinterpret_cast' is not supported in Cpp2
+// expect-error: mixed 'is' and 'as' are not allowed
+// expect-error: repeated 'is' are not allowed
+main: () = {
+    mask: u32 = 0xF0;
+    inverted := ~mask;
+    p: *u32 = mask&;
+    copy := *p;
+    larger := mask > 4u ? mask : 4u;
+    narrow := static_cast<int>(mask);
+    address := reinterpret_cast<std::uintptr_t>(p);
+    flag := mask is u32 as bool;
+    twice := mask is u32 is u32;
+}

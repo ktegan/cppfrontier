@@ -1,0 +1,36 @@
+// Source: notes/autodiff_status.md (reverse mode: function calls,
+// intermediate variables, math functions): locals initialized from calls of a
+// differentiated function with a branch, whose adjoints are passed to the
+// called function's reverse derivative, and a self-updating return value. The
+// adjoints are checked against central finite differences. Upstream cppfront
+// declares an adjoint as `auto a_b {}`, which does not compile.
+#include <cmath>
+#include <iostream>
+
+rev: @autodiff<"reverse"> type = {
+    g: (x: double, y: double) -> (r: double) = {
+        if x > y { r = x * sin(y); } else { r = y * cos(x) + x; }
+    }
+    f: (x: double, y: double) -> (r: double) = {
+        a := g(x, y) * x;
+        b := g(y, a);
+        r = a * b + exp(0.0 - x);
+        r = r * r;
+    }
+}
+
+main: () = {
+    h := 1e-6;
+    y := 0.8;
+    for (0.3, 1.4) do (x) {
+        x_b := 0.0;
+        y_b := 0.0;
+        r_b := 1.0;
+        _ = rev::f_b(x, x_b, y, y_b, r_b);
+        _ = r_b;
+        fd_x := (rev::f(x + h, y) - rev::f(x - h, y)) / (2.0 * h);
+        fd_y := (rev::f(x, y + h) - rev::f(x, y - h)) / (2.0 * h);
+        std::cout << "x = " << x << ": d/dx " << (std::abs(x_b - fd_x) < 1e-5)
+                  << ", d/dy " << (std::abs(y_b - fd_y) < 1e-5) << "\n";
+    }
+}

@@ -1,0 +1,17 @@
+// Experiment condition-bindings: a pattern test that binds is an operand of
+// an if or while condition's top-level && chain, and binds each name once.
+// flags: -experiment=condition-bindings
+// expect-error: a pattern test that binds names must be an operand of the top-level '&&' chain of an 'if' or 'while' condition
+// expect-error: 'n' is bound twice in a condition
+// expect-error: 'as _' binds nothing - remove it
+#include <variant>
+
+f: (v: std::variant<int, long>, k: bool) -> int = {
+    if k || v is int as a { return a; }
+    do { } while v is long as b;
+    if v is int as n && v is int as n { return n; }
+    if v is int as _ { return 0; }
+    return 0;
+}
+
+main: () = { }

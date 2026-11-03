@@ -1,0 +1,25 @@
+// Source: objects.md "Guaranteed initialization" and types.md "operator=":
+// a type with only a converting `operator=: (out this, x: int)` has no copy,
+// so a deferred local or `out` parameter of it must be constructed in place
+// from the assigned value (as upstream). A list and
+// an arithmetic literal still convert first, so `small = 200` and
+// `values = (1, 2, 3)` do not narrow.
+N: type = {
+    public v: int = 0;
+    operator=: (out this, x: int) = { v = x; }
+}
+
+fill: (out x: N) = { x = 3; }
+
+main: () = {
+    y: N;
+    y = 4;
+    z: N;
+    fill(out z);
+    small: u8;
+    small = 200;
+    values: std::array<i8, 3>;
+    values = (1, 2, 3);
+    std::cout << y.v << " " << z.v << " " << small as int << " "
+              << values[2] as int << "\n";
+}

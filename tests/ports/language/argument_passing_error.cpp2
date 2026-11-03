@@ -1,0 +1,12 @@
+// An argument is marked only `out`, `move` or `forward` (expressions.md:
+// "write that keyword before the variable name"; upstream also accepts
+// `forward`); `inout` and `copy` mark parameters.
+// expect-error: 'inout' cannot mark an argument - an argument is marked only 'out', 'move' or 'forward'
+// expect-error: 'copy' cannot mark an argument
+f: (inout x: int, y: int) -> int = { x++; return x + y; }
+
+main: () = {
+    a := 1;
+    b := f(inout a, 2);
+    std::cout << f(a, copy b) << "\n";
+}

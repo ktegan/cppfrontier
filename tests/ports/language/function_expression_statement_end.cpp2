@@ -1,0 +1,30 @@
+// Source: review A1 and upstream parse.h `postfix_expression`: after the `;`
+// of a function expression's expression body, a `(` whose contents are an
+// expression list invokes the function expression, with or without space or
+// a newline between them. Otherwise the `;` ends the enclosing statement, so
+// statement parameters after it begin a new statement, and a block's `}`
+// after it closes the block. Inside a larger expression the `;` stays in the
+// function expression before `)`, `,` or a braced initializer's `}`.
+S: @struct type = { f: std::function<int()>; }
+
+main: () = {
+    f := :() = 42;
+    (copy i := 0) while i < 3 next i++ { std::cout << i; }
+    (i := 1) { std::cout << i; }
+    (j: int = 9) { std::cout << j; }
+    std::cout << f() << "\n";
+
+    c := true;
+    if c { g := :() = 1; std::cout << g(); }
+    if c { h := :() = 2; _ = h; }
+    while c { k := :() = 3; c = false; _ = k; }
+    do { m := :() = 4; _ = m; } while c;
+
+    a := :(x) = x + 5;(0);
+    b := :(x, y) = x * y; (2, 3);
+    d := :() = 7;
+        ();
+    s := S{:() -> int = 6;};
+    v: std::vector<std::function<int()>> = (:() = 7;, :() = 8;);
+    std::cout << a << b << d << s.f() << v[1]() << "\n";
+}

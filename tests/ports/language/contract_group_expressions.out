@@ -1,0 +1,5 @@
+count 0
+violation 1: heap group
+violation 1: x is -2
+violation 2: local group
+2 1

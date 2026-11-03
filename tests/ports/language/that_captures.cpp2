@@ -1,0 +1,69 @@
+// Source: expressions.md "Capture in function expressions", types.md `that`,
+// functions.md "Move/forward from definite last use".
+// Exercises: a capture `that.m$`, also inside a string interpolation, in a
+// function expression in a `that` function: the capture reads `that.m`, so
+// `m`'s generated default copies rather than moves, and a capture that is
+// the last use of `that` moves.
+#include <iostream>
+#include <string>
+
+part: type = {
+    public name: std::string;
+
+    operator=: (out this, n: std::string) = { name = n; }
+    operator=: (out this, that) = {
+        name = that.name;
+        std::cout << "  copy (name)$\n";
+    }
+    operator=: (out this, move that) = {
+        name = (move that.name);
+        std::cout << "  move (name)$\n";
+    }
+    operator=: (inout this, that) = {
+        name = that.name;
+        std::cout << "  copy-assign (name)$\n";
+    }
+}
+
+holder: type = {
+    public a: part = ("a");
+    public b: part = ("b");
+    public c: part = ("c");
+
+    operator=: (out this) = { }
+    operator=: (out this, that) = { }
+    // `a` and `b` are read by captures, so their defaults copy, and the
+    // capture of `that.b` is the last use of `that`, so it moves; `c` moves.
+    operator=: (out this, move that) = {
+        show_a := :() = std::cout << "  captured " << that.a$.name << "\n";
+        show_a();
+        show_b := :() = std::cout << "  captured (that.b$.name)$\n";
+        show_b();
+    }
+}
+
+// In a `that` function, which also gives the move constructor, a capture of
+// `that.a` keeps `a`'s default a copy in both.
+general: type = {
+    public a: part = ("ga");
+    public b: part = ("gb");
+
+    operator=: (out this) = { }
+    operator=: (out this, that) = {
+        show := :() = std::cout << "  general (that.a$.name)$\n";
+        show();
+    }
+}
+
+main: () = {
+    std::cout << "move construction\n";
+    x: holder = ();
+    y: holder = (move x);
+    std::cout << "source: (x.a.name)$ (x.b.name)$ (x.c.name)$\n";
+    std::cout << "target: (y.a.name)$ (y.b.name)$ (y.c.name)$\n";
+    std::cout << "general\n";
+    g: general = ();
+    h: general = (move g);
+    std::cout << "source: (g.a.name)$ (g.b.name)$\n";
+    std::cout << "target: (h.a.name)$ (h.b.name)$\n";
+}

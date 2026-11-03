@@ -1,0 +1,18 @@
+// Overloads on `_ is C` parameters are ordered by constraint subsumption, as
+// Cpp1 orders `C auto` parameters: the more constrained overload wins.
+#include <concepts>
+#include <iostream>
+
+describe: (x: _ is std::integral) -> std::string = "integral";
+describe: (x: _ is std::signed_integral) -> std::string = "signed integral";
+describe: (x: _ is std::floating_point) -> std::string = "floating point";
+
+scale: (copy x: _ is std::integral) -> int = x as int * 2;
+scale: (copy x: _ is std::signed_integral) -> int = x as int * -2;
+
+main: () = {
+    std::cout << describe(1) << "\n";
+    std::cout << describe(1u) << "\n";
+    std::cout << describe(1.5) << "\n";
+    std::cout << scale(3) << " " << scale(3u) << "\n";
+}

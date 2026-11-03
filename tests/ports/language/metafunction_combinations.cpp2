@@ -1,0 +1,46 @@
+// Source: metafunctions.md "enum", "union", "value", "hashable" and
+// "interface": metafunctions applied together, and `==` constants in their
+// types. A constant is not hashed, copied or rejected as interface data; an
+// `@enum` or `@union` that is also `@value` has one default constructor; an
+// interface function written `override` or `final` is virtual, as upstream.
+color: @enum @hashable @value type = { red; green; }
+
+flags: @flag_enum @value type = { read; write; }
+
+token: @union @value type = { num: int; name: std::string; }
+
+record: @hashable type = {
+    public x: int = 1;
+    scale: int == 10;
+}
+
+shape: @interface type = {
+    sides: int == 4;
+    area: (override this) -> int;
+    name: (final this) -> std::string;
+}
+
+square: type = {
+    this: shape = ();
+    area: (override this) -> int = shape::sides * shape::sides;
+    name: (override this) -> std::string = "square";
+}
+
+main: () = {
+    c := color::green;
+    d := c;
+    std::cout << d.to_string() << " " << (color::red < d) << " "
+              << (c.hash() == d.hash()) << "\n";
+    f: flags = flags::read | flags::write;
+    g := f;
+    std::cout << g.to_string() << "\n";
+    t: token = ();
+    t.set_name("abc");
+    u := t;
+    std::cout << u.is_name() << u.name() << "\n";
+    r: record = ();
+    std::cout << (r.hash() == record().hash()) << record::scale << "\n";
+    s: square = ();
+    p: *shape = s&;
+    std::cout << p*.area() << " " << p*.name() << "\n";
+}

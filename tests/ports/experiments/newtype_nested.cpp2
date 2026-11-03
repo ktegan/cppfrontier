@@ -1,0 +1,40 @@
+// Experiment newtype (docs/EXPERIMENTS.md): a @quantity nested in a type, two
+// levels deep, in a namespace, and as a template. Its `k * q` operator is
+// declared at namespace scope after the outermost type, where
+// argument-dependent lookup finds it.
+// flags: -experiment=newtype
+#include <iostream>
+
+Shop: type = {
+    rep: type == i64;
+    Price: @quantity<rep> type = { }
+    Stock: type = {
+        Units: @quantity<i32> type = { }
+        Weight: @quantity<T> <T> type = { }
+    }
+}
+
+physics: namespace = {
+    Body: @struct type = {
+        Mass: @quantity<double> type = { }
+        mass: Mass;
+    }
+}
+
+main: () = {
+    p := 250 as Shop::Price;
+    total := 3 * p + p * 2 + (p + p);
+    std::cout << (total as i64) << " " << (total / p) << "\n";
+
+    u := 4 as Shop::Stock::Units;
+    more := 5 * u - u * 2 + (u + u);
+    std::cout << (more as i32) << " " << (more / u) << "\n";
+
+    w := 1.5 as Shop::Stock::Weight<double>;
+    heavier := 2.0 * w + w * 3.0 + (w + w);
+    std::cout << (heavier as double) << " " << (heavier / w) << "\n";
+
+    b: physics::Body = (physics::Body::Mass(2.5));
+    twice := 2.0 * b.mass + b.mass * 2.0 + (b.mass + b.mass);
+    std::cout << (twice as double) << " " << (twice / b.mass) << "\n";
+}

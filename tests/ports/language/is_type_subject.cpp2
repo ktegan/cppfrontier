@@ -1,0 +1,37 @@
+// Source: expressions.md "is": in a type query `x is C`, "`x` may be a type".
+// A subject that is visibly a type (a template type parameter, a fundamental
+// type, or a type declared here, qualified or through an alias) is tested as
+// the type: `T is X` is whether `x is X` is statically true for a value `x`
+// of type `T`, so the same type, a base, a concept declared here and a
+// template all match, and a dynamic test does not. `inspect` on a type
+// subject tests each alternative the same way. Upstream emits
+// `cpp2::impl::is<X>(T)`, which does not compile.
+B: type = { }
+D: type = { this: B = (); }
+P: @polymorphic_base type = { }
+Q: @polymorphic_base type = { }
+Box: <T> type = { v: T = (); }
+N: namespace = { X: type = { } }
+A: type == N::X;
+number: <T> concept = std::integral<T> || std::floating_point<T>;
+same_int: <T> () -> bool = T is int;
+from_b: <T> () -> bool = T is B;
+numeric: <T> () -> bool = T is number;
+vector: <T> () -> bool = T is std::vector;
+name: <T> () -> std::string = inspect T -> std::string {
+    is int = "int";
+    is number = "number";
+    is std::vector = "vector";
+    is _ = "other";
+};
+main: () = {
+    static_assert(D is B);
+    std::cout << same_int<int>() << same_int<long>() << from_b<D>() << from_b<int>() << " "
+              << (D is B) << (B is D) << (P is Q) << (i32 is int) << " "
+              << numeric<double>() << numeric<B>() << vector<std::vector<int>>()
+              << vector<int>() << " " << (A is N::X) << (Box<int> is Box) << "\n";
+    std::cout << name<int>() << " " << name<char>() << " " << name<std::vector<B>>() << " "
+              << name<B>() << "\n";
+    x := 1;
+    std::cout << (x is int) << "\n";
+}

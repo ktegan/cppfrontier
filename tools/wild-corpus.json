@@ -1,0 +1,444 @@
+{
+  "repositories": [
+    {
+      "url": "https://github.com/hsutter/cppfront",
+      "commit": "66eb614ff7947ed2502227ae55bc686d98868abf",
+      "markdown": [
+        "docs/**/*.md"
+      ],
+      "note": "Code blocks of the Cpp2 documentation, at the audited upstream commit"
+    },
+    {
+      "url": "https://github.com/anton-nikan/breakout",
+      "commit": "29b6a97e9c86a9ca70bd8cb97cb5388fa5e33340",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/anton-nikan/cpp2-explore",
+      "commit": "2930169fe6b42ba234a40d25fbe122adfe57b917",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/Ariaszzzhc/cpp2ls",
+      "commit": "1cea9e8beeb4a9ce3db0b194e868b9a220362146",
+      "paths": [
+        "tests/fixtures/**/*.cpp2",
+        "tests/fixtures/**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/BenchCommons/catalog-algorithms",
+      "commit": "a866fab2b1919727b60b6289154f6794834d6208",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/chestm007/jetbrains-cpp2",
+      "commit": "62931e73aff20ee23a278706fc0ac5a2abe626d7",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/cpp-niel/cpp2lexer",
+      "commit": "cb0633314674589536c20bd4bf85f43d0cbfb8c4",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/cpp-niel/cpp2tracer",
+      "commit": "b5e438ca594ba445a47b4cb7dc4f6ba00f1f2158",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/D3r3k23/cpp2",
+      "commit": "6b6df9909159cf6b734e247f523fcf7595960828",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/douyixuan/cpp2",
+      "commit": "70a6691d47aad600cad731bccd916fa98fbdb145",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/dwmckee/cpp2lox",
+      "commit": "ebff9472099500d0a381e45dc4cb37d176c4a161",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/elazarcoh/cpp2-syntax",
+      "commit": "f07d017a8905cc4f44c8c4a411aa4efa1213b1ec",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/Fabio3rs/cppfront_study_with_cmake",
+      "commit": "2abb218ff51af7c2ec89ae4d515c2863daed0f61",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/farmerpiki/cpp2-issue",
+      "commit": "226db9589a2c1253fccacdf062fe94440ec848dc",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/filipsajdak/Cpp2-Example",
+      "commit": "21184331098c9f2e0e31cdcac27364f2b8d850f1",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/fjebaker/cppfront-to-wasm",
+      "commit": "669a9a6baffa00f6e8d26e7a4d0d2502d8b66c6d",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/fpelliccioni/cppfront-usage",
+      "commit": "30ce90730ccf83a9cf10a096dbadb903703bb2c8",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/GolemCpp/golem",
+      "commit": "53fa8c7dabcff3f65b3101e16d4836dc28bf0690",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/goszpeti/cppfront_conan_toolchain",
+      "commit": "21b24bea3d109d39a550be00adc28590abff9c93",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/Green-Sky/thumbhash_cpp2",
+      "commit": "415d92e5d6a3023cfa3231f8ba5b3ba381584726",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/helmesjo/build2-cppfront",
+      "commit": "f5de19a080840ef27cc06a3389beaceb16c50e4e",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/hgminh95/rules_cppfront",
+      "commit": "07045c67daa3d7de019af14e0ece05ca97ee5074",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/ishani/cppfront-msbuild",
+      "commit": "8ffb9979b58b752c568f35366e9e18b28de83f88",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/isidorostsa/RayTrayCpp2",
+      "commit": "fece8870b2b4ee06a77aff0c8d8757689fd17946",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/JakeShirley/cpp2_sandbox",
+      "commit": "d6a90ccddeca83c971bc1d833354f8040b5d8f0b",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/janseeger/adventofcode22",
+      "commit": "724842b901fc98037cf9912af25ebbaef73e5a71",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/jobtijhuis/adventofcode-2022",
+      "commit": "2d91c372987791c5d29cab76e48db98b7eada84d",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/jpakkane/cpp2meson",
+      "commit": "37214ad487ae8434a0a9c0958ab9684dec981240",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/jray272/cppfront-bzl-rules-demo",
+      "commit": "27a67f4817d1f8186f945b73ddbd06938ac35fce",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/kiblitz/cppfront-sfml3-steam-template",
+      "commit": "8901f2abce74f776fcce4d0e7128db288b067dc3",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/Lathentar/aoc_2024",
+      "commit": "c10ab2ae2c4e7e3df7295b638ccb8ae553d6142c",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/lauler1/cppfront",
+      "commit": "0b5a0d34059f2ac991616d336567dda53bba3ff9",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/LukyGuyLucky/tetris-cpp2",
+      "commit": "8dc88907e2da5c9ade78049641f4d2294d7cfd00",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/mashumafi/Frontier",
+      "commit": "48cb3794de96a179a1a4a7ca01c8220ce1462e51",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/MatthieuHernandez/gopp2",
+      "commit": "944915cefcdb8f922b49aaf07366d7563504ff83",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/modern-cmake/cppfront",
+      "commit": "f1ad014e16ae64bd4e3efafbf02e2291ee244e5d",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/mrizaln/hello-cpp2",
+      "commit": "64c7e73322152dda143456dbc073d1f0a0985db0",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/mrizaln/pong-cpp2",
+      "commit": "ea71f6bd58d809b873ed8180c4ab2118f3353fd8",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/msclock/cppfront-practice",
+      "commit": "61157240eb5782b4208012474418e990b08afb5c",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/neumannt/cppfront-exp",
+      "commit": "cd6a83e6c2b984ef05e26d14d8f90a64e2a8961f",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/njmayes/cpp2-template",
+      "commit": "b51f480204e8a05355f5daf71f19eea253db7ba4",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/ProgrammingRainbow/Beginners-Guide-to-SDL2-in-Cpp2",
+      "commit": "de23d551881585624294b775d2ba0cfbe15df831",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/rajayonin/life.cpp2",
+      "commit": "1c15aeabcb09397e5322f4b87fe93cce686f3ed7",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/SavenkovIgor/CppfrontTemplate",
+      "commit": "5cf455fc9ece307c132019ffa62528e99deaca83",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/scupit/cppfront-cmake-wrapper",
+      "commit": "dcb87e25302cf88e23722e47608faab9eaf26f22",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/tattwamasi/cpp2_modules_ex1",
+      "commit": "8d73a8a99dfa3b3d5330f6b9c39863d6a256e08b",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/threeifbyair/advent2024",
+      "commit": "e5df31ef6e4cfffc433c8752c008934d770906d3",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/tsoj/Starthinker",
+      "commit": "61aba83e5a137a1f137ad915a5f973a12bbd7bcd",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/wrocpp/cpp26-reflection-examples",
+      "commit": "ee4df2863453a67157a19cd3a600d08d59a95c61",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/xmake-io/xmake",
+      "commit": "2ea1e58cb3c8b6c11f01380c919fb78f469160f7",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/YoungHaKim7/cppfront_training",
+      "commit": "28956c8a13d2501eb66b5c0ee6461335b94b41e8",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/zaucy/cpp2b",
+      "commit": "612d867ef55aeecc56f91672e9e1ab84548a89bd",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/zaucy/rules_cpp2",
+      "commit": "b9b0177f576588743af86a8516d185d3926accc8",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://github.com/zyperpl/MNCACpp2Syntax",
+      "commit": "aa6212373fdf3920d3de6c744700d217dfca6693",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    },
+    {
+      "url": "https://gitlab.com/williamgrantuk/make-a-lisp-cpp2",
+      "commit": "5d32a3a88b72c88ae6bbff12185bd9a4820eea0a",
+      "paths": [
+        "**/*.cpp2",
+        "**/*.h2"
+      ]
+    }
+  ]
+}

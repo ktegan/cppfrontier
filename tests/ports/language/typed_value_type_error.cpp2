@@ -1,0 +1,10 @@
+// A typed value's type takes the checks of a declared type.
+// expect-error: (7,11): error: 'int&' is a Cpp1 reference type
+// expect-error: (8,23): error: '_' cannot be part of a template argument
+// expect-error: (9,11): error: the type operator '|' requires '-experiment=type-operators'
+main: () = {
+    x := 1;
+    a := :int& = x;
+    d := :std::vector<_> = ();
+    e := :int | double = 2;
+}

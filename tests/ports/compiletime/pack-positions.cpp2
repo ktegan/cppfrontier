@@ -1,0 +1,55 @@
+// Source: cppreference "Parameter pack" (pack expansion loci: function
+// arguments, template arguments, braced initializers, nested patterns,
+// sizeof..., packs of non-type parameters whose type is another parameter)
+// and the perfect-forwarding factory from "Effective Modern C++" item 25.
+// Exercises the pack positions declarations.md allows (`name...` on template
+// and function parameters) and the expansions Cpp1 accepts from them.
+#include <iostream>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
+
+// A variadic class template storing its pack in a tuple.
+record: <Ts...> type = {
+    fields: std::tuple<Ts...> = ();
+    operator=: (out this) = { }
+    operator=: (out this, args...: Ts) = { fields = (args...); }
+    count: () -> std::size_t == sizeof...(Ts);
+    print: (this) = { std::apply(:(xs...) = { ((std::cout << xs << ";"), ...); }, fields); std::cout << "\n"; }
+}
+
+// Perfect forwarding of a pack into a constructor.
+make_unique_of: <T, Args...> (forward args...: Args) -> std::unique_ptr<T> =
+    std::make_unique<T>(args...);
+
+// A nested pattern: each element is transformed before the expansion.
+twice: (x: int) -> int = 2 * x;
+sum: (xs...: int) -> int = (0 + ... + xs);
+sum_twice: (xs...: int) -> int = sum(twice(xs)...);
+
+// Values of a type given by an earlier parameter, expanded into an array.
+values: <T, Vs...: T> () -> std::vector<T> = (Vs...);
+
+// A constraint over every element of a pack.
+all_integral: <Ts...> (_...: Ts) -> bool requires (std::is_integral_v<Ts> && ...) = true;
+
+// Two packs expanded in lockstep (same length).
+zip_sum: <As..., Bs...> (a: std::tuple<As...>, b: std::tuple<Bs...>) -> _ =
+    zip_sum_impl(a, b, std::index_sequence_for<As...>());
+zip_sum_impl: <A, B, Is...: std::size_t> (a: A, b: B, _: std::index_sequence<Is...>) -> _ =
+    std::make_tuple((std::get<Is>(a) + std::get<Is>(b))...);
+
+main: () = {
+    r: record<int, std::string, double> = (1, "two", 3.5);
+    r.print();
+    static_assert(record<int, char>::count() == 2);
+    p := make_unique_of<std::string>(3, 'z');
+    std::cout << p* << "\n";
+    std::cout << sum_twice(1, 2, 3) << "\n";
+    for values<long, 4, 5, 6>() do (v) { std::cout << v; }
+    std::cout << "\n" << all_integral(1, 'c', 2u) << "\n";
+    z := zip_sum(std::make_tuple(1, 2.5), std::make_tuple(10, 20));
+    std::cout << std::get<0>(z) << " " << std::get<1>(z) << "\n";
+}

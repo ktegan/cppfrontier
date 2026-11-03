@@ -1,0 +1,14 @@
+// Source: upstream's pointer rules (pure2-bounds-safety-pointer-arithmetic-error):
+// a pointer named by a qualified name `A::p` is checked like the bare name.
+// expect-error: + - pointer arithmetic is illegal - use std::span or gsl::span instead
+// expect-error: ++ - pointer arithmetic is illegal - use std::span or gsl::span instead
+A: namespace = {
+    x: int = 1;
+    p: *int = x&;
+}
+
+main: () = {
+    a := A::p + 1;
+    b := A::p* + 1;
+    A::p++;
+}

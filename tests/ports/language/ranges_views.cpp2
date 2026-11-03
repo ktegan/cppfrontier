@@ -1,0 +1,90 @@
+// Source: cppreference "Ranges library" overview example (filter even numbers,
+// square them, print), std::views::reverse/take/drop_while/enumerate/zip
+// (C++23), std::ranges::sort with a projection, and expressions.md captures
+// (`x$` by value, `x&$*` to update a local).
+// Exercises: range adaptor pipelines with `|`, function expressions with and
+// without captures, a capture of a local used later after the local changes,
+// std::ranges algorithms, comparisons ending lambda bodies,
+// projections with a pointer to data member, `..<` and `..=` ranges, and
+// std::ranges::to (C++23).
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <ranges>
+#include <string>
+#include <vector>
+
+person: @struct type = {
+    name: std::string;
+    age: int;
+}
+
+// A filter_view cannot be iterated through a const reference, so this takes
+// `forward r` rather than the default `in r`.
+print_all: (forward r) = {
+    for r do (x) { std::cout << x << " "; }
+    std::cout << "\n";
+}
+
+main: () = {
+    ints: std::vector = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+    even := :(i: int) -> bool = i % 2 == 0;
+    square := :(i: int) -> int = i * i;
+    print_all(ints | std::views::filter(even) | std::views::transform(square));
+
+    limit := 5;
+    below := :(i: int) -> bool = i < limit$;   // captures 5
+    limit = 100;
+    print_all(ints | std::views::filter(below) | std::views::reverse);
+
+    count := 0;
+    std::ranges::for_each(ints, :(i: int) = { if i > 6 { count&$*++; } });
+    std::cout << "count above 6: (count)$\n";
+
+    print_all(ints | std::views::drop_while(:(i: int) -> bool = i < 7) | std::views::take(2));
+
+    for ints | std::views::take(3) | std::views::enumerate do (pair) {
+        std::cout << "[(std::get<0>(pair))$]=(std::get<1>(pair))$ ";
+    }
+    std::cout << "\n";
+
+    names: std::vector<std::string> = ("ann", "bo", "cy");
+    for std::views::zip(names, ints) do (z) {
+        std::cout << std::get<0>(z) << ":" << std::get<1>(z) << " ";
+    }
+    std::cout << "\n";
+
+    people: std::vector<person> = ();
+    people.push_back(:person = ("Zoe", 31));
+    people.push_back(:person = ("Adam", 45));
+    people.push_back(:person = ("Mia", 27));
+    std::ranges::sort(people, std::less<>(), person::age&);
+    for people do (p) { std::cout << p.name << "(" << p.age << ") "; }
+    std::cout << "\n";
+    std::ranges::sort(people, :(a: person, b: person) -> bool = a.name < b.name);
+    for people do (p) { std::cout << p.name << " "; }
+    std::cout << "\n";
+
+    oldest := std::ranges::max(people, std::less<>(), person::age&);
+    std::cout << "oldest (oldest.name)$\n";
+
+    sum := std::accumulate(ints.begin(), ints.end(), 0);
+    squares := (1 ..= 10) | std::views::transform(square) | std::ranges::to<std::vector>();
+    std::cout << "sum (sum)$, (squares.size())$ squares, last (squares.back())$\n";
+
+    for 3 ..< 6 do (i) { std::cout << i << " "; }
+    std::cout << "\n";
+
+    lengths := names | std::views::transform(:(s: std::string) -> std::size_t = s.size())
+                     | std::ranges::to<std::vector>();
+    print_all(lengths);
+
+    by_length: std::map<std::size_t, std::vector<std::string>> = ();
+    for names do (n) { by_length[n.size()].push_back(n); }
+    for by_length do (entry) {
+        std::cout << entry.first << " -> ";
+        print_all(entry.second);
+    }
+}

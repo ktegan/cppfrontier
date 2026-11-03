@@ -1,0 +1,42 @@
+// Experiment patterns (docs/EXPERIMENTS.md) in function templates: an
+// alternative that binds `as T`, or destructures `T(a, b)`, is left out
+// where the subject does not convert to T, as its test fails there. A tuple
+// pattern `(a, b)` is left out where the subject is not tuple-like, an array
+// or an aggregate.
+// flags: -experiment=patterns -experiment=adt
+#include <iostream>
+#include <string>
+#include <variant>
+
+Shape: @adt type = {
+    Circle: (r: double);
+    Rect: (w: double, h: double);
+}
+
+classify: <T> (t: T) -> std::string = inspect t -> std::string {
+    is int as i if i > 10 = "big int " + std::to_string(i);
+    is int = "int";
+    is std::string as s = "string " + s;
+    is Shape::Rect(w, h) = "rect " + std::to_string(w * h);
+    is _ = "other";
+};
+
+first: <T> (t: T) -> std::string = inspect t -> std::string {
+    is (a, b) = "pair " + std::to_string(a + b);
+    is _ = "not a pair";
+};
+
+Point: @struct type = { x: int; y: int; }
+
+main: () = {
+    v: std::variant<int, std::string> = std::string("in a variant");
+    std::cout << classify(42) << "\n" << classify(3) << "\n"
+              << classify(std::string("s")) << "\n" << classify(v) << "\n"
+              << classify(2.5) << "\n";
+    r: Shape = Shape::Rect(2.0, 3.0);
+    c: Shape = Shape::Circle(1.0);
+    std::cout << classify(r) << "\n" << classify(c) << "\n";
+    a: std::array<int, 2> = (5, 6);
+    std::cout << first(1) << "\n" << first(std::pair(1, 2)) << "\n"
+              << first(:Point = (3, 4)) << "\n" << first(a) << "\n";
+}

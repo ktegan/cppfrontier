@@ -1,0 +1,8 @@
+// Experiment trait: a declaration cannot take a name the trait generates.
+// flags: -experiment=trait
+// expect-error: the trait 'Shape' declares 'dyn_Shape'; rename this declaration
+// expect-error: the trait 'Shape' declares 'Shape_archetype'; rename this declaration
+Shape: @trait type = { area: (this) -> double; }
+dyn_Shape: type = { }
+Shape_archetype: type = { }
+main: () = { }

@@ -1,0 +1,12 @@
+// A deduced type keeps its `is` constraint wherever it is declared: on a
+// namespace-scope constant (a namespace-scope object needs a declared type
+// unless it is a `==` constant), on a loop parameter and on a statement
+// parameter (objects.md "`_ is C`").
+limit: _ is std::integral == 3;
+
+main: () = {
+    v: std::vector = (1, 2);
+    for v do (e: _ is std::integral) { std::cout << e; }
+    (copy k: _ is std::integral = 4) { std::cout << k; }
+    std::cout << limit << "\n";
+}

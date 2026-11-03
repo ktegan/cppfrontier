@@ -1,0 +1,21 @@
+// Source: functions.md "Parameters" (deduced types) and LANGUAGE.md "Functions
+// and parameters": a deduced parameter with a default argument, `y := 2`, takes
+// the default's type when the argument is omitted.
+#include <concepts>
+#include <iostream>
+#include <string>
+
+f: (x: int = 1, y := 2) -> int = x + y;
+g: (copy s := std::string("ab"), forward t := 3) -> std::string = s + std::to_string(t);
+h: (n: _ is std::integral = 4u) -> _ = n * 2u;
+S: type = {
+    m: (this, k := 5) -> int = k;
+    n: <T> (this, v: T, w := 1.5) -> double = v + w;
+}
+main: () = {
+    std::cout << f() << " " << f(3) << " " << f(3, 4.5) << "\n";
+    std::cout << g() << " " << g("x") << " " << g("x", 7L) << "\n";
+    std::cout << h() << " " << h(1) << "\n";
+    s: S = ();
+    std::cout << s.m() << " " << s.m(7) << " " << s.n(1) << " " << s.n(1, 2) << "\n";
+}

@@ -1,0 +1,30 @@
+// Experiment given (docs/EXPERIMENTS.md), which builds on trait: @given
+// implements a trait for a type from outside it, here `int`, and UFCS calls,
+// constrained templates and dyn_Show all find it.
+// flags: -experiment=given
+#include <iostream>
+#include <string>
+#include <vector>
+
+Show: @trait type = {
+    show: (this) -> std::string;
+}
+
+Show_int: @given<Show, int> type = {
+    show: (x: int) -> std::string = "int " + std::to_string(x);
+}
+
+Circle: @impl<Show> @value type = {
+    r: int = 1;
+    show: (this) -> std::string = "circle " + std::to_string(r);
+}
+
+print: <T: Show> (x: T) = { std::cout << x.show() << "\n"; }
+
+main: () = {
+    n := 42;
+    std::cout << n.show() << "\n";
+    print(Circle());
+    items: std::vector<dyn_Show> = (7, Circle());
+    for items do (s) { print(s); }
+}

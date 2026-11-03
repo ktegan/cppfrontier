@@ -1,0 +1,16 @@
+int 42
+double
+string "hi"
+sum of numbers 45.500000
+v is int: true, v is double: false
+now a string: true, index 2
+get_if found seven
+0 is zero
+5 is small
+42 is medium
+1000 is large or negative
+-3 is large or negative
+any int 5
+any string text
+empty any
+any other

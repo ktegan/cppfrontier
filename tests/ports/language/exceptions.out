@@ -1,0 +1,20 @@
+  enter parse_digit
+  leave parse_digit
+no exception
+  enter parse_digit
+  leave parse_digit
+parse_error at line 7: not a digit: x
+runtime_error: plain runtime error
+exception: negative
+int 42
+something else
+out_of_range
+  enter parse_digit
+  leave parse_digit
+inner handler, rethrowing
+outer handler: not a digit: ?
+rethrown saved int 42
+  enter parse_digit
+  leave parse_digit
+while reading the config
+  not a digit: z

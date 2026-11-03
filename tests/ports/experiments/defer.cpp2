@@ -1,0 +1,27 @@
+// Experiment defer (docs/EXPERIMENTS.md): deferred statements run when their
+// block exits, in reverse order, on return, break and exceptions.
+// flags: -experiment=defer
+#include <iostream>
+#include <stdexcept>
+
+count: (n: int) -> int = {
+    defer std::cout << "count done\n";
+    i := 0;
+    while i < n next i++ {
+        defer { std::cout << "leave " << i << "\n"; }
+        if i == 1 { break; }
+    }
+    return i;
+}
+
+fail: () = {
+    defer std::cout << "unwound\n";
+    throw(std::runtime_error("boom"));
+}
+
+main: () = {
+    defer std::cout << "second\n";
+    defer std::cout << "first\n";
+    std::cout << count(3) << "\n";
+    try { fail(); } catch (e: std::exception) { std::cout << e.what() << "\n"; }
+}

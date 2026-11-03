@@ -1,0 +1,65 @@
+// Experiment patterns (docs/EXPERIMENTS.md): a guarded or binding `_` falls
+// through like any other alternative, a parenthesized guard is a guard, values
+// may follow `|`, bindings may be spelled like Cpp1 keywords and hide outer
+// names, and an @enum inspect is exhaustive through `|` alternatives.
+// flags: -experiment=patterns -experiment=use-after-move -experiment=checked-arithmetic
+#include <iostream>
+#include <string>
+#include <utility>
+
+Color: @enum type = { red; green; blue; }
+
+big: (x: int) -> int = inspect x -> int {
+    is _ if x > 5 = 1;
+    is _ = 0;
+};
+
+shifted: (x: int) -> int = inspect x -> int {
+    is _ as v = v + 100;
+};
+
+paren: (x: int) -> int = inspect x -> int {
+    is int if (x > 5) = 1;
+    is _ = 0;
+};
+
+small: (x: int) -> int = inspect x -> int {
+    is (1) | (2) = 12;
+    is 3 | 4 = 34;
+    is _ = 0;
+};
+
+warm: (c: Color) -> bool = inspect c -> bool {
+    is (Color::red) | (Color::green) = true;
+    is (Color::blue) = false;
+};
+
+keywords: (p: std::pair<int, int>) -> int = inspect p -> int {
+    is (struct, class) = struct * 10 + class;
+};
+
+main: () = {
+    std::cout << big(1) << big(9) << " " << shifted(1) << " " << paren(1) << paren(9) << "\n";
+    std::cout << small(1) << small(2) << small(3) << small(4) << small(5) << "\n";
+    std::cout << warm(Color::red) << warm(Color::green) << warm(Color::blue) << "\n";
+    std::cout << keywords(std::pair(1, 2)) << "\n";
+
+    // Bindings hide the outer locals: `a` is not read before its
+    // initialization, `b` is not used after its move, and the doubles are
+    // not checked as integers.
+    p: std::pair<std::string, int> = ("hello", 1);
+    a: std::string;
+    b: std::string = "moved";
+    c := (move b);
+    r := inspect p -> std::string {
+        is (a, b) = a + std::to_string(b);
+    };
+    a = r;
+    i: int = 1;
+    j: int = 2;
+    d: std::pair<double, double> = (0.5, 0.25);
+    s := inspect d -> double {
+        is (i, j) = i - j;
+    };
+    std::cout << a << " " << c << " " << s << i << j << "\n";
+}

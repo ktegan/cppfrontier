@@ -1,0 +1,70 @@
+// Source: cppreference "constexpr" and std::string_view examples, and the
+// usual compile-time string-processing tutorials (vowel counting, FNV-1a
+// hashing for switch-like dispatch, reversing into a std::array, constexpr
+// std::string in C++20). Exercises function aliases over string_view and
+// std::string, a templated function alias returning std::array whose size is
+// a template argument, and results used in static_assert and as template
+// arguments.
+#include <array>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <string_view>
+
+count_vowels: (s: std::string_view) -> int == {
+    n := 0;
+    for s do (c) {
+        if std::string_view("aeiouAEIOU").find(c) != std::string_view::npos { n++; }
+    }
+    return n;
+}
+
+fnv1a: (s: std::string_view) -> u64 == {
+    h: u64 = 14695981039346656037u;
+    for s do (c) {
+        h = (h ^ (c as u8)) * 1099511628211u;
+    }
+    return h;
+}
+
+reversed: <N: std::size_t> (s: std::string_view) -> std::array<char, N> == {
+    out: std::array<char, N> = ();
+    (copy i: std::size_t = 0)
+    while i < N next i++ {
+        // A checked subscript is not a constant expression: cpp2util.h builds
+        // its message with std::to_string. unchecked_subscript is the opt-out.
+        unchecked_subscript(out, i) = unchecked_subscript(s, N - 1 - i);
+    }
+    return out;
+}
+
+// constexpr std::string (C++20): built and destroyed during evaluation.
+shout_length: (s: std::string_view) -> std::size_t == {
+    t: std::string = s;
+    t += "!!!";
+    return t.size();
+}
+
+command_id: (name: std::string_view) -> int = {
+    h := fnv1a(name);
+    if h == fnv1a("start") { return 1; }
+    if h == fnv1a("stop") { return 2; }
+    return 0;
+}
+
+tag: <H: u64> type = {
+    hash: u64 == H;
+}
+
+main: () = {
+    static_assert(count_vowels("Hello, compile time") == 7);
+    static_assert(fnv1a("") == 14695981039346656037u);
+    static_assert(fnv1a("a") != fnv1a("b"));
+    static_assert(shout_length("hey") == 6u);
+    r :== reversed<5>("stack");
+    static_assert(r.front() == 'k' && r.back() == 's');
+    std::cout << std::string_view(r.data(), r.size()) << "\n";
+    std::cout << command_id("stop") << command_id("start") << command_id("other") << "\n";
+    std::cout << (tag<fnv1a("x")>::hash == fnv1a("x")) << "\n";
+    std::cout << count_vowels("Programming in Cpp2") << "\n";
+}

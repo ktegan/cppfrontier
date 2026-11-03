@@ -1,0 +1,25 @@
+// Experiment checked-arithmetic (docs/EXPERIMENTS.md): `+`, `-`, `*`, unary
+// `-`, the compound assignments and `++`/`--` on known integers go through
+// cpp2::checked_* helpers, which terminate on overflow. In-range results are
+// unchanged, and a `double` keeps the plain operators.
+// flags: -experiment=checked-arithmetic
+#include <iostream>
+
+sum: (n: i32) -> i64 = {
+    total: i64 = 0;
+    i := 1;
+    while i <= n next i++ {
+        total += i * i;
+    }
+    return total;
+}
+
+main: () -> int = {
+    a: i32 = 46340;
+    b := a * a;
+    c: u8 = 250;
+    c += 5;
+    d := 1.5 * a;
+    std::cout << sum(100) << " " << b << " " << (c as int) << " " << d << "\n";
+    return 0;
+}

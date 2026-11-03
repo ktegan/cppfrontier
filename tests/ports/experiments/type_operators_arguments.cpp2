@@ -1,0 +1,20 @@
+// Experiment type-operators (docs/EXPERIMENTS.md): in a template argument `|`
+// and `&` are Cpp1 operators unless the argument is marked `type`, in a
+// declared type, a typed value and `new<...>` alike.
+// flags: -experiment=type-operators
+A: i32 == 1;
+B: i32 == 6;
+Circle: @struct type = { r: int = 1; }
+Square: @struct type = { s: int = 2; }
+main: () = {
+    b: std::bitset<A | B> = ();
+    c: std::bitset<B & 6> = ();
+    v: std::vector<type int | std::string> = (1, "two");
+    shapes: std::vector<type Circle | Square> = ();
+    shapes.push_back(Square());
+    std::cout << b.size() << " " << c.size() << " " << v.size() << " " << shapes.size() << "\n";
+    cell := :int | double = 2.5;
+    cells := :std::vector<type int | std::string> = (1, std::string("a"));
+    boxed := new<type int | double>(1);
+    std::cout << cell.index() << " " << cells.size() << " " << boxed*.index() << "\n";
+}

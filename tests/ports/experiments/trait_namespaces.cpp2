@@ -1,0 +1,42 @@
+// Experiment trait: traits are resolved by name lookup, so a type or concept
+// with a trait's name in another namespace is not the trait, and a trait in a
+// namespace is used from others by its qualified name.
+// flags: -experiment=trait
+#include <iostream>
+#include <string>
+
+geo: namespace = {
+    Shape: @trait type = {
+        area: (this) -> double;
+        label: (this, prefix: std::string) -> std::string;
+    }
+    Unit: @impl<Shape> @value type = {
+        area: (this) -> double = 1.0;
+        label: (this, prefix: std::string) -> std::string = prefix + "unit";
+    }
+}
+
+app: namespace = {
+    Big: @impl<geo::Shape> @value type = {
+        area: (this) -> double = 100.0;
+        label: (this, prefix: std::string) -> std::string = prefix + "big";
+    }
+    total: <T: geo::Shape> (x: T) -> double = x.area() * 2;
+    // Not the trait.
+    Shape: @value type = { area: (this) -> double = 3.0; }
+    area_of: (s: Shape) -> double = s.area();
+    Small: <T> concept = sizeof(T) < 16u;
+    size: <T: Small> (x: T) -> std::size_t = sizeof(x);
+}
+
+Other: @value type = {
+    area: (this) -> double = 5.0;
+    label: (this, p: std::string) -> std::string = p + "other";
+}
+Other_is_Shape: @impl<geo::Shape, Other> type = { }
+
+main: () = {
+    shapes: std::vector<geo::dyn_Shape> = (geo::Unit(), app::Big(), Other());
+    for shapes do (s) { std::cout << s.label("a ") << " " << app::total(s) << "\n"; }
+    std::cout << app::area_of(app::Shape()) << " " << app::size(1) << "\n";
+}

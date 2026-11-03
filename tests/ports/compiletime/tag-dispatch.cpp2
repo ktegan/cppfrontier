@@ -1,0 +1,78 @@
+// Source: cppreference std::advance "possible implementation" (iterator
+// category tag dispatch, and the C++17 if-constexpr version), plus the
+// classic "tag dispatch vs. concepts" tutorial comparison. Exercises overloads
+// selected by an empty tag argument, a tag computed from a dependent
+// iterator_traits member, variable templates, template aliases, and the
+// same algorithm written three ways.
+#include <forward_list>
+#include <iostream>
+#include <iterator>
+#include <list>
+#include <vector>
+
+// 1. Tag dispatch on the iterator category.
+do_advance: <It> (inout it: It, n: int, _: std::input_iterator_tag) = {
+    (copy i := 0) while i < n next i++ { it++; }
+    std::cout << "input ";
+}
+do_advance: <It> (inout it: It, n: int, _: std::bidirectional_iterator_tag) = {
+    if n >= 0 { (copy i := 0) while i < n next i++ { it++; } }
+    else { (copy i := 0) while i > n next i-- { it--; } }
+    std::cout << "bidirectional ";
+}
+do_advance: <It> (inout it: It, n: int, _: std::random_access_iterator_tag) = {
+    it += n;
+    std::cout << "random-access ";
+}
+
+category_of: <It> type == std::iterator_traits<It>::iterator_category;
+
+my_advance: <It> (inout it: It, n: int) = do_advance(it, n, category_of<It>());
+
+// 2. The same with if constexpr and a variable template.
+is_random_access: <It> bool == std::is_base_of_v<std::random_access_iterator_tag, category_of<It>>;
+
+advance2: <It> (inout it: It, n: int) = {
+    if constexpr is_random_access<It> { it += n; }
+    else { (copy i := 0) while i < n next i++ { it++; } }
+}
+
+// 3. The same with overloads constrained by concepts; random_access_iterator
+// subsumes input_iterator. (Written `inout it: _ is std::input_iterator`, the
+// first overload lowers to `requires std::input_iterator<CPP2_TYPEOF(it)>`,
+// which is not ordered against `std::random_access_iterator<It>`, and the
+// call is ambiguous in both translators.)
+advance3: <It> (inout it: It, n: int) requires std::input_iterator<It> = {
+    (copy i := 0) while i < n next i++ { it++; }
+    std::cout << "[input] ";
+}
+advance3: <It> (inout it: It, n: int) requires std::random_access_iterator<It> = {
+    it += n;
+    std::cout << "[random] ";
+}
+
+main: () = {
+    v: std::vector<int> = (1, 2, 3, 4, 5);
+    l: std::list<int> = (1, 2, 3, 4, 5);
+    f: std::forward_list<int> = (1, 2, 3, 4, 5);
+
+    vi := v.begin();
+    li := l.end();
+    fi := f.begin();
+    my_advance(vi, 3);
+    my_advance(li, -2);
+    my_advance(fi, 1);
+    std::cout << "\n" << vi* << li* << fi* << "\n";
+
+    advance2(vi, 1);
+    advance2(fi, 2);
+    std::cout << vi* << fi* << "\n";
+
+    vj := v.begin();
+    lj := l.begin();
+    advance3(vj, 2);
+    advance3(lj, 1);
+    std::cout << vj* << lj* << "\n";
+    static_assert(is_random_access<std::vector<int>::iterator>);
+    static_assert(!is_random_access<std::list<int>::iterator>);
+}

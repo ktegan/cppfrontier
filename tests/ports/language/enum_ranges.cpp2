@@ -1,0 +1,11 @@
+// Source: metafunctions.md "enum" and "flag_enum": enumerator values are
+// checked against the declared underlying type, so the full range of `u64`
+// and negative values of a signed type are accepted.
+big: @enum<u64> type = { top := 18446744073709551615; }
+small: @enum<i8> type = { low := -128; next; high := 127; }
+bits: @flag_enum<u8> type = { a := 64; b; }
+
+main: () = {
+    std::cout << big::top.get_raw_value() << " " << small::next.get_raw_value() + 0 << " "
+              << small::high.get_raw_value() + 0 << " " << bits::b.get_raw_value() + 0 << "\n";
+}

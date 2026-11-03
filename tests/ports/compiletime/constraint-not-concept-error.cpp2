@@ -1,0 +1,9 @@
+// Source: cppreference "Constraints and concepts" (a type-constraint must name
+// a concept) and "Abbreviated function templates"; `void f(widget auto x)` is
+// ill-formed in Cpp1. functions.md: `_ is C` declares a type constraint
+// (e.g., a concept). Upstream emits `widget<CPP2_TYPEOF(x)>` and leaves the
+// error to the Cpp1 compiler.
+// expect-error: 'widget' is not a concept, so it cannot constrain '_'
+widget: type = { }
+f: (x: _ is widget) = { }
+main: () = { }

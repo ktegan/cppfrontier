@@ -1,0 +1,20 @@
+// A fundamental alias names a type in an expression as `cpp2::alias`, so a
+// call, a braced value, a typed value and UFCS on a literal all construct one
+// (common.md "Literals": `u8(123)` or `123.u8()`).
+show: (x: u8) -> int = x;
+
+main: () = {
+    a := u8(123);
+    b := u8{5};
+    c := 123.u8();
+    d := uint(7);
+    e := longlong(5);
+    f := i8(-3);
+    g := :u16 = 9;
+    h := ulong(1);
+    std::cout << show(a) << " " << show(b) << " " << show(c) << "\n";
+    std::cout << d << " " << e << " " << (f as int) << " " << g << " " << h << "\n";
+    std::cout << sizeof(u8) << " " << std::is_same_v<decltype(e), longlong> << "\n";
+    v: std::vector<i16> = (1, 2);
+    std::cout << v.size() << " " << (a as int) << " " << (d is uint) << "\n";
+}

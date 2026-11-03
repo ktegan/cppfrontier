@@ -1,0 +1,9 @@
+build/
+build-*/
+Testing/
+archive/
+vendor/*
+!vendor/README.md
+*.o
+*.a
+compile_commands.json

@@ -1,0 +1,10 @@
+// Source: expressions.md "is": a subject that is visibly a type is a
+// compile-time query on the type, so what follows `is` names a type, a
+// template or a concept; a value, as in `T is 0`, is an error. A value
+// subject, `x is 0`, is unaffected.
+// expect-error: 'T' is a type, so it cannot be tested against a value
+zero: <T> (x: T) -> bool = x is 0;
+is_zero: <T> () -> bool = T is 0;
+main: () = {
+    std::cout << zero(0) << is_zero<int>() << "\n";
+}

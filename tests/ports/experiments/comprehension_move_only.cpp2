@@ -1,0 +1,30 @@
+// Experiment comprehension: the element of an optional or expected source is
+// neither copied nor default-constructed, so a move-only or non-default
+// constructible element works, with and without a guard.
+// flags: -experiment=comprehension
+#include <expected>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <vector>
+
+NoDefault: type = {
+    public v: int;
+    operator=: (out this, x: int) = { v = x; }
+}
+
+main: () = {
+    o: std::optional<std::unique_ptr<int>> = std::make_unique<int>(4);
+    a := for o do (p) yield p* + 1;
+    b := for o do (p) if p* > 1 yield p* + 2;
+    c := for o do (p) if p* > 9 yield p* + 2;
+    std::cout << a.value() << " " << b.value() << " " << c.has_value() << "\n";
+
+    e: std::expected<NoDefault, int> = (std::in_place, 5);
+    d := for e do (n) yield n.v * 2;
+    std::cout << d.value() << "\n";
+
+    v: std::vector<std::unique_ptr<int>> = ();
+    v.push_back(std::make_unique<int>(3));
+    for (for v do (p) if p* > 0 yield p* * 10) do (x) std::cout << x << "\n";
+}

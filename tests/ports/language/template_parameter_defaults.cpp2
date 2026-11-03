@@ -1,0 +1,21 @@
+// Template parameter kinds and defaults are a type or an expression, so they
+// render like any other.
+
+sum: <T: type = std::vector<i32>, N: i32 = (1 + 2) * 2, W: _ = :i32 = 3> () -> i32 = {
+    values: T = (N, W);
+    total: i32 = 0;
+    for values do (v) total += v;
+    return total;
+}
+
+holder: <T: type = i64> type = {
+    public value: T = 7;
+}
+
+pick: <B: bool = (1 > 2)> () -> i32 = { if B { return 1; } return 2; }
+
+main: () = {
+    std::cout << sum() << " " << sum<std::vector<i32>, 4>() << "\n";
+    h: holder = ();
+    std::cout << h.value << " " << sizeof(h.value) << " " << pick() << "\n";
+}

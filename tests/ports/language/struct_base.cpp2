@@ -1,0 +1,17 @@
+// Source: metafunctions.md "struct" and types.md "implicit": a struct with a
+// base gets a memberwise constructor that initializes the base by default,
+// so a base whose default constructor is explicit, as an `operator=` without
+// `implicit` is, still works.
+base: type = {
+    public v: int = 1;
+    operator=: (out this) = { }
+}
+derived: @struct type = {
+    this: base;
+    x: int = 2;
+}
+main: () = {
+    a: derived = ();
+    b: derived = (3);
+    std::cout << a.v << a.x << b.v << b.x << "\n";
+}

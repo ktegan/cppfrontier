@@ -1,0 +1,58 @@
+// Source: cppreference "Constraints and concepts" (conjunctions, partial
+// ordering of constraints, the Hashable example) and the usual
+// "more constrained overload wins" tutorials. Exercises concept definitions
+// built from other concepts, constrained parameters `_ is C` and `_ is C<U>`,
+// requires clauses on functions and types, and overload selection by
+// subsumption between concepts and between requires clauses.
+#include <concepts>
+#include <functional>
+#include <iostream>
+#include <string>
+#include <type_traits>
+
+number: <T> concept = std::integral<T> || std::floating_point<T>;
+signed_int: <T> concept = std::integral<T> && std::is_signed_v<T>;
+hashable: <T> concept = std::is_invocable_r_v<std::size_t, std::hash<T>, T>;
+convertible_from: <T, U> concept = std::convertible_to<U, T>;
+
+// Overload selection among disjoint constraints. (Subsumption between
+// `_ is std::integral` and `_ is std::signed_integral` is not used: both
+// translators lower `_ is C` to `requires C<CPP2_TYPEOF(x)>`, which Clang
+// orders but GCC reports as ambiguous.)
+describe: (x: _ is std::unsigned_integral) -> std::string = "unsigned integral (x)$";
+describe: (x: _ is std::signed_integral) -> std::string = "signed integral (x)$";
+describe: (x: _ is std::floating_point) -> std::string = "floating point";
+describe: (_: std::string) -> std::string = "a string";
+
+// The same through requires clauses on template parameters; the second
+// clause is a conjunction that contains the first, so it is more constrained.
+kind: <T> (_: T) -> std::string requires number<T> = "number";
+kind: <T> (_: T) -> std::string requires number<T> && signed_int<T> = "signed number";
+
+// A concept with an extra argument, used as a constraint: the constrained
+// type is the first argument.
+take_int_like: (x: _ is convertible_from<int>) -> int = x as int;
+
+// A constrained class template.
+boxed: <T> type requires hashable<T> = {
+    value: T;
+    operator=: (out this, v: T) = { value = v; }
+    hash: (this) -> std::size_t = std::hash<T>()(value);
+}
+
+// sizeof... in a requires clause.
+first_of: <T, Ts...> (first: T, _...: Ts) -> T requires sizeof...(Ts) > 0u = first;
+
+main: () = {
+    std::cout << describe(42u) << "\n";
+    std::cout << describe(-7) << "\n";
+    std::cout << describe(1.5) << "\n";
+    std::cout << describe(std::string("x")) << "\n";
+    std::cout << kind(2u) << ", " << kind(-2) << ", " << kind(2.5f) << "\n";
+    std::cout << take_int_like('A') << "\n";
+    b: boxed<int> = 5;
+    std::cout << (b.hash() == std::hash<int>()(5)) << "\n";
+    std::cout << first_of(9, "x", 2.0) << "\n";
+    static_assert(number<i64> && !number<std::string>);
+    static_assert(hashable<std::string>);
+}

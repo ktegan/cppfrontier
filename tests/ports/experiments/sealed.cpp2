@@ -1,0 +1,40 @@
+// Experiment sealed (docs/EXPERIMENTS.md): a @sealed hierarchy's derived types
+// are all in this translation unit, so an inspect covering each of them needs
+// no `is _`.
+// flags: -experiment=sealed
+#include <iostream>
+#include <string>
+
+Shape: @sealed @polymorphic_base type = {
+    area: (virtual this) -> double;
+}
+
+Circle: type = {
+    this: Shape = ();
+    r: double;
+    operator=: (out this, r_: double) = { r = r_; }
+    area: (override this) -> double = 3.0 * r * r;
+}
+
+Square: type = {
+    this: Shape = ();
+    s: double;
+    operator=: (out this, s_: double) = { s = s_; }
+    area: (override this) -> double = s * s;
+}
+
+name: (s: Shape) -> std::string = inspect s -> std::string {
+    is Circle = "circle";
+    is Square = "square";
+};
+
+name_ptr: (s: *Shape) -> std::string = inspect s* -> std::string {
+    is Square = "square";
+    is Circle = "circle";
+};
+
+main: () = {
+    c: Circle = (1.0);
+    q: Square = (2.0);
+    std::cout << name(c) << " " << name(q) << " " << name_ptr(q&) << " " << q.area() << "\n";
+}

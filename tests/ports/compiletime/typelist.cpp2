@@ -1,0 +1,71 @@
+// Source: the type-list chapter of "C++ Templates: The Complete Guide"
+// (Vandevoorde, Josuttis, Gregor; ch. 24: Front, PushFront, IndexOf,
+// Transform, Reverse) restated without class template specialization, which
+// Cpp2 cannot declare: operations are function aliases over tag values,
+// recursing with `if constexpr` and returning a new list by value.
+#include <array>
+#include <cstddef>
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <typeinfo>
+
+typelist: <Ts...> type = {
+    size: std::size_t == sizeof...(Ts);
+}
+
+// Concatenation and push_front by deduction from the arguments' packs.
+concat: <As..., Bs...> (_: typelist<As...>, _: typelist<Bs...>) -> typelist<As..., Bs...> == ();
+push_front: <T, Ts...> (_: typelist<Ts...>) -> typelist<T, Ts...> == ();
+
+// The type at an index, by peeling the front.
+at: <I: std::size_t, T, Ts...> (_: typelist<T, Ts...>) -> _ == {
+    if constexpr I == 0u { return std::type_identity<T>(); }
+    else { return at<I - 1u>(typelist<Ts...>()); }
+}
+at_t: <I: std::size_t, L> type == decltype(at<I>(L()))::type;
+
+// The index of a type, or the size when it is absent.
+index_of: <U, Ts...> (_: typelist<Ts...>) -> std::size_t == {
+    same: std::array<bool, sizeof...(Ts) + 1> = (std::is_same_v<U, Ts>..., true);
+    i: std::size_t = 0;
+    while !same[i] next i++ { }
+    return i;
+}
+
+// Reverse by moving the front onto an accumulator.
+reverse_into: <Acc, T, Ts...> (acc: Acc, _: typelist<T, Ts...>) -> _ == {
+    if constexpr sizeof...(Ts) == 0u { return push_front<T>(acc); }
+    else { return reverse_into(push_front<T>(acc), typelist<Ts...>()); }
+}
+reverse: <Ts...> (l: typelist<Ts...>) -> _ == {
+    if constexpr sizeof...(Ts) == 0u { return l; }
+    else { return reverse_into(typelist<>(), l); }
+}
+
+// Transform with a template template parameter is not expressible, so the
+// metafunction is a function template over std::type_identity.
+add_pointer: <T> (_: std::type_identity<T>) -> std::type_identity<*T> == ();
+transform_pointers: <Ts...> (_: typelist<Ts...>) -> typelist<type decltype(add_pointer(std::type_identity<Ts>()))::type...> == ();
+
+// Print each type's size with a fold.
+print_sizes: <Ts...> (_: typelist<Ts...>) = {
+    ((std::cout << sizeof(Ts) << " "), ...);
+    std::cout << "\n";
+}
+
+main: () = {
+    l1: typelist<char, short, int> = ();
+    l2: typelist<long, double> = ();
+    all := concat(l1, l2);
+    static_assert(decltype(all)::size == 5);
+    static_assert(std::is_same_v<at_t<3, decltype(all)>, long>);
+    static_assert(index_of<int>(all) == 2u);
+    static_assert(index_of<float>(all) == 5u);
+    rev := reverse(l1);
+    static_assert(std::is_same_v<decltype(rev), typelist<int, short, char>>);
+    static_assert(std::is_same_v<decltype(transform_pointers(l2)), typelist<*long, *double>>);
+    print_sizes(all);
+    print_sizes(rev);
+    std::cout << decltype(all)::size << " " << index_of<double>(all) << "\n";
+}

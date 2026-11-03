@@ -1,0 +1,10 @@
+// Source: Cpp1 `void f(int x = 1, auto y = 2)`. declarations.md: `name :=
+// value` is `name: _ = value` in every declaration, parameters included.
+// Calls pass `y`: Cpp1 does not deduce a template parameter from a default.
+f: (x: int = 1, y := 2) = {
+    std::cout << x + y << "\n";
+}
+main: () = {
+    f(10, 20);
+    f(1, 2.5);
+}

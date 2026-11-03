@@ -1,0 +1,13 @@
+// Source: objects.md "Guaranteed initialization" and contracts.md: a
+// precondition and a postcondition's `$` capture are evaluated on entry,
+// before the body initializes an `out` parameter or named return value, as
+// is an expression body before it assigns one.
+// expect-error: local variable x is used before it was initialized
+// expect-error: local variable r is used before it was initialized
+// expect-error: local variable y is used before it was initialized
+// expect-error: local variable z is used before it was initialized
+set_x: (out x: int) pre(x == 0) = { x = 1; }
+make_r: (n: int) -> (r: int) post(r$ < r) = { r = n; }
+set_y: (out y: int) = std::cout << y;
+set_z: (out z: int) pre(z == 0) = z = 1;
+main: () = { }

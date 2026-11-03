@@ -1,0 +1,25 @@
+// Source: expressions.md "is": `x is C` with a concept `C` is a static
+// concept query on the type of `x`. With a concept declared in this file it
+// is `C<CPP2_TYPEOF(x)>`, also with template arguments, a qualified name, in
+// an inspect alternative and in a contract. Upstream emits
+// `cpp2::impl::is<C>(x)`, which does not compile for a concept.
+#include <concepts>
+number: <T> concept = std::integral<T> || std::floating_point<T>;
+sized: <T, n: int> concept = sizeof(T) == n as std::size_t;
+N: namespace = { wide: <T> concept = sizeof(T) >= 8u; }
+has_size: <T> concept = requires (x: T) { x.size(); };
+describe: <T> (x: T) -> std::string = inspect x -> std::string {
+    is sized<1> = "byte";
+    is has_size = "sized";
+    is N::wide = "wide";
+    is number = "number";
+    is _ = "other";
+};
+half: (x) -> double pre(x is number) = x / 2.0;
+main: () = {
+    v: std::vector<int> = ();
+    s: std::string = "s";
+    std::cout << describe('c') << " " << describe(1.0) << " " << describe(1) << " "
+              << describe(v) << " " << describe(s&) << " " << (s is has_size) << (1 is N::wide)
+              << (v& is number) << " " << half(3) << "\n";
+}

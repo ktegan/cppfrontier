@@ -1,0 +1,60 @@
+// Source: cppreference "Curiously Recurring Template Pattern" (the Base/Derived
+// static-dispatch example) and the common "CRTP counter and comparison mixin"
+// tutorials. Exercises a templated base written `this: base<derived>`,
+// calling into the derived type through a static_cast of `this`, a mixin
+// that adds operators from one derived function, and static members per
+// instantiation.
+#include <iostream>
+#include <string>
+
+// Static polymorphism: interface() calls the derived implementation().
+shape_base: <Derived> type = {
+    name: (this) -> std::string = "shape " + self().kind();
+    area: (this) -> double = self().compute_area();
+    self: (this) -> forward Derived = unchecked_cast<*const Derived>(this&)*;
+}
+
+square: type = {
+    this: shape_base<square> = ();
+    side: double = 2.0;
+    operator=: (out this, s: double) = { side = s; }
+    kind: (this) -> std::string = "square";
+    compute_area: (this) -> double = side * side;
+}
+
+circle: type = {
+    this: shape_base<circle> = ();
+    r: double = 1.0;
+    operator=: (out this, radius: double) = { r = radius; }
+    kind: (this) -> std::string = "circle";
+    compute_area: (this) -> double = 3.0 * r * r;
+}
+
+// A generic function constrained to CRTP-derived shapes.
+report: <D> (s: shape_base<D>) = {
+    std::cout << s.name() << " area " << s.area() << "\n";
+}
+
+// A per-type instance counter: each instantiation has its own count.
+counted: <T> type = {
+    count: (inout this) -> int = { n()++; return n(); }
+    n: () -> forward int = { static c: int = 0; return c; }
+}
+
+apple: type = { this: counted<apple> = (); }
+pear: type = { this: counted<pear> = (); }
+
+main: () = {
+    report(:square = 3.0);
+    report(:circle = 2.0);
+    a1: apple = ();
+    a2: apple = ();
+    p: pear = ();
+    _ = a1.count();
+    _ = a2.count();
+    pears := p.count();
+    _ = a1;     // count() modifies its object, so a final use must be explicit
+    _ = a2;
+    _ = p;
+    std::cout << "apples " << counted<apple>::n() << ", pears " << pears << "\n";
+}

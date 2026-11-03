@@ -1,0 +1,138 @@
+// Source: cppreference "try-block", "throw expression", "std::exception_ptr"
+// and "std::nested_exception" examples, and the functions.md throw/try/catch
+// rules (`throw(x)` needs parentheses, `catch (name: type)`, `catch (_)`).
+// Exercises: a user exception hierarchy derived from std::runtime_error,
+// catching by base type, catch order, rethrowing with `throw;` (like `return;`,
+// `throw` with no value), a throwing call, stack unwinding destroying locals, std::exception_ptr,
+// std::throw_with_nested, lambdas that throw, and the Cpp2
+// rule that postconditions are not checked when a function exits by throwing.
+#include <exception>
+#include <functional>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+parse_error: type = {
+    this: std::runtime_error;
+    line: int;
+
+    operator=: (out this, msg: std::string, l: int) = {
+        std::runtime_error = msg;
+        line = l;
+    }
+    where: (this) -> int = line;
+}
+
+tracer: type = {
+    name: std::string;
+    operator=: (out this, n: std::string) = {
+        name = n;
+        std::cout << "  enter (name)$\n";
+    }
+    operator=: (move this) = { std::cout << "  leave (name)$\n"; }
+}
+
+parse_digit: (c: char) -> int = {
+    t: tracer = "parse_digit";
+    if c < '0' || c > '9' {
+        throw(parse_error("not a digit: " + std::string(1, c), 7));
+    }
+    return c - '0';
+}
+
+checked_twice: (x: int) -> int
+    post(false, "never checked when throwing")
+= {
+    if x < 0 { throw(std::invalid_argument("negative")); }
+    return x * 2;
+}
+
+throws_int: () = { throw(42); }
+
+classify: (f: std::function<() -> void>) = {
+    try {
+        f();
+        std::cout << "no exception\n";
+    }
+    catch (e: parse_error) {
+        std::cout << "parse_error at line (e.where())$: (e.what())$\n";
+    }
+    catch (e: std::runtime_error) {
+        std::cout << "runtime_error: (e.what())$\n";
+    }
+    catch (e: std::out_of_range) {
+        std::cout << "out_of_range\n";
+    }
+    catch (e: std::exception) {
+        std::cout << "exception: (e.what())$\n";
+    }
+    catch (i: int) {
+        std::cout << "int (i)$\n";
+    }
+    catch (_) {
+        std::cout << "something else\n";
+    }
+}
+
+print_nested: (e: std::exception, level: int) = {
+    std::cout << std::string(level * 2, ' ') << e.what() << "\n";
+    try {
+        std::rethrow_if_nested(e);
+    }
+    catch (inner: std::exception) {
+        print_nested(inner, level + 1);
+    }
+}
+
+main: () = {
+    classify(:() = { _ = parse_digit('4'); });
+    classify(:() = { _ = parse_digit('x'); });
+    classify(:() = { throw(std::runtime_error("plain runtime error")); });
+    classify(:() = { _ = checked_twice(-1); });
+    classify(:() = throws_int());
+    classify(:() = { throw(3.5); });
+    classify(:() = { v: std::vector<int> = (); _ = v.at(3); });
+
+    // Rethrow from an inner handler to an outer one.
+    try {
+        try {
+            _ = parse_digit('?');
+        }
+        catch (e: parse_error) {
+            std::cout << "inner handler, rethrowing\n";
+            throw;
+        }
+    }
+    catch (e: std::exception) {
+        std::cout << "outer handler: (e.what())$\n";
+    }
+
+    // Carry an exception out of its handler.
+    saved: std::exception_ptr = ();
+    try {
+        throws_int();
+    }
+    catch (_) {
+        saved = std::current_exception();
+    }
+    try {
+        std::rethrow_exception(saved);
+    }
+    catch (i: int) {
+        std::cout << "rethrown saved int (i)$\n";
+    }
+
+    // Nested exceptions.
+    try {
+        try {
+            _ = parse_digit('z');
+        }
+        catch (_) {
+            std::throw_with_nested(std::runtime_error("while reading the config"));
+        }
+    }
+    catch (e: std::exception) {
+        print_nested(e, 0);
+    }
+}

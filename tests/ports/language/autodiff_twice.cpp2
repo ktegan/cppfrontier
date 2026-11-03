@@ -1,0 +1,35 @@
+// Source: metafunctions.md @autodiff (`"suffix=<s>"`: "Can be used to apply
+// autodiff multiple times. E.g. `@autodiff @autodiff<"suffix=_d2">`"): the
+// second @autodiff also differentiates `f_d`, whose locals `temp_1` and
+// `temp_1_d` the first one generated, so its own temporaries take other
+// names, as they do next to a user's local named `temp_1`. The second
+// derivative is checked against the exact one, the reverse derivative
+// against a central finite difference. Upstream cppfront declares `temp_1`
+// twice, which does not compile.
+#include <cmath>
+#include <iostream>
+
+twice: @autodiff @autodiff<"suffix=_d2"> type = {
+    f: (x: double) -> (r: double) = { r = x * x * sin(x); }
+}
+
+rev: @autodiff<"reverse"> type = {
+    f: (x: double) -> (temp_2: double) = { temp_1 := x * x; temp_2 = temp_1 * sin(x) * x; }
+}
+
+main: () = {
+    for (0.5, 0.9) do (x) {
+        a := twice::f_d_d2(x, 1.0, 1.0, 0.0);
+        d1 := 2.0 * x * sin(x) + x * x * cos(x);
+        d2 := 2.0 * sin(x) + 4.0 * x * cos(x) - x * x * sin(x);
+        x_b := 0.0;
+        r_b := 1.0;
+        _ = rev::f_b(x, x_b, r_b);
+        _ = r_b;
+        h := 1e-6;
+        fd := (rev::f(x + h) - rev::f(x - h)) / (2.0 * h);
+        std::cout << "x = " << x << ": d " << (std::abs(a.r_d - d1) < 1e-12) << (std::abs(a.r_d2 - d1) < 1e-12)
+                  << ", d2 " << (std::abs(a.r_d_d2 - d2) < 1e-12)
+                  << ", reverse " << (std::abs(x_b - fd) < 1e-6) << "\n";
+    }
+}

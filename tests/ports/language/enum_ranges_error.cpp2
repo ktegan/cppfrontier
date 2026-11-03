@@ -1,0 +1,17 @@
+// Source: metafunctions.md "enum" and "flag_enum": an enumerator value,
+// written or implied, must fit the declared underlying type, or without one
+// the largest default underlying type.
+// expect-error: a: the value is outside the range of u8
+// expect-error: c: the value is outside the range of u8
+// expect-error: d: the value is outside the range of i16
+// expect-error: f: the value is outside the range of u8
+// expect-error: h: the value is outside the range of i64
+// expect-error: i: the value is outside the range of u64
+over: @enum<u8> type = { a := 256; }
+implied: @enum<u8> type = { b := 255; c; }
+signed_low: @enum<i16> type = { d := -32769; }
+flags: @flag_enum<u8> type = { e := 128; f; }
+deduced: @enum type = { g := 9223372036854775807; h; }
+negative_flags: @flag_enum type = { i := -1; }
+
+main: () = { }

@@ -1,0 +1,10 @@
+// Source: a Cpp1 loop and pointer example (`++i`, `&x`, `*p`) ported
+// literally. common.md: `++`, `&` and `*` are postfix in Cpp2.
+// expect-error: prefix '++var' is not valid Cpp2; use postfix 'var++' instead
+// expect-error: prefix '&var' address-of is not valid Cpp2; use postfix 'var&' instead
+main: () = {
+    i := 0;
+    ++i;
+    p := &i;
+    std::cout << p* << "\n";
+}

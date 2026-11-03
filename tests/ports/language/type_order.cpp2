@@ -1,0 +1,34 @@
+// Source: hello-world.md "Order-independent by default": a type definition
+// that needs a later type complete, for a data member, a base, or a constant,
+// follows that type's definition, moved ahead with what it needs. A type alias
+// named by an earlier signature or member moves ahead too.
+A: type = {
+    public b: B = ();
+    public c: N::C<int> = ();
+    sum: (this) -> int = b.v + c.w + k;
+    k: int == B::m + 1;
+}
+B: @struct type = {
+    v: int = 2;
+    m: int == 3;
+}
+N: namespace = {
+    C: @struct <T> type = { w: T = 4; }
+}
+D: type = { this: E = (); }
+E: type = { public e: F = (); }
+F: @struct type = { f: int = 5; }
+G: type = { public v: Vec = (); }
+size_of: (v: Vec) -> std::size_t = v.size();
+first: (w: Wrap<int>) -> int = w[0];
+Vec: type == std::array<Elem, 3>;
+Wrap: <T> type == std::vector<T>;
+Elem: @struct type = { e: int = 6; }
+
+main: () = {
+    a: A = ();
+    d: D = ();
+    std::cout << a.b.v << a.c.w << A::k << a.sum() << d.e.f << "\n";
+    g: G = ();
+    std::cout << size_of(g.v) << g.v[0].e << first(:Wrap<int> = (7)) << "\n";
+}

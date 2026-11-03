@@ -1,0 +1,16 @@
+// Source: functions.md "Definite last use" and LANGUAGE.md "Moves and last
+// use": a last use passed to a non-const lvalue reference parameter, as in
+// `std::exchange(x, 0)`, is moved and fails to compile; a later mention such as
+// `_ = x;` keeps the call from being the last use.
+#include <iostream>
+#include <utility>
+
+take: (copy x: int) -> int = {
+    old := std::exchange(x, 0);
+    _ = x;
+    return old + x;
+}
+
+main: () = {
+    std::cout << take(3) << "\n";
+}

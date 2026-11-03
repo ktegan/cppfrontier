@@ -1,0 +1,16 @@
+// Source: review A6 and functions.md "Function with multiple/named return
+// values": the named return values of a function template, or of a function
+// template member of a class template, may name the template parameters.
+g: <X> (x: X) -> (lo: X, hi: X) = { lo = x - 1; hi = x + 1; }
+h: <X> (x: X) -> (v: X) = { v = x * 2; }
+S: type = { f: <X> (this, x: X) -> (a: X, b: X) = { a = x; b = x + 1; } }
+U: <T> type = {
+    f: <X> (this, x: X) -> (a: T, b: X) = { a = T(x); b = x; }
+    k: (this) -> (a: T, b: T) = { a = T(7); b = T(); }
+}
+
+main: () = {
+    w := g(5);
+    u: U<long> = ();
+    std::cout << w.lo << w.hi << h(4) << S().f(1).b << u.f(3).a << u.k().a << "\n";
+}

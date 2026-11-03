@@ -1,0 +1,12 @@
+// Function expressions inside an ordinary string's interpolation read its
+// escapes, and literals in an interpolation hold colons and parentheses.
+#include <iostream>
+#include <string>
+
+main: () = {
+    s: std::string = "v";
+    std::cout << "1 (:() -> std::string = \"q:(\";())$\n";
+    std::cout << "2 (:(t: std::string) -> std::string = t + \"\\\\\" + s$;(\"in\"))$\n";
+    std::cout << "3 (:() -> std::string = std::string(\"x\") + \"\\\"y\\\"\";():>8)$\n";
+    std::cout << "4 (\"a:b\")$ (std::string(\")$\") + \"!\")$ (':')$\n";
+}

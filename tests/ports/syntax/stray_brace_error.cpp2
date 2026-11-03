@@ -1,0 +1,8 @@
+// Source: a Cpp1 namespace block converted to Cpp2 with its closing brace
+// left behind.
+// expect-error: closing } does not match a prior {
+f: () -> int = 1;
+}
+main: () = {
+    std::cout << f() << "\n";
+}

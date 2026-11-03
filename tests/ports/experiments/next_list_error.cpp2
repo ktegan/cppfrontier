@@ -1,0 +1,11 @@
+// Experiment next-list: each item of a next list is checked as a next
+// clause, so an item may be one assignment but not a list or a chain.
+// flags: -experiment=next-list
+// expect-error: an assignment is not a value and cannot be chained
+// expect-error: Cpp2 has no comma operator, and a list '(a, b)' is not one value here
+main: () = {
+    i := 0;
+    j := 0;
+    while i < 3 next (i = j = 1, j++) { }
+    while i < 3 next (i++, (j, i)) { }
+}

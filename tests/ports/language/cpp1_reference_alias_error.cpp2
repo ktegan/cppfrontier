@@ -1,0 +1,19 @@
+// Source: functions.md, Cpp2 has no reference types; `cpp1_ref<T>` names a
+// Cpp1 reference. A type alias's value and a `decltype` type are declared
+// types too, so `&` after them is rejected as after any other type, at
+// namespace, type and function scope. `const int&` would otherwise lower to
+// `int& const`. Upstream rejects these as parse errors.
+// expect-error: (12,14): error: 'int&' is a Cpp1 reference type
+// expect-error: (13,21): error: 'int&' is a Cpp1 reference type
+// expect-error: (14,24): error: 'T&&' is a Cpp1 reference type
+// expect-error: (15,29): error: 'int&' is a Cpp1 reference type
+// expect-error: (16,4): error: 'decltype(x)&' is a Cpp1 reference type
+// expect-error: (17,10): error: 'decltype(x)&' is a Cpp1 reference type
+ref: type == int&;
+cref: type == const int&;
+fwd: <T: type> type == T&&;
+holder: type = { r: type == int&; }
+y: decltype(x)& = x;
+f: () -> decltype(x)& = x;
+x: int = 1;
+main: () = { r: cpp1_ref<int> = x; r = 2; }

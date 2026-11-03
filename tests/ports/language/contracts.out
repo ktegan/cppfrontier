@@ -1,0 +1,20 @@
+insert at 1: ok
+insert at 9: violation: position 9 is outside 'container'
+insert at -1: violation: position -1 is outside 'container'
+logged violation: size must not change
+broken push: ok
+size now 5
+assert true: ok
+assert false: violation: arithmetic is broken
+inactive group: ok
+predicate off: ok
+predicate on: violation: audit failed
+unevaluated: ok
+noisy() was called 1 time(s)
+local group: violation: local says no
+popped 20
+pop: ok
+popped 10
+pop: ok
+pop empty: violation: stack: pop from an empty stack
+stack size 0

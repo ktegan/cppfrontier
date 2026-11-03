@@ -1,0 +1,12 @@
+// Source: expressions.md "inspect": each alternative's value is used as if
+// written `:Type = alternative;`, so the result type is a type to convert
+// to. A deduced or `void` result type is rejected; upstream emits Cpp1 that
+// does not compile.
+// expect-error: inspect_result_type_error.cpp2(9,37): error: an inspect expression's result type cannot be deduced - write the type after '->'
+// expect-error: inspect_result_type_error.cpp2(10,46): error: an inspect expression's result type cannot be deduced - write the type after '->'
+// expect-error: inspect_result_type_error.cpp2(11,34): error: an inspect expression has a value, so its result type cannot be 'void'
+show: () = std::cout << "x";
+twice: (x: int) -> _ = inspect x -> _ { is 1 = 2; is _ = 0; };
+pointer: (x: int) -> _ = inspect x -> *const _ { is _ = x&; };
+run: (x: int) = _ = inspect x -> void { is _ = show(); };
+main: () = { std::cout << twice(1) << pointer(1)* << "\n"; run(1); }

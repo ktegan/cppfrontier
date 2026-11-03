@@ -1,0 +1,52 @@
+// Source: cppreference "range-based for loop", "throw expression" (rethrow),
+// "default arguments" and "template parameters" examples, written with the
+// common.md, functions.md and declarations.md rules.
+// Exercises: `for (r) do` iterating the range `r` itself (a parenthesized
+// expression is grouping; a list needs two or more elements, and a trailing
+// comma is ignored), `throw;` rethrowing, defaults that end a template or
+// function parameter list (a pack may follow them), the shorthand `<T = int>`,
+// and template arguments in Cpp2 type syntax (`*const char`, `const int`).
+// Differences from upstream: upstream iterates `for (v) do` once, over `{ v }`;
+// it rejects `throw;` and `<T = int>`.
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+sum: (forward r) -> int = {
+    total := 0;
+    for (r) do (e) { total += e; }
+    return total;
+}
+
+scaled: <T = int> (x: T, factor: T = 2, rest...: _) -> T = x * factor + (0 + ... + rest);
+
+main: () = {
+    v: std::vector<int> = (1, 2, 3);
+    std::cout << "sum (v): (sum(v))$\n";
+    for (v,) do (e) { std::cout << e << " "; }
+    std::cout << "\n";
+    for (10, 20,) do (e) { std::cout << e << " "; }
+    std::cout << "\n";
+    for ((v)) do (e) { std::cout << e << " "; }
+    std::cout << "\n";
+
+    try {
+        try {
+            throw(std::string("inner"));
+        }
+        catch (e: std::string) {
+            std::cout << "caught (e)$, rethrowing\n";
+            throw;
+        }
+    }
+    catch (e: std::string) {
+        std::cout << "outer caught (e)$\n";
+    }
+
+    std::cout << "scaled: (scaled(3))$ (scaled(3, 3))$ (scaled(3, 3, 1, 2))$ (scaled<double>(1.5))$\n";
+
+    names: std::vector<*const char> = ("a", "b");
+    std::cout << "names: (names.ssize())$\n";
+    std::cout << "const int: (std::is_const_v<std::remove_pointer_t<std::vector<*const int>::value_type>>)$\n";
+}

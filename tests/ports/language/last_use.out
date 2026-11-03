@@ -1,0 +1,51 @@
+local
+  copy a
+  move a
+parameters
+  move c
+  move m
+  copy i
+forwarded
+  copy f
+  move f2
+branches true
+  move x
+branches false
+  move x
+loops
+  copy outer
+  move inner
+  copy outer
+  move inner
+  move cond
+twice
+  copy x
+  copy x
+members
+  move h.part
+  lvalue u
+  rvalue u
+captured
+  move x
+compile time
+  move x
+checked
+  copy checked
+returned
+  move r
+expression body
+  move e
+statement parameter
+  move s
+exits true
+  move x
+exits false
+  move x
+jumps
+  move y
+  move y
+  copy outer
+thrown true
+  move x
+  copy h
+  move h

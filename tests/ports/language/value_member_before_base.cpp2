@@ -1,0 +1,34 @@
+// Source: types.md "Data members before a base" (a member declared before
+// `this: Base` is initialized first) with metafunctions.md @value and
+// @ordered: the defaulted comparisons compare the bases and data members in
+// declaration order, including members declared before a base. Upstream
+// cppfront's helper bases have no comparisons, so `==` is deleted.
+#include <iostream>
+#include <string>
+
+tag: @ordered type = {
+    public t: int = 0;
+    operator=: (out this) = { }
+    operator=: (out this, v: int) = { t = v; }
+    operator=: (out this, that) = { }
+}
+
+record: @value type = {
+    public id: int = 0;
+    this: tag = ();
+    public name: std::string = "";
+    operator=: (out this, i: int, n: std::string) = {
+        id = i;
+        tag = i * 10;
+        name = n;
+    }
+}
+
+main: () = {
+    a: record = (1, "a");
+    b := a;
+    c: record = (1, "c");
+    d: record = (0, "z");
+    std::cout << (a == b) << (a == c) << (a < c) << (d < a) << "\n";
+    std::cout << b.id << " " << b.t << " " << b.name << "\n";
+}

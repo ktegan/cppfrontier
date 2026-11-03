@@ -1,0 +1,33 @@
+// Experiment linear (docs/EXPERIMENTS.md): a @linear type is move-only, and
+// each value is consumed exactly once on every path: by `move x`, by passing
+// it whole to a `move` parameter (here `this` of `release`), or by
+// `return x;`. linear_error.cpp2 is the rejected case.
+// flags: -experiment=linear
+#include <iostream>
+
+Handle: @linear type = {
+    public id: int;
+    operator=: (out this, id_: int) = { id = id_; }
+    release: (move this) = { }
+}
+
+open: (id: int) -> Handle = { h := Handle(id); return h; }
+close: (move h: Handle) = {
+    std::cout << "closed " << h.id << "\n";
+    h.release();
+}
+
+main: (args) -> int = {
+    a := open(1);
+    b := open(2);
+    if args.ssize() > 5 {
+        close(move a);
+        close(move b);
+    } else {
+        close(move b);
+        close(move a);
+    }
+    c := open(3);
+    close(c);
+    return 0;
+}

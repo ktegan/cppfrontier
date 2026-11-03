@@ -1,0 +1,37 @@
+// Source: cppreference "Fold expressions (since C++17)" fold-operator list.
+// Exercises folds over `*` and `&`, which are left folds since a `*` or `&`
+// before `...` is postfix (a product with an initial value folds `*=`, as
+// `(r *= ... *= xs)`); a fold over dereferenced pointers; a fold over `>>`,
+// which is spelled by joined `>` tokens; operands with `is` and UFCS calls;
+// and a last use passed beside a pack expansion, which is evaluated once and
+// so is moved.
+#include <iostream>
+#include <string>
+
+product: (xs...: int) -> int = {
+    result := 1;
+    (result *= ... *= xs);
+    return result;
+}
+product_left: (xs...: int) -> int = (... * xs);
+mask: (xs...: int) -> int = (... & xs);
+targets: (ps...: *int) -> int = (ps* + ...);
+shifted: (x: int, ys...: int) -> int = (x >> ... >> ys);
+all_ints: <Ts...> (xs...: Ts) -> bool = (xs is int && ...);
+total_size: <Ts...> (xs...: Ts) -> std::size_t = (xs.size() + ...);
+
+keep: <Ts...> (move s: std::string, _...: Ts) -> std::string = s;
+relay: <Ts...> (xs...: Ts) -> std::string = {
+    s: std::string = "moved";
+    return keep(s, xs...);
+}
+
+main: () = {
+    std::cout << product(2, 3, 4) << " " << product_left(5, 6) << " " << mask(7, 14, 6) << "\n";
+    a := 10;
+    b := 20;
+    std::cout << shifted(64, 1, 2) << " " << product() << " " << targets(a&, b&) << "\n";
+    std::cout << all_ints(1, 2) << all_ints(1, 2.0) << "\n";
+    std::cout << total_size(std::string("ab"), std::string("cde")) << "\n";
+    std::cout << relay(1, 'x') << "\n";
+}

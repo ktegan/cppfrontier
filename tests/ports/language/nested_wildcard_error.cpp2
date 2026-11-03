@@ -1,0 +1,11 @@
+// Source: Cpp1 has no placeholder `auto` in a template argument, a
+// `std::variant` alternative or a function type's parameter.
+// objects.md: `_` deduces a declared type; it lowers to Cpp1 `auto`, so it
+// can only be a declared type, what `*` and `const` qualify in it, or a
+// function type's return type.
+// expect-error: '_' cannot be part of a template argument
+// expect-error: '_ is std::integral' cannot be part of a template argument
+f: (v: std::vector<_>) = { }
+g: (fp: *(x: _ is std::integral) -> int) = { }
+
+main: () = { }

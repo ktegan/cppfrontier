@@ -1,0 +1,46 @@
+// Source: contracts.md preconditions and types.md operator=. A constructor's
+// preconditions are checked on entry, before its member initializers
+// evaluate anything, so one reads the argument a member initializer then
+// moves; and an assignment checks them before it assigns the members.
+// Upstream checks them in the body, after the members are initialized, so
+// `pre(!n.empty())` reads the moved-from `n`. An `out` parameter set among
+// the leading statements is set before the next member's value, which may
+// be a list.
+trace: (what: std::string_view, value: int) -> int = {
+    std::cout << what << "\n";
+    return value;
+}
+
+person: type = {
+    name: std::string;
+    age: int;
+    operator=: (out this, move n: std::string, a: int) pre(!n.empty()) pre(trace("check", a) == a) = {
+        name = n;
+        age = trace("age", a);
+    }
+    operator=: (out this, move n: std::string) pre(!n.empty(), "a name") = {
+        name = n;
+        age = trace("age", 0);
+    }
+    show: (this) = std::cout << name << " " << age << "\n";
+}
+
+grid: type = {
+    cells: std::vector<int>;
+    operator=: (out this, n: int, out count: int) pre(n > 0) = {
+        count = n;
+        cells = (n, 7);
+    }
+    size: (this) -> std::size_t = cells.size();
+}
+
+main: () = {
+    p: person = ("Ada Lovelace, a name longer than a small buffer", 36);
+    p.show();
+    q: person = ("Charles Babbage, a name longer than a small buffer");
+    q = std::string("Grace Hopper, a name longer than a small buffer");
+    q.show();
+    count: int;
+    g: grid = (3, out count);
+    std::cout << count << " " << g.size() << "\n";
+}

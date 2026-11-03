@@ -1,0 +1,5 @@
+// A requires clause is an expression like any other: Cpp2 spells conjunction
+// `&&`, so `and` is a juxtaposed operand.
+// expect-error: unexpected text 'std::signed_integral' after an expression
+f: <T> (x: T) -> T requires std::integral<T> and std::signed_integral<T> = x;
+main: () = { }

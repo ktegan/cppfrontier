@@ -1,0 +1,50 @@
+// Experiment let-else (docs/EXPERIMENTS.md), with destructuring and adt:
+// 'name := value as T else { ... }' declares 'name' when 'value is T' and
+// otherwise runs a block that leaves the scope.
+// flags: -experiment=let-else -experiment=destructuring -experiment=adt
+#include <iostream>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <variant>
+#include <vector>
+
+Shape: @adt type = {
+    Circle: (r: double);
+    Rect: (w: double, h: double);
+}
+
+width: (s: Shape) -> double = {
+    (w, _) := s as Shape::Rect else { return 0.0; }
+    return w;
+}
+
+parse: (text: std::string) -> int = {
+    value: std::variant<int, std::string> = text;
+    if !text.empty() && text[0] >= '0' && text[0] <= '9' { value = std::stoi(text); }
+    n := value as int else { throw(std::invalid_argument("not a number: " + text)); }
+    return n;
+}
+
+total: (values: std::vector<std::optional<int>>) -> int = {
+    sum := 0;
+    for values do (o) {
+        n := o as int else { continue; }
+        sum += n;
+    }
+    return sum;
+}
+
+main: () = {
+    std::cout << width(Shape::Rect(2.5, 1.0)) << " " << width(Shape::Circle(1.0)) << "\n";
+    std::cout << parse("42") << "\n";
+    try {
+        _ = parse("x");
+    }
+    catch (e: std::invalid_argument) {
+        std::cout << e.what() << "\n";
+    }
+    values: std::vector<std::optional<int>> = (1, std::nullopt, 3);
+    std::cout << total(values) << "\n";
+}

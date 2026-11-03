@@ -1,0 +1,11 @@
+// Source: objects.md. A data member named `_` cannot be named by a
+// constructor's leading statement, so it needs a default initializer.
+// expect-error: (7,5): error: in operator=, the type scope object '_' at 6:5 needs a default initializer, since no statement can name it
+S: type = {
+    a: int = 1;
+    _: int;
+    operator=: (out this) = {
+        a = 2;
+    }
+}
+main: () = { s: S = (); }

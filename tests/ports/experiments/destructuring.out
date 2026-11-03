@@ -1,0 +1,6 @@
+3 2
+Ada 36
+6
+consumed a string long enough to live on the heap
+s is [a string long enough to live on the heap] tt
+42

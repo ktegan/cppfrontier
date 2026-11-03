@@ -1,0 +1,12 @@
+// Experiment type-operators (docs/EXPERIMENTS.md): an unmarked template
+// argument that combines a type keyword is an expression that cannot be one,
+// and a marked intersection of types has no lowering.
+// flags: -experiment=type-operators
+// expect-error: in a template argument '|' and '&' are Cpp1 operators; write 'type int | std::string' for a type combination
+// expect-error: '&' combines constraints, not types
+// expect-error: in a template argument '|' and '&' are Cpp1 operators; write 'type int | char' for a type combination
+main: () = {
+    v: std::vector<int | std::string> = ();
+    w: std::vector<type int & std::string> = ();
+    x := :std::vector<int | char> = ();
+}

@@ -1,0 +1,115 @@
+// Source: objects.md "guaranteed initialization" and functions.md "out
+// parameters", combined with types.md constructors and metafunctions.md
+// @union and @value.
+// Exercises: a constructor that initializes its `out` parameters between and
+// after its members; named returns set on early-return and throwing paths;
+// `out` arguments through member, static and forwarding functions, in a
+// returned expression and in every alternative of an `inspect`; a `@union`
+// `out` parameter; and captures and interpolations of `out` parameters.
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+Report: type = {
+    public a: int;
+    public b: std::string;
+    operator=: (out this, n: int, out doubled: int, out note: std::string) = {
+        doubled = n * 2;
+        a = doubled;
+        b = std::to_string(a);
+        if n > 2 { note = "big"; } else { note = "small"; }
+    }
+}
+
+Pair: @value type = {
+    public x: int = 0;
+    public tag: std::string = ();
+    operator=: (out this, v: int, t: std::string) = { x = v; tag = t; }
+}
+
+split: (n: int) -> (lo: Pair, hi: Pair) = {
+    if n < 0 {
+        lo = (-1, "neg");
+        hi = lo;
+        return;
+    }
+    else if n == 0 {
+        throw(std::invalid_argument("zero"));
+    }
+    lo = (n, "lo");
+    hi = (n * 2, lo.tag + "hi");
+}
+
+Source: type = {
+    public n: int = 4;
+    fill: (this, out x: int) = { x = n + 1; }
+    make: (out x: int) -> Source = { x = 9; return Source(); }
+}
+
+set: (out x: int, v: int) -> int = { x = v; return v; }
+pass_on: (out y: int) = set(out y, 3);
+returned: (out z: int) -> int = { return set(out z, 5) + 1; }
+
+Num: @union type = {
+    i: int;
+    s: std::string;
+}
+
+choose: (out n: Num, k: int) = {
+    n = ();
+    if k == 0 { n.set_i(42); } else { n.set_s("str"); }
+}
+
+describe: (out text: std::string, out count: int) = {
+    text = "hey";
+    count = 2;
+    show := :() -> std::string = text$ + std::to_string(count$);
+    std::cout << show() << " (text)$ (count)$\n";
+}
+
+main: () = {
+    d: int;
+    note: std::string;
+    r: Report = (3, out d, out note);
+    std::cout << r.a << r.b << d << note << "\n";
+
+    s1 := split(3);
+    std::cout << s1.lo.x << s1.hi.x << s1.hi.tag << "\n";
+    s2 := split(-5);
+    std::cout << s2.lo.tag << (s2.lo == s2.hi) << "\n";
+    try {
+        _ = split(0);
+    } catch (e: std::exception) {
+        std::cout << e.what() << "\n";
+    }
+
+    src: Source = ();
+    a: int;
+    src.fill(out a);
+    b: int;
+    made := Source::make(out b);
+    c: int;
+    pass_on(out c);
+    e: int;
+    f := returned(out e);
+    std::cout << a << b << made.n << c << e << f << "\n";
+
+    k := 2;
+    g: int;
+    picked := inspect k -> int {
+        is 1 = set(out g, 10);
+        is _ = set(out g, 20);
+    };
+    std::cout << picked << g << "\n";
+
+    for (0, 1) do (which) {
+        n: Num;
+        choose(out n, which);
+        if n.is_i() { std::cout << n.i() << " "; } else { std::cout << n.s() << "\n"; }
+    }
+
+    text: std::string;
+    count: int;
+    describe(out text, out count);
+    std::cout << text << count << "\n";
+}

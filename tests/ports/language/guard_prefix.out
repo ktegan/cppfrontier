@@ -1,0 +1,26 @@
+passed to a copy parameter:
+  acquire l
+  move l
+  use l
+  release l
+  end of scope
+guard passed to a copy parameter:
+  acquire guard_l
+  copy guard_l'
+  use guard_l'
+  release guard_l'
+  end of scope
+  release guard_l
+initializes another object:
+  acquire l
+  move l
+  end of inner scope
+  release l
+  end of scope
+guard initializes another object:
+  acquire guard_l
+  copy guard_l'
+  end of inner scope
+  release guard_l'
+  end of scope
+  release guard_l

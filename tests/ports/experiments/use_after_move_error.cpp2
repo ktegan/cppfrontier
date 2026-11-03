@@ -1,0 +1,21 @@
+// Experiment use-after-move (docs/EXPERIMENTS.md): a mention after an
+// explicit move on every path, or on some path, is rejected.
+// flags: -experiment=use-after-move
+// expect-error: s was moved on line 14 and is used here
+// expect-error: t may have been moved on line 17 and is used here
+#include <iostream>
+#include <string>
+
+take: (move s: std::string) = { std::cout << s << "\n"; }
+
+main: (args) -> int = {
+    s: std::string = "a";
+    t: std::string = "b";
+    take(move s);
+    std::cout << s << "\n";
+    if args.ssize() > 1 {
+        take(move t);
+    }
+    std::cout << t << "\n";
+    return 0;
+}

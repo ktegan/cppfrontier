@@ -1,0 +1,73 @@
+// Source: functions.md "Move/forward from definite last use": a local whose
+// name starts with `guard` is never moved from, because its destructor is its
+// real last use (as for a local std::scoped_lock).
+// Exercises: a lock-like RAII type whose last use would otherwise move it into
+// a `copy` parameter or another object and release it early, with and without
+// the `guard` prefix.
+#include <iostream>
+#include <memory>
+#include <string>
+
+// Holds a lock until destroyed; a moved-from std::unique_ptr is null, so a
+// moved-from lock holds nothing and releases nothing.
+lock: type = {
+    public name: std::unique_ptr<std::string>;
+
+    operator=: (out this, n: std::string) = {
+        name = new<std::string>(n);
+        std::cout << "  acquire (n)$\n";
+    }
+    operator=: (out this, that) = {
+        name = new<std::string>(that.name* + "'");
+        std::cout << "  copy (name*)$\n";
+    }
+    operator=: (out this, move that) = {
+        std::cout << "  move (name*)$\n";
+    }
+    operator=: (move this) = {
+        if name { std::cout << "  release (name*)$\n"; }
+    }
+}
+
+use: (copy l: lock) = { std::cout << "  use (l.name*)$\n"; }
+
+passed: () = {
+    std::cout << "passed to a copy parameter:\n";
+    l: lock = "l";
+    use(l);
+    std::cout << "  end of scope\n";
+}
+
+guard_passed: () = {
+    std::cout << "guard passed to a copy parameter:\n";
+    guard_l: lock = "guard_l";
+    use(guard_l);
+    std::cout << "  end of scope\n";
+}
+
+initializes: () = {
+    std::cout << "initializes another object:\n";
+    l: lock = "l";
+    {
+        other := l;
+        std::cout << "  end of inner scope\n";
+    }
+    std::cout << "  end of scope\n";
+}
+
+guard_initializes: () = {
+    std::cout << "guard initializes another object:\n";
+    guard_l: lock = "guard_l";
+    {
+        other := guard_l;
+        std::cout << "  end of inner scope\n";
+    }
+    std::cout << "  end of scope\n";
+}
+
+main: () = {
+    passed();
+    guard_passed();
+    initializes();
+    guard_initializes();
+}

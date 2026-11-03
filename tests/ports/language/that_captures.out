@@ -1,0 +1,17 @@
+move construction
+  copy a
+  copy b
+  move c
+  copy a
+  captured a
+  move b
+  captured b
+source: a  
+target: a b c
+general
+  copy ga
+  move gb
+  copy ga
+  general ga
+source: ga 
+target: ga gb

@@ -1,0 +1,17 @@
+move construction
+  copy a
+  move b
+  move c
+source: a - - 7
+target: a b c 7
+move assignment
+  move-assign a
+  move-assign b
+  move-assign c
+source: - - - 0
+target: a b c 7
+whole use
+  copy p
+  receiver lvalue
+  last use rvalue
+source: p

@@ -1,0 +1,103 @@
+// Source: cppreference "Default comparisons" (operator<=> = default, memberwise
+// lexicographic comparison, weak/partial orderings) and "std::partial_ordering"
+// (NaN is unordered).
+// Exercises: @value, @ordered, @weakly_ordered_value, @partially_ordered_value, a
+// hand-written operator<=> with a body, defaulted memberwise operator<=> and
+// operator== (no body), chained comparisons, and use as keys in std::set and
+// std::ranges::sort.
+#include <compare>
+#include <iostream>
+#include <set>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+// Memberwise: compares year, then month, then day.
+date: @value type = {
+    year:  i32 = 1970;
+    month: i32 = 1;
+    day:   i32 = 1;
+
+    operator=: (out this, y: i32, m: i32, d: i32) = {
+        year = y;
+        month = m;
+        day = d;
+    }
+    print: (this) -> std::string = "(year)$-(month)$-(day)$";
+}
+
+// Case-insensitive name: equal names that differ in case are equivalent.
+ci_name: @weakly_ordered_value type = {
+    s: std::string = ();
+    operator=: (out this, v: std::string) = { s = v; }
+    operator<=>: (this, that) -> std::weak_ordering = {
+        a := lower(s);
+        b := lower(that.s);
+        return a <=> b;
+    }
+    get: (this) -> std::string = s;
+}
+
+lower: (str: std::string) -> std::string = {
+    r := str;
+    for r do (inout c) { c = unchecked_narrow<char>(std::tolower(c)); }
+    return r;
+}
+
+// A partially ordered value: a NaN measurement is unordered with everything.
+reading: @partially_ordered_value type = {
+    v: double = 0.0;
+    operator=: (out this, x: double) = { v = x; }
+}
+
+// Ordered but not copyable: only a comparison is generated.
+ticket: @ordered type = {
+    number: i32;
+    operator=: (out this, n: i32) = { number = n; }
+    get: (this) -> i32 = number;
+}
+
+ordering_name: (o: std::partial_ordering) -> std::string = {
+    if o == std::partial_ordering::less { return "less"; }
+    if o == std::partial_ordering::greater { return "greater"; }
+    if o == std::partial_ordering::equivalent { return "equivalent"; }
+    return "unordered";
+}
+
+main: () = {
+    a: date = (2024, 2, 29);
+    b: date = (2024, 3, 1);
+    c := b;
+    std::cout << "a < b: (a < b)$, b == c: (b == c)$, a != c: (a != c)$\n";
+    d: date = ();
+    std::cout << "default date (d.print())$\n";
+    std::cout << "chain d < a < b: (d < a < b)$, a <= b <= c: (a <= b <= c)$\n";
+    std::cout << "chain b == c == a: (b == c == a)$\n";
+
+    dates: std::vector<date> = (b, a, d, :date = (2023, 12, 31));
+    std::ranges::sort(dates);
+    for dates do (x) { std::cout << x.print() << " "; }
+    std::cout << "\n";
+
+    names: std::set<ci_name> = ();
+    for ("bob", "Alice", "BOB", "carol", "alice") do (n) {
+        _ = names.insert(:ci_name = n);
+    }
+    for names do (n) { std::cout << n.get() << " "; }
+    std::cout << "\n";
+    x: ci_name = "HeLLo";
+    y: ci_name = "hello";
+    std::cout << "equivalent: (x <=> y == 0)$, x < y: (x < y)$\n";
+
+    nan: reading = std::nan("");
+    one: reading = 1.0;
+    two: reading = 2.0;
+    std::cout << "1 vs 2: (ordering_name(one <=> two))$\n";
+    std::cout << "2 vs 1: (ordering_name(two <=> one))$\n";
+    std::cout << "nan vs 1: (ordering_name(nan <=> one))$, nan < 1: (nan < one)$, nan > 1: (nan > one)$\n";
+
+    t1: ticket = 7;
+    t2: ticket = 9;
+    std::cout << "t1 < t2: (t1 < t2)$, t1 >= t2: (t1 >= t2)$\n";
+}

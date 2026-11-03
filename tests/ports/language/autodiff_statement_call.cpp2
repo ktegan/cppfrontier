@@ -1,0 +1,39 @@
+// Source: notes/autodiff_status.md (function arguments and function calls,
+// forward mode and higher order): a function without a return value that
+// updates an `inout` parameter is differentiated into one without a return
+// value that also updates the parameter's derivative, and a call of it as a
+// statement calls the derivative. The derivatives are checked against central
+// finite differences. Upstream cppfront generates `-> ()` and rejects it.
+#include <cmath>
+#include <iostream>
+
+fwd: @autodiff type = {
+    scale: (x: double, inout y: double) = { y = x * x * y + sin(y); }
+    f: (x: double) -> (r: double) = {
+        y: double = 2.0;
+        scale(x, y);
+        scale(y, y);
+        r = y * x;
+    }
+}
+
+taylor: @autodiff<"order=2"> type = {
+    scale: (x: double, inout y: double) = { y = x * x * y; }
+    f: (x: double) -> (r: double) = {
+        y: double = 2.0;
+        scale(x, y);
+        r = y * x;
+    }
+}
+
+main: () = {
+    for (0.5, 1.5) do (x) {
+        h := 1e-6;
+        fd := (fwd::f(x + h) - fwd::f(x - h)) / (2.0 * h);
+        d: cpp2::taylor<double, 2> = (1.0);
+        t := taylor::f_d(x, d);
+        std::cout << "x = " << x << ": d/dx " << (std::abs(fwd::f_d(x, 1.0).r_d - fd) < 1e-5)
+                  << ", taylor " << t.r_d[1] << " " << t.r_d[2] << " expect "
+                  << 6.0 * x * x << " " << 12.0 * x << "\n";
+    }
+}

@@ -1,0 +1,39 @@
+// Experiment newtype (docs/EXPERIMENTS.md): what would clash with the members
+// @newtype generates is rejected, as is a second @unit with the same
+// dimensions, which would name the same type; `x as T` between distinct types
+// is rejected also for a deduced local; a metaclass argument may not be
+// empty; and the `k * q` operator of a nested @quantity, declared at
+// namespace scope, must be able to name it and deduce it.
+// flags: -experiment=newtype
+// expect-error: '@value' cannot be combined with '@newtype', which generates the type's members; only @hashable, @delegate and @print can
+// expect-error: '@enum' cannot be combined with '@newtype'
+// expect-error: '@newtype' generates the member 'value' holding the underlying value, so the type cannot declare its own
+// expect-error: 'Feet' has the underlying type and exponents of 'Metres', so both would name one type; a @unit type is distinguished by its dimensions only
+// expect-error: empty argument in the argument list of '@unit'
+// expect-error: no conversion between distinct types Apples and Pears
+// expect-error: the 'k * q' operator of a @quantity type is declared at namespace scope, which cannot name 'Hidden': 'Hidden' is a private member of 'Outer'
+// expect-error: the 'k * q' operator of a @quantity type is declared at namespace scope, which cannot name 'Inner': 'Secret' is a private member of 'Outer'
+// expect-error: the 'k * q' operator of a @quantity type is declared at namespace scope, which cannot name 'Sized': it is nested in the template 'Box', whose template arguments 'k * q' cannot deduce
+
+Valued: @newtype<i32> @value type = { }
+Enumerated: @enum @newtype<i32> type = { a; b; }
+Member: @newtype<i32> type = {
+    twice: (this) -> i32 = value * 2;
+    value: i32 = 0;
+}
+Metres: @unit<double, 1> type = { }
+Feet: @unit<double, 1> type = { }
+Gap: @unit<double,, 2> type = { }
+Apples: @newtype<i32> type = { }
+Pears: @newtype<i32> type = { }
+Outer: type = {
+    private Hidden: @quantity<i32> type = { }
+    private Secret: type = { Inner: @quantity<i32> type = { } }
+}
+Box: <T> type = { Sized: @quantity<T> type = { } }
+
+main: () -> int = {
+    a := 7 as Apples;
+    p := a as Pears;
+    return p as i32;
+}

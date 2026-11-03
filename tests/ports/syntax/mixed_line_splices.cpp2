@@ -1,0 +1,17 @@
+// Source: mixed.md side-by-side Cpp1 and Cpp2, with line splices after Cpp2
+// declarations: a string literal and a `//` comment continued onto the next
+// line, which stays Cpp1 string or comment text, and a Cpp1 expression
+// continued across lines.
+#include <iostream>
+first: () -> int = 1;
+const char* text = "abc\
+def";
+second: () -> int = 2;
+// a comment \
+hidden: () -> int = 3;
+int sum = 1 + \
+2;
+hidden: () -> int = 4;
+main: () = {
+    std::cout << first() << second() << text << sum << hidden() << "\n";
+}

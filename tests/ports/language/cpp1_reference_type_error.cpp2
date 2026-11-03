@@ -1,0 +1,16 @@
+// Source: Cpp1 declarations with reference types `T&` and `T&&`.
+// functions.md: Cpp2 passes by reference through a parameter's passing
+// style, and has no reference types; `cpp1_ref<T>` names a Cpp1 reference.
+// Upstream rejects these as parse errors.
+// expect-error: 'int&' is a Cpp1 reference type
+// expect-error: 'std::string&&' is a Cpp1 reference type
+// expect-error: a function type cannot have named return values
+f: (copy x: const int&) -> int = x;
+g: (x: std::string&&) = { }
+h: (fp: *(x: int) -> (r: int)) = { }
+
+main: () = {
+    a := 1;
+    r: int& = a;
+    r = 7;
+}

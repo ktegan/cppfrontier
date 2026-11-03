@@ -1,0 +1,13 @@
+// Source: functions.md named return values and types.md virtual functions. A
+// function with named returns returns a result type of its own class, so an
+// override's result type would differ from the base's, which Cpp1 rejects as
+// an invalid covariant return type. Upstream emits that Cpp1.
+// expect-error: a virtual function cannot have named return values
+shape: @polymorphic_base type = {
+    extent: (virtual this) -> (width: int, height: int) = { width = 1; height = 1; }
+}
+square: type = {
+    this: shape;
+    extent: (override this) -> (width: int, height: int) = { width = 2; height = 2; }
+}
+main: () = { }

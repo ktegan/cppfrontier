@@ -1,0 +1,79 @@
+// Source: cppreference "Dependent names" (the typename and template
+// disambiguators: T::value_type, T::template rebind<U>, x.template get<N>())
+// and the allocator-rebind idiom. Cpp2 writes no `typename` in ordinary type
+// positions; `type T::member` is upstream's disambiguator for a template
+// argument (issue #727). Exercises nested member types, a member template of
+// a dependent type, a member function template called with explicit
+// arguments on a dependent object (UFCS and members-only `..`), the type of
+// an unnamed object, dependent member aliases, and a scope whose template
+// argument is a `decltype` of a generic parameter.
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
+
+holder: <T> type = {
+    public value: T = ();
+    get: <N: int> (this) -> int = N * 100;
+    rebind: <U> type == holder<U>;
+    value_type: type == T;
+}
+
+// T::value_type as a parameter, return and local type.
+first_or_default: <C> (c: C) -> C::value_type = {
+    if c.empty() { return :C::value_type = (); }
+    return c.front();
+}
+
+// A member type of a dependent type, as a template argument.
+sum_keys: <M> (m: M) -> int = {
+    keys: std::vector<type M::key_type> = ();
+    for m do (kv) { keys.push_back(kv.first); }
+    total := 0;
+    for keys do (k) { total += k; }
+    return total;
+}
+
+// A member template of a dependent type (needs `template` in Cpp1).
+rebind_to_int: <H> (_: H) -> int = {
+    r: H::rebind<int> = ();
+    r.value = 7;
+    return r.value;
+}
+
+// A member function template with explicit arguments on a dependent object.
+call_get: <H> (h: H) -> int = h.get<3>() + h..get<4>();
+
+// std::get on a dependent tuple.
+second_of: <Tuple> (t: Tuple) -> std::tuple_element_t<1, Tuple> = std::get<1>(t);
+
+// An allocator rebind through std::allocator_traits.
+rebound_size: <Alloc> (_: Alloc) -> std::size_t = {
+    a: std::allocator_traits<Alloc>::rebind_alloc<double> = ();
+    p := std::allocator_traits<decltype(a)>::allocate(a, 1);
+    p* = 2.5;
+    size := sizeof(p*);
+    std::allocator_traits<decltype(a)>::deallocate(a, p, 1);
+    _ = a;
+    return size;
+}
+
+first_of: (c) -> _ = {
+    x: std::remove_cvref_t<decltype(c)>::value_type = c[0];
+    return x;
+}
+
+main: () = {
+    std::cout << first_or_default(:std::vector<int> = (5, 6)) << " " << first_or_default(:std::vector<std::string> = ()).size() << "\n";
+    m: std::map<int, std::string> = ((1, "a"), (2, "b"), (39, "c"));
+    std::cout << sum_keys(m) << "\n";
+    h: holder<std::string> = ();
+    std::cout << rebind_to_int(h) << "\n";
+    std::cout << call_get(h) << "\n";
+    std::cout << second_of(std::make_tuple(1, "two", 3.0)) << "\n";
+    std::cout << rebound_size(std::allocator<char>()) << "\n";
+    static_assert(std::is_same_v<holder<char>::rebind<long>::value_type, long>);
+    std::cout << first_of(std::vector<int>(1, 9)) << "\n";
+}

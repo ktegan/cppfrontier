@@ -1,0 +1,12 @@
+// Source: objects.md "Objects" and upstream's rule that deferred locals are
+// initialized in declaration order: two locals passed as `out` arguments to
+// one call are initialized left to right, so they must be passed in the
+// order they are declared.
+// expect-error: local variable x must be initialized before y (local variables must be initialized in the order they are declared)
+set2: (out a: int, out b: int) = { a = 1; b = 2; }
+main: () = {
+    x: int;
+    y: int;
+    set2(out y, out x);
+    std::cout << x << y << "\n";
+}

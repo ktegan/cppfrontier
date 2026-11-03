@@ -1,0 +1,45 @@
+// Source: functions.md (`vec.std::ranges::sort(...)` with a function
+// expression) and expressions.md (`v.std::ranges::find("Nonesuch")` as the
+// start of a `..<` range).
+// Exercises: a UFCS call whose name is qualified, which names a non-member
+// and is the direct call `N::f(x, args)`: standard algorithms, a function in
+// our own namespace (chosen over a member of the same name), and a qualified
+// function template with explicit template arguments.
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+
+geometry: namespace = {
+    scaled: (x: int, factor: int) -> int = x * factor;
+    padded: <T> (x: int) -> T = T(x as std::size_t, '*');
+    twice: (p: point) -> int = p.x * 2;
+    point: @value type = {
+        public x: int = 0;
+        operator=: (out this, v: int) = { x = v; }
+        twice: (this) -> int = -1;
+    }
+}
+
+test: (v: std::vector<std::string>) = {
+    i1 := v.std::ranges::find("Nonesuch");
+    for i1 ..< v.end() do (e) std::cout << "  (e*)$\n";
+}
+
+main: () = {
+    vec: std::vector<int> = (3, 1, 4, 1, 5);
+    vec.std::ranges::sort();
+    for vec do (e) std::cout << e << " ";
+    std::cout << "\n";
+    vec.std::ranges::sort(:(x, y) = y < x);
+    for vec do (e) std::cout << e << " ";
+    std::cout << "\n";
+
+    n := 6;
+    std::cout << n.geometry::scaled(7) << "\n";
+    std::cout << n.geometry::padded<std::string>() << "\n";
+    p: geometry::point = 21;
+    std::cout << p.geometry::twice() << " " << p.twice() << "\n";
+
+    test(:std::vector<std::string> = ("a", "Nonesuch", "b"));
+}

@@ -1,0 +1,9 @@
+sum (v): 6
+1 2 3 
+10 20 
+1 2 3 
+caught inner, rethrowing
+outer caught inner
+scaled: 6 9 12 3.000000
+names: 2
+const int: true

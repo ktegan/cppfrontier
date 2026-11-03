@@ -1,0 +1,12 @@
+// The default constructor `@value` generates initializes every member, as a
+// user-written one must (objects.md "guaranteed initialization").
+// expect-error: in operator=, expected 'x = ...' initialization statement
+V: @value type = {
+    public x: int;
+    operator=: (out this, v: int) = { x = v; }
+}
+
+main: () = {
+    v: V = ();
+    std::cout << v.x << "\n";
+}

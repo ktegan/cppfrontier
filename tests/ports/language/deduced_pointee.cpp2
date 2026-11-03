@@ -1,0 +1,23 @@
+// Source: Cpp1 placeholder declarations `auto*`, `auto const*` and
+// `std::integral auto*` for locals, parameters and a range-for variable.
+// objects.md, functions.md: `_` deduces a type and `_ is C` constrains it.
+// `_` lowers to Cpp1 `auto`, so it can be what `*` and `const` qualify; a
+// parameter `p: *_` deduces a pointer and an `out x: _ is C` constrains the
+// caller's type. Upstream drops the pointer from a parameter `p: *_`.
+deref: (p: *_ is std::integral) -> int = p*;
+deref_copy: (copy p: * const _) -> int = p*;
+rebind: (inout p: *_, q: *int) = { p = q; }
+set: (out x: _ is std::integral) = { x = 5; }
+
+main: () = {
+    a := 1;
+    b := 2;
+    p: *_ is std::integral = a&;
+    c: * const _ = b&;
+    q: *int = a&;
+    rebind(q, b&);
+    s: long;
+    set(out s);
+    for (a&, b&) do (e: *_ is std::integral) { std::cout << e* << " "; }
+    std::cout << deref(p) << deref_copy(c) << q* << s << "\n";
+}

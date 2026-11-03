@@ -1,0 +1,15 @@
+// Source: deferred initialization (objects.md "guaranteed initialization"): a
+// local of a reference type, `cpp1_ref<T>` or an alias of one, must be bound
+// where it is declared, since `deferred_init` cannot hold a reference.
+// Upstream accepts the declaration and emits Cpp1 that does not compile.
+// expect-error: 'r' has a reference type, so it must be initialized where it is declared
+// expect-error: 'a' has a reference type, so it must be initialized where it is declared
+alias: type == const cpp1_ref<int>;
+main: () = {
+    i := 1;
+    bound: cpp1_ref<int> = i;
+    r: cpp1_ref<int>;
+    r = bound;
+    a: alias;
+    a = i;
+}

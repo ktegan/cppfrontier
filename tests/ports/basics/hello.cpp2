@@ -1,0 +1,3 @@
+// The smallest port: checks the harness itself.
+#include <iostream>
+main: () = { std::cout << "hello\n"; }

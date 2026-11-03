@@ -1,0 +1,7 @@
+// Source: expressions.md "Casts": Cpp1 casts are rejected in favor of `as` and
+// `unchecked_cast`.
+// expect-error: 'reinterpret_cast' is not supported in Cpp2 - use 'unchecked_cast<T>(expr)'
+main: () = {
+    i := 7;
+    p := reinterpret_cast<*char>(i&);
+}

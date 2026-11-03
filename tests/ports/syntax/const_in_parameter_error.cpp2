@@ -1,0 +1,8 @@
+// Source: Cpp1 `void f(const int x)` and `for (const auto& x : v)` ported
+// with their `const`. functions.md: an `in` parameter is always const.
+// expect-error: an 'in' parameter is always const, 'const' isn't needed and isn't allowed
+f: (in x: const int) = { std::cout << x; }
+main: () = {
+    v: std::vector<int> = (1, 2);
+    for v do (x: const int) { f(x); }
+}

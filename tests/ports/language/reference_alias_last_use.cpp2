@@ -1,0 +1,10 @@
+// Source: last-use moves (functions.md "definite last use"): a local whose
+// type is a Cpp1 reference alias refers to another object, so its last use
+// forwards it and the element it refers to keeps its value. Upstream moves
+// it, emptying `v[0]`.
+main: () = {
+    v: std::vector<std::string> = ("hello");
+    r: std::vector<std::string>::reference = v[0];
+    keep: std::string = r;
+    std::cout << v[0] << " " << keep << "\n";
+}

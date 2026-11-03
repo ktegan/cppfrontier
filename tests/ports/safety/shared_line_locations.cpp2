@@ -1,0 +1,54 @@
+// Source: docs/ARCHITECTURE.md (#line). Run-time checks name the source line
+// of the statement that fails, also when statements share a line: with a
+// function's header, with each other, or in a `next` clause, which is emitted
+// after the loop body. The handler prints the file name and line of each one.
+// Upstream keeps statements that share a line on one output line, so it
+// names the same lines, except that it reports the precondition of `first`
+// on the next line and maps the `next` clause to the loop's closing line.
+#include <filesystem>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <source_location>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+report: (msg: * const char, copy where: std::source_location) = {
+    throw(std::runtime_error(std::filesystem::path(where.file_name()).filename().string() +
+        "(" + std::to_string(where.line()) + "): " + msg));
+}
+
+attempt: (f: std::function<() -> void>) = {
+    try { f(); std::cout << "ok\n"; }
+    catch (e: std::exception) { std::cout << e.what() << "\n"; }
+}
+
+at: (v: std::vector<int>, i: int) -> int = { n := v.ssize(); return v[i] + n; }
+first: (v: std::vector<int>) -> int pre(!v.empty(), "empty") = { n := v.ssize(); return v[0] + n; }
+deref: (p: std::unique_ptr<int>) -> int = { n := 1; return p* + n; }
+
+holder: type = {
+    items: std::vector<int> = (1, 2);
+    get: (this, i: int) -> int = { _ = items.ssize(); return items[i]; }
+}
+
+main: () = {
+    cpp2::bounds_safety.set_handler(report&);
+    cpp2::null_safety.set_handler(report&);
+    cpp2::default.set_handler(report&);
+    v: std::vector<int> = (1, 2);
+    attempt(:() = { _ = at(v$, 5); });
+    attempt(:() = { _ = first(std::vector<int>()); });
+    attempt(:() = { _ = deref(std::unique_ptr<int>()); });
+    attempt(:() = { h: holder = (); _ = h.get(3); });
+    attempt(:() = {
+        x := 1; assert(x == 2, "x is not 2");
+    });
+    attempt(:() = {
+        w: std::vector<int> = (1, 2);
+        for w next _ = w[2] do (e) {
+            _ = e;
+        }
+    });
+}

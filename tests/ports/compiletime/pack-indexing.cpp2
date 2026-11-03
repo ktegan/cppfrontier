@@ -1,0 +1,31 @@
+// Source: cppreference "Pack indexing" (C++26, P2662): `first_plus_last` and
+// the indexed type alias examples. The docs do not mention pack indexing;
+// Cpp2 passes `xs...[I]` and `Ts...[I]` through to Cpp1.
+// cxx-std: c++26
+#include <iostream>
+#include <string>
+
+first_plus_last: <Ts...> (xs...: Ts) -> _ = xs...[0] + xs...[sizeof...(xs) - 1];
+
+nth: <I: std::size_t, Ts...> (xs...: Ts) -> _ = xs...[I];
+
+// GCC cannot yet mangle a pack index in a function signature, so these are locals.
+locals: <Ts...> () = {
+    y: Ts...[0] = 3;
+    v: std::vector<Ts...[1]> = (2.5, 5.0);
+    p: *const Ts...[0] = y&;
+    std::cout << p* << " " << v.size() << " " << v[0] << "\n";
+}
+
+holder: <Ts...> type = {
+    last_type: type == Ts...[sizeof...(Ts) - 1];
+}
+
+main: () = {
+    std::cout << first_plus_last(1, 2, 3, 40) << "\n";
+    std::cout << nth<1>(1, std::string("two"), 3.0) << "\n";
+    static_assert(std::is_same_v<holder<int, char, double>::last_type, double>);
+    v: holder<int, std::string>::last_type = "ok";
+    std::cout << v << "\n";
+    locals<int, double>();
+}

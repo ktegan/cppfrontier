@@ -1,0 +1,85 @@
+// Experiments condition-bindings, let-else, destructuring, defer,
+// comprehension and try-operator (docs/EXPERIMENTS.md) together, in
+// function templates, loops with labels, and function expressions.
+// flags: -experiment=condition-bindings -experiment=let-else -experiment=destructuring -experiment=defer -experiment=comprehension -experiment=try-operator
+#include <iostream>
+#include <optional>
+#include <string>
+#include <tuple>
+#include <variant>
+#include <vector>
+
+V: type == std::variant<int, std::string, std::tuple<int, int>>;
+
+describe: (v: V) -> std::string = {
+    r: std::string = "";
+    if v is int as n && n > 0 && v is int as m && m == n {
+        r = "pos " + std::to_string(m);
+    } else if v is std::tuple<int, int>(a, b) && a < b {
+        r = "asc " + std::to_string(a) + std::to_string(b);
+    } else if v is std::string as s {
+        if s.empty() { r = "empty"; } else { r = s; }
+    } else {
+        r = "other";
+    }
+    return r;
+}
+
+// A labeled loop whose condition binds, with `continue` and `break outer`.
+total: <T> (xs: std::vector<T>) -> int = {
+    i := 0;
+    t := 0;
+    outer: while i < xs.ssize() && xs[i] is int as o next i++ {
+        if o == 0 { continue; }
+        if o < 0 { break outer; }
+        t += o;
+    }
+    return t;
+}
+
+// let-else in a template, whose else block runs a defer before it returns.
+doubled: <T> (v: std::variant<int, T>) -> int = {
+    n := v as int else {
+        defer std::cout << "(not int) ";
+        return -1;
+    }
+    return n * 2;
+}
+
+products: (v: std::vector<std::variant<int, std::tuple<int, int>>>) -> int = {
+    t := 0;
+    for v do (e) {
+        (a, b) := e as std::tuple<int, int> else { continue; }
+        t += a * b;
+    }
+    return t;
+}
+
+values: (b: bool) -> std::optional<std::vector<int>> = {
+    if b { return std::vector<int>(3, 4); }
+    return std::nullopt;
+}
+
+// `?` in a comprehension's range, and a comprehension in a function expression
+// over that view, which owns its vector and is passed as an `in` parameter.
+squares: (b: bool) -> std::optional<int> = {
+    sq := for values(b)? do (x) yield x * x;
+    sum := :(r) -> int = {
+        s := 0;
+        for (for r do (y) if y > 0 yield y + 1) do (z) { s += z; }
+        return s;
+    };
+    return sum(sq);
+}
+
+main: () = {
+    std::cout << describe(5) << "|" << describe(-5) << "|" << describe(std::tuple(1, 2))
+              << "|" << describe(std::tuple(2, 1)) << "|" << describe(std::string(""))
+              << "|" << describe(std::string("hi")) << "\n";
+    xs: std::vector<std::optional<int>> = (1, 0, 2, -1, 5);
+    std::cout << total(xs) << "\n";
+    std::cout << doubled<std::string>(4) << " " << doubled<std::string>(std::string("x")) << "\n";
+    v: std::vector<std::variant<int, std::tuple<int, int>>> = (1, std::tuple(2, 3), 4, std::tuple(5, 6));
+    std::cout << products(v) << "\n";
+    std::cout << squares(true).value_or(-1) << " " << squares(false).value_or(-1) << "\n";
+}

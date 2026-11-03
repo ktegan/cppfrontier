@@ -1,0 +1,20 @@
+// decltype(x) of a deferred local or an out parameter is its declared type,
+// not that of the wrapper that holds it.
+fill: (out r: i64) = {
+    static_assert(std::is_same_v<decltype(r), i64>);
+    t: decltype(r) = 7;
+    r = t;
+}
+main: () = {
+    x: i64;
+    x = 5;
+    y: decltype(x) = 5;
+    z := :decltype(x) = 6;
+    static_assert(std::is_same_v<decltype(x), i64>);
+    w: std::vector<decltype(x)> = (1, 2);
+    p: decltype(x);
+    p = 3;
+    q: i64;
+    fill(out q);
+    std::cout << x + y + z + w.ssize() + p + q << "\n";
+}

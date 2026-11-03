@@ -1,0 +1,12 @@
+// The type of `new<T>`, `unique.new<T>` and a typed value is a Cpp2 type:
+// `const`, `*` and `type` lower as in a declared type.
+sum: <T: type> (t: T) -> std::size_t = {
+    p := new<type T::value_type>(t[0]);
+    q := new<*int>(nullptr);
+    r := unique.new<const int>(4);
+    s := new<std::vector<type T::value_type>>(t);
+    w := :* const int = nullptr;
+    return (p* + r*) as std::size_t + s*.size() + (q* == nullptr) as std::size_t +
+        (w == nullptr) as std::size_t;
+}
+main: () = { std::cout << sum(std::vector<int>(2, 7)) << "\n"; }

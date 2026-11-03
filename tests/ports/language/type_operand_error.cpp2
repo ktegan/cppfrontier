@@ -1,0 +1,6 @@
+// Source: expressions.md "is": `v is T` tests one type, and `int | double`
+// is not a type, so `double` here is an operand of `|`. Upstream emits Cpp1
+// that does not compile.
+// expect-error: 'double' is a type, not a value - 'v is T' tests one type; to test several, write 'v is A || v is B'
+f: (v) -> bool = v is int | double;
+main: () = { _ = f(1); }

@@ -1,0 +1,58 @@
+// Experiment defer (docs/EXPERIMENTS.md) with returns: postconditions are
+// checked after the defers have run, on every exit path; a return of a name
+// a defer in scope mentions, and of named return values, copies, so the defer
+// sees the value and the result is the value at the return.
+// flags: -experiment=defer -experiment=try-operator
+#include <iostream>
+#include <optional>
+#include <string>
+
+closed: bool = false;
+
+falls_off: () post(closed) = {
+    closed = false;
+    defer closed = true;
+}
+
+returns: () post(closed) = {
+    closed = false;
+    defer closed = true;
+    return;
+}
+
+returns_value: () -> int post(closed) = {
+    closed = false;
+    defer closed = true;
+    return 1;
+}
+
+returns_early: (o: std::optional<int>) -> std::optional<int> post(closed) = {
+    closed = false;
+    defer closed = true;
+    x := o?;
+    return x;
+}
+
+named: () -> (r: std::string = "a string long enough to live on the heap") post(r.ssize() > 1) = {
+    defer std::cout << "defer sees [" << r << "]\n";
+}
+
+returned: () -> std::string = {
+    s: std::string = "another string long enough to live on the heap";
+    defer {
+        std::cout << "defer sees [" << s << "]\n";
+        s = "changed";
+    }
+    return s;
+}
+
+main: () = {
+    falls_off();
+    returns();
+    _ = returns_value();
+    _ = returns_early(1);
+    _ = returns_early(std::nullopt);
+    std::cout << "postconditions held\n";
+    std::cout << named() << "\n";
+    std::cout << returned() << "\n";
+}

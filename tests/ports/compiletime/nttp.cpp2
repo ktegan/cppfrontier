@@ -1,0 +1,82 @@
+// Source: cppreference "Template parameters" (non-type template parameters:
+// integral, auto, pointer, class type and string-literal wrappers) and the
+// common C++20 "fixed_string as template argument" tutorial. Exercises
+// `N: i32`, `V: _` (Cpp1 `auto`), defaults, bool and enum-like parameters,
+// a structural @struct type as a parameter type, a parameter whose type is
+// only dependent on a non-type parameter, and arithmetic in template
+// arguments (parenthesized when it contains `>`), and function pointer
+// parameters, single and packed.
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <iostream>
+#include <string_view>
+#include <type_traits>
+
+square: (x: int) -> int = x * x;
+negate: (x: int) -> int = -x;
+apply: <F: *(x: int) -> int> (v: int) -> int = F(v);
+apply_all: <Fs...: *(x: int) -> int> (v: int) -> int = (Fs(v) + ... + 0);
+
+// A fixed-capacity buffer: type parameter plus integral parameter with default.
+buffer: <T, N: std::size_t = 4> type = {
+    data: std::array<T, N> = ();
+    capacity: (this) -> std::size_t = N;
+}
+
+// `_` is an `auto` template parameter; its type is deduced from the argument.
+show_value: <V: _> () = {
+    std::cout << V << " (" << sizeof(V) << " bytes)\n";
+}
+
+// A structural class type used as a template parameter type.
+point: @struct type = {
+    x: int = 0;
+    y: int = 0;
+}
+
+at_point: <P: point> () -> int = P.x * 10 + P.y;
+
+// A string wrapper; a templated @struct is an aggregate, so it is structural.
+fixed_string: @struct <N: std::size_t> type = {
+    chars: std::array<char, N> = ();
+    view: (this) -> std::string_view = (chars.data(), N - 1);
+}
+
+greet: <S: fixed_string<6>> () = { std::cout << "hello, " << S.view() << "\n"; }
+
+// A parameter type that depends only on a non-type parameter.
+unwrap: <N: int> (_: std::integral_constant<int, N>) -> int = N;
+
+// Recursion with a computed template argument.
+pow2: <N: u32> () -> u64 == {
+    if constexpr N == 0u { return 1u; }
+    else { return 2u * pow2<N - 1u>(); }
+}
+
+// A bool parameter selecting a branch.
+maybe_negate: <Negate: bool> (x: int) -> int = {
+    if constexpr Negate { return -x; }
+    return x;
+}
+
+main: () = {
+    b1: buffer<int> = ();
+    b2: buffer<char, 16> = ();
+    std::cout << b1.capacity() << " " << b2.capacity() << "\n";
+
+    show_value<42>();
+    show_value<'c'>();
+    show_value<7u>();
+
+    std::cout << at_point<point(3, 4)>() << "\n";
+
+    greet<fixed_string<6>(std::to_array("world"))>();
+
+    std::cout << unwrap(std::integral_constant<int, 17>()) << "\n";
+    static_assert(pow2<10>() == 1024u);
+    std::cout << pow2<40>() << "\n";
+    std::cout << maybe_negate<true>(5) << " " << maybe_negate<false>(5) << "\n";
+    std::cout << buffer<int, (2 > 1) as std::size_t>().capacity() << "\n";
+    std::cout << apply<square&>(3) << " " << apply_all<square&, negate&>(3) << "\n";
+}

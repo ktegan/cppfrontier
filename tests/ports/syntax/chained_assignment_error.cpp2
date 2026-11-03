@@ -1,0 +1,11 @@
+// Source: Cpp1 `a = b = 0;` resetting two counters at once. An assignment is
+// not a value, so it cannot be chained, initialize, or be an argument or a
+// parenthesized operand. cppfront accepts an initializer `x: int = y = 1`.
+// expect-error: an assignment is not a value and cannot be chained - instead of 'c = b = a;', write 'b = a; c = b;'
+main: () = {
+    a := 1;
+    b := 2;
+    a = b = 0;
+    c: int = b = 3;
+    std::cout << a << b << c << "\n";
+}

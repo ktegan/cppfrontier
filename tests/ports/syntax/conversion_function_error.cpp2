@@ -1,0 +1,19 @@
+// Source: a Cpp1 class with `explicit operator bool() const` and
+// `operator std::string() const`. The documentation has no conversion
+// functions; types.md converts with `operator=: (implicit out this, ...)`.
+// expect-error: conversion functions such as 'operator bool' are not supported; use a named function, or a converting constructor 'operator=: (implicit out this, value: From)' in the target type
+// expect-error: conversion functions such as 'operator std::string' are not supported
+#include <string>
+
+handle: type = {
+    fd: int = -1;
+    operator bool: (this) -> bool = fd >= 0;
+    public operator std::string: (this) -> std::string = {
+        return std::to_string(fd);
+    }
+}
+
+main: () = {
+    h: handle = ();
+    _ = h;
+}

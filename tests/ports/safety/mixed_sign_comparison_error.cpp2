@@ -1,0 +1,20 @@
+// Source: safety.md "Integer mixed-sign <, <=, >, and >=": comparing a signed
+// and an unsigned integer with a relational operator is rejected at compile
+// time, also inside a chain and against an unsuffixed (signed) literal.
+// expect-error: 'x < y' is a mixed signed/unsigned comparison
+// expect-error: 'n >= count' is a mixed signed/unsigned comparison
+// expect-error: 'size > 0' is a mixed signed/unsigned comparison
+// expect-error: '1 <= y' is a mixed signed/unsigned comparison
+less: (x: i32, y: u32) -> bool = x < y;
+
+enough: (n: std::size_t, count: int) -> bool = {
+    return n >= count;
+}
+
+nonempty: (size: std::size_t) -> bool = size > 0;
+
+between: (x: i32, y: u32) -> bool = x <= 1 <= y;
+
+main: () = {
+    std::cout << less(42, 43u) << enough(3u, 2) << nonempty(1u) << between(0, 2u) << "\n";
+}

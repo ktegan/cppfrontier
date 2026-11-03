@@ -1,0 +1,63 @@
+// Source: the "Memberwise operator= semantics" example in types.md, extended
+// with the cppreference "Copy assignment operator" / "Converting constructor"
+// cases: one `(out this, that)` provides copy and move construction and
+// assignment; one `(out this, who: std::string)` provides conversion
+// construction and assignment; a default member initializer fills members the
+// body does not mention; and a more specific `(inout this, that)` overrides the
+// generated copy assignment.
+#include <iostream>
+#include <string>
+
+mytype: type = {
+    name:          std::string;
+    social_handle: std::string = "(unknown)";
+
+    operator=: (out this, who: std::string) = {
+        name = who;
+        print("convert");
+    }
+    operator=: (out this, that) = {
+        print("copy/move");
+    }
+    print: (this, what: std::string) = {
+        std::cout << what << ": value is [(name)$] [(social_handle)$]\n";
+    }
+    set_handle: (inout this, h: std::string) = { social_handle = h; }
+}
+
+// Writes its own copy assignment; copy construction still comes from (out this, that).
+counted: type = {
+    value: int = 0;
+    assignments: int = 0;
+
+    operator=: (out this, v: int) = { value = v; }
+    operator=: (out this, that) = { }
+    operator=: (inout this, that) = {
+        value = that.value;
+        assignments = assignments + 1;
+    }
+    show: (this) = std::cout << "value (value)$, assigned (assignments)$ times\n";
+}
+
+main: () = {
+    x: mytype = "Jim";   // construct from string
+    x = "John";          // assign from string
+    x.set_handle("@john");
+    y := x;              // copy construct
+    y = x;               // copy assign
+    z := (move x);       // move construct
+    z = (move y);        // move assign
+    x.print("x");        // moved from
+    y.print("y");        // moved from
+    z.print("z");
+
+    a: counted = 1;
+    b := a;
+    b.show();
+    b = a;
+    b = :counted = 5;
+    b.show();
+    c: counted = 7;
+    c = 8;               // converting assignment, generated from (out this, v: int)
+    c.show();
+}

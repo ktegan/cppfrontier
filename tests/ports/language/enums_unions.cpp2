@@ -1,0 +1,111 @@
+// Source: metafunctions.md @enum (skat_game, janus), @flag_enum
+// (file_attributes) and @union (name_or_number) examples, plus the
+// cppreference "enumeration declaration" and "std::variant" motivating uses
+// (a traffic light state machine, permission flags, a token that is a name or
+// a number).
+// Exercises: @enum with explicit and implicit values, an explicit underlying
+// type, member functions on an enum (including a `==` constexpr function),
+// to_string and from_string, the first implicit value (0 in both translators,
+// though the skat_game comment in metafunctions.md says values start at 1), comparison of enumerators, a `for` over the
+// enumerators by hand, @flag_enum bitwise combination, has/set/clear and
+// to_string, @union set_/is_/accessor functions, and `inspect` on an enum.
+#include <iostream>
+#include <string>
+#include <vector>
+
+skat_game: @enum<i16> type = {
+    diamonds := 9;
+    hearts;  // 10
+    spades;  // 11
+    clubs;   // 12
+    grand    := 20;
+    null     := 23;
+}
+
+janus: @enum type = {
+    past;
+    future;
+
+    flip: (inout this) == {
+        if this == past { this = future; }
+        else { this = past; }
+    }
+}
+
+light: @enum type = {
+    red;
+    green;
+    yellow;
+
+    next: (this) -> light = {
+        if this == red { return green; }
+        if this == green { return yellow; }
+        return red;
+    }
+    // Upstream rejects `= inspect ...;` as a function body (see
+    // optional_expected), and reads `inspect this -> int` as `this->int`.
+    seconds: (this) -> int = {
+        return inspect (this) -> int {
+            is (red) = 30;
+            is (green) = 25;
+            is _ = 5;
+        };
+    }
+}
+
+file_attributes: @flag_enum<u8> type = {
+    cached;     // 1
+    current;    // 2
+    obsolete;   // 4
+    cached_and_current := cached | current;
+}
+
+name_or_number: @union type = {
+    name: std::string;
+    num : i32;
+}
+
+describe: (x: name_or_number) -> std::string = {
+    if x.is_name() { return "name " + x.name(); }
+    if x.is_num() { return "number (x.num())$"; }
+    return "empty";
+}
+
+main: () = {
+    for (skat_game::diamonds, skat_game::hearts, skat_game::clubs, skat_game::null) do (g) {
+        std::cout << g.to_string() << " = " << g.get_raw_value() << "\n";
+    }
+    std::cout << "hearts < spades: " << (skat_game::hearts < skat_game::spades) << "\n";
+    std::cout << "from_string(grand): " << skat_game::from_string("grand").get_raw_value() << "\n";
+
+    j := janus::past;
+    std::cout << "janus starts at (j.to_string())$ (raw (j.get_raw_value())$)";
+    j.flip();
+    std::cout << ", flips to (j.to_string())$";
+    j.flip();
+    std::cout << ", and back to (j.to_string())$\n";
+
+    l := light::red;
+    for 1 ..= 4 do (step) {
+        std::cout << "step (step)$: (l.to_string())$ for (l.seconds())$s\n";
+        l = l.next();
+    }
+
+    f: file_attributes = file_attributes::cached;
+    std::cout << "f = (f.to_string())$\n";
+    f.set(file_attributes::obsolete);
+    std::cout << "after set: (f.to_string())$, raw (f.get_raw_value())$\n";
+    std::cout << "has cached: (f.has(file_attributes::cached))$, has current: (f.has(file_attributes::current))$\n";
+    f.clear(file_attributes::cached);
+    std::cout << "after clear: (f.to_string())$\n";
+    both := file_attributes::cached | file_attributes::current;
+    std::cout << "both == cached_and_current: (both == file_attributes::cached_and_current)$\n";
+    std::cout << "none: (file_attributes::none.to_string())$\n";
+
+    x: name_or_number = ();
+    std::cout << describe(x) << "\n";
+    x.set_name("xyzzy");
+    std::cout << describe(x) << "\n";
+    x.set_num(120);
+    std::cout << describe(x) << ", plus 3 is " << x.num() + 3 << "\n";
+}

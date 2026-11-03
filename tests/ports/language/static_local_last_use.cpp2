@@ -1,0 +1,30 @@
+// Source: objects.md and the definite last use rule (functions.md "Passing
+// parameters"): a `static` local outlives each call, so no mention of it is a
+// last use; passing it, copying it and returning it leave it intact for the
+// next call. Upstream moves it at its last mention in the body.
+sink: (copy s: std::string) -> std::string = s;
+passed: () -> std::string = {
+    static s: std::string = "passed";
+    return sink(s);
+}
+copied: () -> std::string = {
+    static s: std::string = "copied";
+    t := s;
+    return t;
+}
+returned: () -> std::string = {
+    static s: std::string = "returned";
+    return s;
+}
+counter: () -> int = {
+    static calls: std::vector<int> = ();
+    calls.push_back(calls.ssize());
+    l := :(copy v: std::vector<int>) -> int = v.ssize();
+    return l(calls);
+}
+main: () = {
+    std::cout << passed() << " " << passed() << "\n";
+    std::cout << copied() << " " << copied() << "\n";
+    std::cout << returned() << " " << returned() << "\n";
+    std::cout << counter() << counter() << counter() << "\n";
+}

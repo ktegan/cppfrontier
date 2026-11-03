@@ -1,0 +1,32 @@
+// Source: expressions.md "inspect": nested inspect expressions, value, type,
+// predicate and wildcard alternatives, a generic subject, std::any and
+// std::optional subjects, and a deduced function return type.
+#include <variant>
+#include <optional>
+#include <any>
+is_even: (x: int) -> bool = x % 2 == 0;
+show: (v) = {
+    std::cout << inspect v -> std::string {
+        is int = "int ";
+        is std::string = "string ";
+        is _ = "other ";
+    };
+}
+nested: (v: std::variant<int, std::string>, n: int) -> std::string = inspect v -> std::string {
+    is int = inspect n -> std::string { is 0 = "int0"; is (is_even) = "int-even"; is _ = "int-odd"; };
+    is std::string = "s" + (v as std::string);
+    is _ = "?";
+};
+pick: (x: int) -> _ = inspect x -> i64 { is 1 = 10; is _ = 20; };
+gen: <T> (x: T) -> int = inspect x -> int { is int = 1; is double = 2; is (:(y) -> bool = y > 5;) = 3; is _ = 4; };
+main: () = {
+    show(1); show(std::string("a")); show(2.0); std::cout << "\n";
+    std::cout << nested(0, 0) << nested(1, 2) << nested(1, 3) << nested(std::string("x"), 0) << "\n";
+    std::cout << pick(1) << pick(2) << gen(1) << gen(2.0) << gen(10L) << gen('a') << "\n";
+    a: std::any = 3;
+    std::cout << inspect a -> std::string { is int = "anyint"; is _ = "anyother"; } << "\n";
+    o: std::optional<int> = ();
+    std::cout << inspect o -> std::string { is void = "empty"; is int = "full"; is _ = "?"; } << "\n";
+    o = 3;
+    std::cout << inspect o -> std::string { is void = "empty"; is 3 = "three"; is _ = "?"; } << "\n";
+}

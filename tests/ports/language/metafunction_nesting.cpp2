@@ -1,0 +1,46 @@
+// Source: metafunctions.md "enum", "flag_enum", "union", "struct" and
+// "copyable": metafunction types nested in a class template, using one
+// another and the template parameter, and @enum and @flag_enum values as
+// inspect patterns in a function and a function template.
+outer: @copyable <T: type> type = {
+    kind: @enum type = { small; big; }
+    val: @union type = { i: T; s: std::string; }
+    rec: @struct type = { k: kind = kind::small; v: val = (); }
+    data: rec = ();
+    operator=: (out this) = { }
+    set: (inout this, x: T) = { data.v.set_i(x); data.k = kind::big; }
+    show: (this) -> std::string = {
+        if data.v.is_i() { return data.k.to_string() + std::to_string(data.v.i()); }
+        return data.k.to_string() + "-";
+    }
+}
+
+dir: @enum type = { north; east; south; west; }
+fl: @flag_enum type = { a; b; c; }
+
+name: (d: dir) -> std::string = inspect d -> std::string {
+    is (dir::north) = "N";
+    is (dir::south) = "S";
+    is _ = "?";
+};
+fname: (f: fl) -> std::string = inspect f -> std::string {
+    is (fl::a) = "A";
+    is (fl::a | fl::b) = "AB";
+    is _ = "?";
+};
+tname: <T: type> (x: T) -> std::string = inspect x -> std::string {
+    is (dir::east) = "E";
+    is dir = "dir";
+    is int = "int";
+    is _ = "?";
+};
+
+main: () = {
+    o: outer<int> = ();
+    std::cout << o.show() << "\n";
+    o.set(4);
+    p := o;
+    std::cout << p.show() << " " << o.show() << "\n";
+    std::cout << name(dir::north) << name(dir::west) << fname(fl::a | fl::b) << fname(fl::c) << "\n";
+    std::cout << tname(dir::east) << tname(dir::west) << tname(3) << tname(1.5) << "\n";
+}

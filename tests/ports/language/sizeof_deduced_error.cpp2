@@ -1,0 +1,7 @@
+// Source: a type-id of only `const`, `*` and `_` leaves the type to be
+// deduced, as in `x: const = 1;`, which both translators accept. A `sizeof`, `alignof` or `typeid` type-id has no
+// initializer to deduce from, so `sizeof(const)` is an error.
+// expect-error: 'sizeof' needs a type, but this one is deduced
+main: () = {
+    std::cout << sizeof(const) << "\n";
+}

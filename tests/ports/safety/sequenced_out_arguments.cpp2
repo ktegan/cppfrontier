@@ -1,0 +1,29 @@
+// Source: guaranteed initialization (objects.md) with C++17 sequencing: an
+// `out` argument initializes a read that is evaluated after it, a later
+// operand of `<<` or `&&`, a later list element, an assignment's left
+// operand, or an `inspect` alternative after its subject. Locals that one expression initializes are checked in that
+// order, so `second = make(out first)` initializes `first` first. Upstream
+// follows the text: it rejects `v[i] = make(out i)` and the assignment with
+// `first` declared first.
+make: (out x: int) -> int = { x = 1; return 2; }
+name: (out s: std::string) -> std::string = { s = "out"; return "list"; }
+main: () = {
+    b: int;
+    std::cout << make(out b) << b << "\n";
+    e: std::string;
+    v: std::vector<std::string> = (name(out e), e);
+    std::cout << v[0] << " " << v[1] << "\n";
+    i: int;
+    w: std::vector<int> = (0, 0, 0);
+    w[i] = make(out i);
+    std::cout << w[0] << w[1] << w[2] << "\n";
+    c: int;
+    if make(out c) == 2 && c == 1 { std::cout << "sequenced\n"; }
+    first: int;
+    second: int;
+    second = make(out first);
+    std::cout << first << second << "\n";
+    d: int;
+    x := inspect make(out d) -> int { is 2 = d + 10; is _ = 0; };
+    std::cout << x << "\n";
+}

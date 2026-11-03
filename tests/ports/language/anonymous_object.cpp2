@@ -1,0 +1,16 @@
+// Source: objects.md, an object named `_` with a declared type.
+// `_: T = f();` keeps an unnamed object alive to the end of its scope, as a
+// named guard does; `_ = f();` destroys the result at once.
+guard: type = {
+    name: std::string;
+    operator=: (out this, n: std::string) = { name = n; std::cout << "lock " << name << "\n"; }
+    operator=: (move this) = { std::cout << "unlock " << name << "\n"; }
+}
+
+make: (n: std::string) -> guard = n;
+
+main: () = {
+    _: guard = make("held");
+    _ = make("discarded");
+    std::cout << "work\n";
+}

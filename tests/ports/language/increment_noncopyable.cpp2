@@ -1,0 +1,23 @@
+// Source: functions.md "next i++" (`++` is always postfix in Cpp2) and
+// types.md "operator=": a type with only a default constructor has no copy, so
+// its `operator++` gets no Cpp1 postfix form, which would return a copy; a
+// copyable type still gets one for Cpp1 callers. As upstream.
+counter: type = {
+    public n: int = 0;
+    operator=: (out this) = { }
+    operator++: (inout this) -> forward counter = { n++; return this; }
+}
+
+ticks: @value type = {
+    public n: int = 0;
+    operator++: (inout this) -> forward ticks = { n += 2; return this; }
+}
+
+main: () = {
+    c: counter = ();
+    c++;
+    c++;
+    t: ticks = ();
+    t++;
+    std::cout << c.n << " " << t.n << "\n";
+}

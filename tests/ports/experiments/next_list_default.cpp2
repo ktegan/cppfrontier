@@ -1,0 +1,12 @@
+// Without experiment next-list, a loop's next clause is one expression, so a
+// list is rejected; upstream emits it as a Cpp1 comma operator.
+// expect-error: a 'next' clause is one expression, not a list '(a, b)' - '-experiment=next-list' runs each item in order
+#include <iostream>
+
+main: () = {
+    i := 0;
+    j := 10;
+    while i < 3 next (i++, j -= 2) {
+        std::cout << i << " " << j << "\n";
+    }
+}

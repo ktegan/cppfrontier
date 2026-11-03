@@ -1,0 +1,40 @@
+// Source: objects.md "guaranteed initialization" with the common Cpp1
+// pattern of a fallback value set in a handler.
+// Exercises: a local initialized by the last statement of a `try` block,
+// directly or as an `out` argument, initialized again in a handler, since a
+// throw from that statement undoes its initialization (an `out` argument's
+// object is destroyed when its expression throws).
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+parse: (s: std::string) -> int = {
+    if s.empty() { throw(std::invalid_argument("empty")); }
+    return std::stoi(s);
+}
+
+parse_into: (out x: int, s: std::string) = {
+    x = s.ssize();
+    _ = parse(s);
+}
+
+main: () = {
+    for ("12", "", "x7") do (text) {
+        n: int;
+        try {
+            n = parse(text);
+        } catch (e: std::exception) {
+            std::cout << "fallback after " << e.what() << ": ";
+            n = -1;
+        }
+        std::cout << n << "\n";
+    }
+    m: int;
+    try {
+        std::cout << "parsing\n";
+        parse_into(out m, "q");
+    } catch (_) {
+        m = 0;
+    }
+    std::cout << m << "\n";
+}

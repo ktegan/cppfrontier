@@ -1,0 +1,14 @@
+// A Cpp1 braced list is not a Cpp2 expression: an argument is written
+// `(...)` or as a typed value `:T = (...)`.
+// expect-error: a braced list '{...}' is not Cpp2
+size: (v: std::vector<int>) -> int = v.ssize();
+
+f: () -> int = size({1, 2});
+
+g: () -> int = {
+    r: int;
+    r = size({});
+    return r;
+}
+
+h: () -> int = size(:std::vector<int> = (1, 2)) + size(());

@@ -1,0 +1,38 @@
+// Experiment delegate (docs/EXPERIMENTS.md): a forwarding function calls the
+// member through `this`, so a parameter named like the member does not hide
+// it; its types mean what they mean in the member's type, as a nested alias,
+// a type of the member type's namespace, or the struct of named return values;
+// and a function template forwards its template arguments.
+// flags: -experiment=delegate
+#include <iostream>
+
+lib: namespace = {
+    Point: @value type = { public x: i32 = 0; }
+    Counter: type = {
+        Kind: type == i32;
+        n: Kind = 0;
+        operator=: (out this) = { }
+        add: (inout this, counter: Kind) = { n += counter; }
+        get: (this) -> Kind = n;
+        at: (this, p: Point) -> Point = { r := p; r.x += n; return r; }
+        pair: (this) -> (a: i32, b: i32) = { a = n; b = n * 2; }
+        conv: <T> (this) -> T = T(n);
+        show: <T> (this, x: T) -> T = x;
+    }
+}
+
+app: namespace = {
+    Service: @delegate<counter> type = {
+        counter: lib::Counter = ();
+        operator=: (out this) = { }
+    }
+}
+
+main: () -> int = {
+    s: app::Service = ();
+    s.add(3);
+    p := s.pair();
+    std::cout << s.get() << " " << s.at(lib::Point()).x << " " << p.a << p.b << " "
+              << s.conv<i64>() << " " << s.show(2.5) << "\n";
+    return 0;
+}

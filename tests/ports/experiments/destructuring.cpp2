@@ -1,0 +1,34 @@
+// Experiment destructuring (docs/EXPERIMENTS.md): `(a, b) := value;` binds
+// the elements of a pair, tuple or array to deduced locals; `_` discards one.
+// A name's last use, including `return`, is forwarded: it moves an element
+// held by value and leaves one bound by reference, as through std::tie.
+// flags: -experiment=destructuring
+#include <array>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <tuple>
+
+divide: (n: int, d: int) -> std::pair<int, int> = (n / d, n % d);
+
+consume: (copy s: std::string) = { std::cout << "consumed " << s << "\n"; }
+
+first: () -> std::unique_ptr<int> = {
+    (p, _) := std::pair(std::make_unique<int>(42), 0);
+    return p;
+}
+
+main: () = {
+    (q, r) := divide(17, 5);
+    std::cout << q << " " << r << "\n";
+    (name, _, age) := std::tuple(std::string("Ada"), 'x', 36);
+    std::cout << name << " " << age << "\n";
+    (x, y, z) := std::array{1, 2, 3};
+    std::cout << x + y + z << "\n";
+    s: std::string = "a string long enough to live on the heap";
+    t: std::string = "t";
+    (a, b) := std::tie(s, t);
+    consume(a);
+    std::cout << "s is [" << s << "] " << b << t << "\n";
+    std::cout << first()* << "\n";
+}

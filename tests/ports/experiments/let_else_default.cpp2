@@ -1,0 +1,11 @@
+// Without experiment let-else, 'else' after a declaration's initializer is
+// not part of the expression.
+// expect-error: 'else' is not part of an expression - is an operand missing?
+#include <optional>
+
+f: (o: std::optional<int>) -> int = {
+    n := o as int else { return 0; }
+    return n;
+}
+
+main: () = { }

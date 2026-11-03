@@ -1,0 +1,14 @@
+// Source: a Cpp1 `switch` over an int with no `default:` label, ported to
+// an `inspect` expression. expressions.md: an inspect expression requires a
+// catchall `is _` alternative.
+// expect-error: an inspect expression must have an `is _` match-anything wildcard alternative
+describe: (v: int) -> std::string = {
+    return inspect v -> std::string {
+        is 1 = "one";
+        is 2 = "two";
+    };
+}
+
+main: () = {
+    std::cout << describe(1) << "\n";
+}

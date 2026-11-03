@@ -1,0 +1,5 @@
+postconditions held
+defer sees [a string long enough to live on the heap]
+a string long enough to live on the heap
+defer sees [another string long enough to live on the heap]
+another string long enough to live on the heap

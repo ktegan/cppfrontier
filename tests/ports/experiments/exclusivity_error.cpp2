@@ -1,0 +1,15 @@
+// Experiment exclusivity (docs/EXPERIMENTS.md): an object passed `inout` to a
+// function of this translation unit cannot also be used by another argument
+// of the same call; distinct objects are fine.
+// flags: -experiment=exclusivity
+// expect-error: 'total' is passed inout and also used by another argument of the same call
+
+add_to: (inout total: int, amount: int) = { total += amount; }
+
+main: () -> int = {
+    total := 1;
+    other := 2;
+    add_to(total, other);
+    add_to(total, total * 2);
+    return total;
+}

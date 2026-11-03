@@ -1,0 +1,12 @@
+// Source: expressions.md "Capture in string interpolation": `(expr)$` pastes
+// the value of `expr`, so `()$` and `( )$` have nothing to paste, in an
+// ordinary or raw string and in a function expression. Upstream emits
+// `cpp2::to_string()`, which does not compile.
+// expect-error: (9,18): error: a string interpolation '(...)$' needs an expression
+// expect-error: (10,31): error: a string interpolation '(...)$' needs an expression
+// expect-error: (11,18): error: a string interpolation '(...)$' needs an expression
+main: () = {
+    std::cout << "cost ()$ \n";
+    l := :() -> std::string = "( )$";
+    std::cout << $R"(x ()$)" << l();
+}

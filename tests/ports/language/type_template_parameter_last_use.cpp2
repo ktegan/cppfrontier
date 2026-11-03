@@ -1,0 +1,22 @@
+// Source: last-use moves (functions.md "definite last use"): a `copy`
+// parameter whose type is a template type parameter, of the enclosing type or
+// of the function itself, may be a Cpp1 reference, as in
+// `W<cpp1_ref<std::string>>` or an explicit `take<cpp1_ref<std::string>>(s)`,
+// so its last use forwards it, which moves only an object, and the caller's
+// object keeps its value.
+W: <T> type = {
+    take: (this, copy t: T) -> std::string = { s: std::string = t; return s; }
+    both: <U> (this, copy u: U, copy t: T) -> std::string = {
+        s: std::string = u;
+        r: std::string = t;
+        return s + r;
+    }
+}
+take: <T> (copy t: T) -> std::string = { s: std::string = t; return s; }
+main: () = {
+    s: std::string = "kept";
+    w: W<cpp1_ref<std::string>> = ();
+    std::cout << w.take(s) << " " << s << "\n";
+    std::cout << w.both(std::string("u-"), s) << " " << s << "\n";
+    std::cout << take<cpp1_ref<std::string>>(s) << " " << s << "\n";
+}

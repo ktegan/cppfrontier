@@ -1,0 +1,36 @@
+// Source: LANGUAGE.md "Returns" (design: experiments/forward-return-bare-
+// names.md; forward_return_bare_names.cpp2 has the accepted
+// forms): a `-> forward T` return, always a reference, may not refer into a
+// local or a by-value parameter through member accesses, subscripts or calls.
+// expect-error: (16,5): error: a 'forward' return cannot return a reference into a local variable or an 'in', 'copy', or 'move' parameter
+// expect-error: (21,5): error: a 'forward' return cannot return a reference into a local variable or an 'in', 'copy', or 'move' parameter
+// expect-error: (26,5): error: a 'forward' return cannot return a reference into a local variable or an 'in', 'copy', or 'move' parameter
+// expect-error: (31,5): error: a 'forward' return cannot return a reference into a local variable or an 'in', 'copy', or 'move' parameter
+// expect-error: (34,75): error: a 'forward' return cannot return a reference into a local variable or an 'in', 'copy', or 'move' parameter
+#include <string>
+#include <utility>
+#include <vector>
+
+whole: () -> forward std::string = {
+    s: std::string = "s";
+    return s;
+}
+
+member: () -> forward std::string = {
+    p: std::pair<int, std::string> = (1, "one");
+    return p.second;
+}
+
+element: () -> forward int = {
+    v: std::vector<int> = (1, 2, 3);
+    return v[0];
+}
+
+called: () -> forward char = {
+    s: std::string = "s";
+    return s.front();
+}
+
+parameter: (copy p: std::pair<int, std::string>) -> forward std::string = p.second;
+
+main: () = { }

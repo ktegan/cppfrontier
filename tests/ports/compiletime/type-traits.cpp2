@@ -1,0 +1,79 @@
+// Source: cppreference "if statement" (constexpr if examples: get_value,
+// type-dependent branches), "std::conditional", and the classic hand-written
+// type traits from template-metaprogramming tutorials (remove_all_pointers,
+// is_one_of, type-to-name). Cpp2 has no class template specialization, so the
+// traits are written as templated types with `==` members computed by
+// function aliases and `if constexpr`, plus std::type_identity tag types.
+#include <iostream>
+#include <ranges>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+// A templated type whose members are compile-time values and a type alias.
+traits: <T> type = {
+    is_ptr: bool == std::is_pointer_v<T>;
+    size: std::size_t == sizeof(T);
+    pointee: type == std::remove_pointer_t<T>;
+}
+
+// is_one_of<T, Ts...> as a variable template written as an object alias.
+is_one_of: <T, Ts...> bool == (std::is_same_v<T, Ts> || ...);
+
+// Strip every level of pointer by recursion through std::type_identity.
+strip_pointers: <T> (_: std::type_identity<T>) -> _ == {
+    if constexpr std::is_pointer_v<T> {
+        return strip_pointers(std::type_identity<std::remove_pointer_t<T>>());
+    }
+    else {
+        return std::type_identity<T>();
+    }
+}
+remove_all_pointers: <T> type == decltype(strip_pointers(std::type_identity<T>()))::type;
+
+// A type-dependent function body selected with if constexpr.
+describe: <T> (x: T) -> std::string = {
+    if constexpr std::is_pointer_v<T> {
+        return "pointer to " + describe(x*);
+    }
+    else if constexpr std::is_integral_v<T> {
+        return "integer " + std::to_string(x);
+    }
+    else if constexpr std::is_floating_point_v<T> {
+        return "floating";
+    }
+    else {
+        return "other of size " + std::to_string(sizeof(T));
+    }
+}
+
+// std::conditional_t chosen from a non-type template parameter.
+counter_type: <N: int> type == std::conditional_t<(N < 256), u8, u32>;
+
+// A trait-like function alias usable in requires clauses.
+is_container: <T> () -> bool == std::ranges::range<T>;
+
+total: <C> (c: C) -> int requires is_container<C>() = {
+    sum := 0;
+    for c do (e) { sum += e; }
+    return sum;
+}
+
+main: () = {
+    static_assert(traits<*int>::is_ptr && !traits<int>::is_ptr);
+    static_assert(std::is_same_v<traits<*double>::pointee, double>);
+    static_assert(is_one_of<int, char, long, int>);
+    static_assert(!is_one_of<float, char, long, int>);
+    static_assert(std::is_same_v<remove_all_pointers<***int>, int>);
+    static_assert(std::is_same_v<counter_type<10>, u8> && std::is_same_v<counter_type<1000>, u32>);
+    static_assert(is_container<std::vector<int>>() && !is_container<int>());
+
+    std::cout << traits<longdouble>::size << " " << traits<char>::size << "\n";
+    i := 42;
+    p := i&;
+    pp := p&;
+    std::cout << describe(pp) << "\n";
+    std::cout << describe(2.5) << "\n";
+    std::cout << describe(std::string("abc")).substr(0, 13) << "\n";
+    std::cout << total(:std::vector<int> = (1, 2, 3)) << "\n";
+}

@@ -1,0 +1,11 @@
+// Source: upstream's lexer: `not` followed by whitespace is the operator `!`,
+// and otherwise an ordinary name, as `not(b)`. Upstream's documentation does
+// not give this rule.
+not: (b: bool) -> bool = b;
+main: () = {
+    b := true;
+    c := not b;
+    d := not
+        c;
+    std::cout << c << d << not(b) << "\n";
+}

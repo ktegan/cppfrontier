@@ -1,0 +1,47 @@
+// Source: metafunctions.md @regex and perlre: where Perl's result depends on
+// its optimizer, @regex keeps one rule and differs from perl 5.40 on purpose.
+// A group in a loop keeps the match of the last repetition that set it, as in
+// PCRE and Python; perl leaves group 1 of `(?:(a)|b)+` unset on "ab" but
+// keeps it for `(?:x(a)|b)+` on "xab". perlre does not state these other
+// results of perl, so @regex follows the rules it does state: in a branch reset
+// group a backreference to the second branch's group 2 matches (perl: no);
+// a lookahead that always succeeds does not change what follows (perl: no for
+// `(?=(c+)?)[A-C]` on "A"); a negative lookahead succeeds only when its
+// pattern fails, so its groups stay unset (perl keeps the group of the failed
+// attempt), as in PCRE and Python.
+#include <iostream>
+
+show: (name: std::string, r) = {
+    std::cout << name << ":";
+    if !r.matched {
+        std::cout << " no\n";
+        return;
+    }
+    i := 0;
+    while i < cpp2::unchecked_narrow<int>(r.group_number()) next i++ {
+        if r.ctx.get_group(i).matched {
+            std::cout << " " << r.group_start(i) << "-" << r.group_end(i);
+        }
+        else {
+            std::cout << " unset";
+        }
+    }
+    std::cout << "\n";
+}
+
+m: @regex type = {
+    regex_loop := R"((?:(a)|b)+)";             // perl: 0-2 unset
+    regex_loop_prefix := R"((?:x(a)|b)+)";     // perl: 0-3 1-2
+    regex_branch_reset := R"((?|(a)|(b)(c))\2)";  // perl: no
+    regex_optional_lookahead := R"((?=(c+)?)[A-C])"; // perl: no
+    regex_negative_lookahead := R"((?!(a)b)a)";    // perl: 0-1 0-1
+}
+
+main: () = {
+    v: m = ();
+    show("loop", v.regex_loop.search("ab"));
+    show("loop prefix", v.regex_loop_prefix.search("xab"));
+    show("branch reset", v.regex_branch_reset.search("bcc"));
+    show("optional lookahead", v.regex_optional_lookahead.search("A"));
+    show("negative lookahead", v.regex_negative_lookahead.search("ac"));
+}

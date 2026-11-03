@@ -1,0 +1,11 @@
+// Source: objects.md "Objects": a branch that calls a function, even one
+// whose name begins with `throw`, still reaches the code after its `if`, so
+// it must initialize the deferred local like the other branch.
+// expect-error: local variable x must be initialized on both branches or neither branch
+pick: (c: bool) -> int = {
+    x: int;
+    if c { throwaway(); } else { x = 2; }
+    return x;
+}
+throwaway: () = { }
+main: () = { }

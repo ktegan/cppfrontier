@@ -1,0 +1,20 @@
+// `override` and `final` functions are virtual, so `@struct` and `@value`
+// reject them (metafunctions.md).
+// expect-error: a struct may not have a virtual function
+// expect-error: a value type may not have a protected or virtual function
+B: type = {
+    operator=: (out this) = { }
+    operator=: (out this, that) = { }
+    f: (virtual this) = { }
+    g: (virtual this) = { }
+}
+
+S: @struct type = {
+    this: B = ();
+    f: (override this) = { }
+}
+
+V: @value type = {
+    this: B = ();
+    g: (final this) = { }
+}

@@ -1,0 +1,47 @@
+// Experiment lazy (docs/EXPERIMENTS.md) with metafunctions: a type-scope lazy
+// object is a static member, so the members that @value, @struct, @hashable,
+// @enum and @union generate, and a memberwise `that` constructor, leave it
+// out, and it does not become an enumerator or alternative or need a helper
+// base before a base.
+// flags: -experiment=lazy
+#include <iostream>
+#include <string>
+
+base: @value type = { public b: int = 1; }
+
+plain: type = {
+    public shared: lazy std::string = "shared";
+    this: base = ();
+    public n: int = 0;
+    operator=: (out this) = { }
+    operator=: (out this, that) = { }
+    operator=: (out this, x: int) = { n = x; }
+}
+
+point: @struct type = { x: int; y: int; public origin: lazy int = 0; }
+
+value: @hashable @value type = {
+    public v: int = 1;
+    public limit: lazy int = 10;
+    operator=: (out this, x: int) = { v = x; }
+}
+
+color: @enum type = { red; green; public count: lazy int = 2; }
+
+either: @union type = { i: int; s: std::string; public kinds: lazy int = 2; }
+
+main: () = {
+    p: plain = (4);
+    q := p;
+    std::cout << q.n << q.b << " " << plain::shared << "\n";
+    pt: point = (3, 4);
+    std::cout << pt.x << pt.y << point::origin << "\n";
+    a: value = (2);
+    b := a;
+    std::cout << (a == b) << (a.hash() == b.hash()) << value::limit << "\n";
+    std::cout << color::green.to_string() << color::count << "\n";
+    e: either = ();
+    e.set_s("text");
+    f := e;
+    std::cout << f.s() << either::kinds << "\n";
+}

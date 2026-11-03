@@ -1,0 +1,34 @@
+// Source: Cpp1 `Base::name()` called from an override, and `obj.Base::f()`,
+// ported. A qualified UFCS call `x.N::f(args)` whose `N::f` is a function
+// with a `this` parameter of a type declared in this translation unit (a
+// base, a nested type, or an alias of one) is the member call
+// `x.N::f(args)`, a non-virtual call of that class's function; otherwise,
+// for a namespace or a static function, it is the free call `N::f(x, args)`. Upstream emits
+// `CPP2_UFCS(N::f)(x, args)`, the same member call for a type, which GCC
+// rejects for a namespace.
+Base: @polymorphic_base type = {
+    name: (virtual this) -> std::string = "Base";
+}
+Derived: type = {
+    this: Base = ();
+    name: (override this) -> std::string = "Derived";
+    both: (this) -> std::string = this.Base::name() + "/" + name();
+}
+N: namespace = {
+    Inner: type = {
+        public v: int = 3;
+        get: (this) -> int = v;
+        as_type: <T> (this) -> T = v;
+        twice: (n: int) -> int = n * 2;
+    }
+    get: (x: Inner) -> int = x.v * 10;
+}
+A: type == N::Inner;
+main: () = {
+    d: Derived = ();
+    p: *Derived = d&;
+    std::cout << d.both() << " " << d.Base::name() << " " << p*.Base::name() << "\n";
+    i: N::Inner = ();
+    std::cout << i.N::Inner::get() << " " << i.N::get() << " " << i.A::get() << " "
+              << i.N::Inner::as_type<long>() << " " << 4.N::Inner::twice() << "\n";
+}

@@ -1,0 +1,9 @@
+// A template parameter declared twice, and a pack before the last parameter
+// of a class or alias template, are diagnosed rather than left to the Cpp1
+// compiler. A function template may declare a pack first, as in `call`.
+// expect-error: template parameter 'T' is declared twice
+// expect-error: template parameter pack 'Ts' must be the last template parameter
+pair: <T, T> type = { }
+tuple_with: <Ts..., U> type = { }
+call: <Ts..., U> (u: U, ts...: Ts) -> int = (sizeof...(Ts)) as int;
+main: () = { _ = call(1); }

@@ -1,0 +1,21 @@
+// Source: a Cpp1 `std::vector<item*>`. A template argument ending in a
+// postfix `*` is rejected (postfix_star_template_arguments_error.cpp2), so a
+// pointer type is written `*item` and a dereference `(size_pointer*)`.
+// Upstream reads `item*` as a dereference.
+#include <array>
+#include <iostream>
+#include <vector>
+
+item: @struct type = { value: int = 0; }
+
+size: int == 3;
+size_pointer: *const int == size&;
+
+main: () = {
+    a: item = (1);
+    b: item = (2);
+    pointers: std::vector<*item> = (a&, b&);
+    values: std::array<int, (size_pointer*)> = ();
+    for pointers do (p) std::cout << p*.value << " ";
+    std::cout << values.size() << "\n";
+}

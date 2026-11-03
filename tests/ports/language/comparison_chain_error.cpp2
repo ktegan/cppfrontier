@@ -1,0 +1,20 @@
+// Source: types.md "Chained comparisons" (P0893): `a >= b < c` and
+// `a != b != c` are nonsense chains rejected at compile time, while
+// `a <= b < c` and `a<b == c<d` are fine.
+// expect-error: != comparisons cannot appear in a comparison chain
+// expect-error: a comparison chain must be all < and <=, all > and >=, or all ==
+in_range: (lo: int, x: int, hi: int) -> bool = lo <= x < hi;
+same_side: (a: int, b: int, c: int, d: int) -> bool = a < b == c < d;
+all_different: (a: int, b: int, c: int) -> bool = a != b != c;
+
+main: () = {
+    a := 3;
+    b := 1;
+    c := 2;
+    if a >= b < c {
+        std::cout << "nonsense\n";
+    }
+    _ = in_range(1, 2, 3);
+    _ = same_side(1, 2, 3, 4);
+    _ = all_different(1, 2, 1);
+}

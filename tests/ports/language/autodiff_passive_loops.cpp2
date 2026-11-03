@@ -1,0 +1,33 @@
+// Source: metafunctions.md @autodiff and notes/autodiff_status.md ("For
+// loop" and "Passive variables" are supported in forward mode): a for loop
+// over a passive range, a std::vector<int> or an integer range, repeats the
+// differentiated body without a derivative of the range, and a passive
+// variable assigned to an active one has a zero derivative. Upstream cppfront
+// names a missing `idx_d` or `n_d`, and cannot parse a range expression there.
+#include <iostream>
+#include <vector>
+
+ad: @autodiff type = {
+    power: (x: double, n: int) -> (r: double) = {
+        r = 1.0;
+        for (0 ..< n) do (i) { r = r * x; }
+    }
+    weighted: (x: double, weights: std::vector<int>) -> (r: double) = {
+        r = 0.0;
+        for weights do (w) { r = r + w * x * x; }
+    }
+    last: (x: double, values: std::vector<int>) -> (r: double) = {
+        r = x;
+        for values do (v) { r = v; }
+    }
+}
+
+main: () = {
+    p := ad::power_d(2.0, 1.0, 3);
+    std::cout << p.r << " " << p.r_d << "\n";
+    w: std::vector<int> = (1, 2);
+    q := ad::weighted_d(3.0, 1.0, w);
+    std::cout << q.r << " " << q.r_d << "\n";
+    l := ad::last_d(3.0, 1.0, w);
+    std::cout << l.r << " " << l.r_d << "\n";
+}

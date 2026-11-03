@@ -1,0 +1,197 @@
+// Source: the classic C++ textbook "bank account" exercise (Stroustrup PPP
+// and many course notes): an account base class with savings and checking
+// accounts, overdraft rules enforced with exceptions, monthly processing via
+// virtual functions, and a transaction log replayed at the end.
+// Exercises: a @polymorphic_base with protected data and a protected
+// helper, derived types initializing their base in `operator=`, `override`
+// and `final`, calling the base version of an overridden function, owning
+// std::unique_ptr<account> in a vector, a custom exception type derived from
+// std::runtime_error, a transaction log of std::variant alternatives
+// processed with `inspect` and `is`/`as`, std::map lookups with
+// `find`/`contains`, and statement-local `(copy ...)` loop counters.
+#include <iostream>
+#include <map>
+#include <memory>
+#include <source_location>
+#include <stdexcept>
+#include <string>
+#include <variant>
+#include <vector>
+
+insufficient_funds: type = {
+    this: std::runtime_error = ();
+    shortfall: i64 = 0;
+    operator=: (out this, id: std::string, short_by: i64) = {
+        std::runtime_error = ("account (id)$ is short by (short_by)$");
+        shortfall = short_by;
+    }
+    missing: (this) -> i64 = shortfall;
+}
+
+account: @polymorphic_base type = {
+    protected id: std::string = ();
+    protected cents: i64 = 0;
+
+    operator=: (out this, id_: std::string, opening: i64) = {
+        id = id_;
+        cents = opening;
+    }
+
+    name: (this) -> std::string = id;
+    balance: (this) -> i64 = cents;
+    deposit: (inout this, amount: i64)
+        pre(amount > 0, "deposits must be positive")
+    = {
+        cents += amount;
+    }
+    withdraw: (virtual inout this, amount: i64) = {
+        take(amount, 0);
+    }
+    month_end: (virtual inout this) = { }
+    kind: (virtual this) -> std::string = "account";
+
+    protected take: (inout this, amount: i64, overdraft: i64) = {
+        if amount > cents + overdraft {
+            throw(insufficient_funds(id, amount - cents - overdraft));
+        }
+        cents -= amount;
+    }
+}
+
+savings: @polymorphic_base type = {
+    this: account = ();
+    rate_percent: i64 = 0;
+    withdrawals: int = 0;
+
+    operator=: (out this, id_: std::string, opening: i64, rate: i64) = {
+        account = (id_, opening);
+        rate_percent = rate;
+    }
+    withdraw: (override inout this, amount: i64) = {
+        if withdrawals == 2 {
+            throw(std::logic_error("savings (name())$ allows two withdrawals a month"));
+        }
+        account::withdraw(amount);
+        withdrawals++;
+    }
+    month_end: (override inout this) = {
+        cents += cents * rate_percent / 100;
+        withdrawals = 0;
+    }
+    kind: (override this) -> std::string = "savings";
+}
+
+checking: type = {
+    this: account = ();
+    limit: i64 = 0;
+    fee: i64 = 0;
+
+    operator=: (out this, id_: std::string, opening: i64, overdraft_limit: i64, monthly_fee: i64) = {
+        account = (id_, opening);
+        limit = overdraft_limit;
+        fee = monthly_fee;
+    }
+    // An expression body would deduce the return type (`-> forward _`),
+    // which a virtual function cannot have.
+    withdraw: (final inout this, amount: i64) = { take(amount, limit); }
+    month_end: (override inout this) = { cents -= fee; }
+    kind: (override this) -> std::string = "checking (account::kind())$";
+}
+
+deposit_op: @struct type = { to: std::string; amount: i64; }
+withdraw_op: @struct type = { from: std::string; amount: i64; }
+transfer_op: @struct type = { from: std::string; to: std::string; amount: i64; }
+transaction: type == std::variant<deposit_op, withdraw_op, transfer_op>;
+
+describe: (t: transaction) -> std::string = {
+    return inspect t -> std::string {
+        is deposit_op = "deposit ((t as deposit_op).amount)$ to ((t as deposit_op).to)$";
+        is withdraw_op = "withdraw ((t as withdraw_op).amount)$ from ((t as withdraw_op).from)$";
+        is _ = "transfer ((t as transfer_op).amount)$";
+    };
+}
+
+bank: type = {
+    accounts: std::map<std::string, std::unique_ptr<account>> = ();
+
+    open: (inout this, forward a) = {
+        id := a*.name();
+        accounts[id] = a;
+    }
+    at: (inout this, id: std::string) -> forward account = {
+        // Both translators reject `return found*.second*;` for an iterator
+        // `found`: a return whose postfix chain starts with a local is taken
+        // to return that local.
+        if !accounts.contains(id) {
+            throw(std::out_of_range("no account (id)$"));
+        }
+        return accounts[id]*;
+    }
+    apply: (inout this, t: transaction) = {
+        if t is deposit_op {
+            d := t as deposit_op;
+            at(d.to).deposit(d.amount);
+        }
+        else if t is withdraw_op {
+            w := t as withdraw_op;
+            at(w.from).withdraw(w.amount);
+        }
+        else {
+            x := t as transfer_op;
+            at(x.from).withdraw(x.amount);
+            at(x.to).deposit(x.amount);
+        }
+    }
+    month_end: (inout this) = {
+        for accounts do (inout entry) { entry.second*.month_end(); }
+    }
+    report: (this) = {
+        for accounts do (entry) {
+            a: * const account = entry.second.get();
+            std::cout << "  (a*.name())$ [(a*.kind())$]: (a*.balance())$\n";
+        }
+    }
+}
+
+throw_violation: (msg: * const char, copy _: std::source_location) = {
+    throw(std::invalid_argument(msg));
+}
+
+main: () = {
+    cpp2::default.set_handler(throw_violation&);
+    b: bank = ();
+    b.open(std::make_unique<savings>("sam", 10000, 2));
+    b.open(std::make_unique<checking>("cat", 500, 1000, 100));
+    b.open(std::make_unique<savings>("sue", 0, 5));
+
+    log: std::vector<transaction> = (
+        :deposit_op = ("sue", 2000),
+        :withdraw_op = ("cat", 1200),
+        :withdraw_op = ("cat", 800),
+        :transfer_op = ("sam", "sue", 3000),
+        :withdraw_op = ("sam", 100),
+        :withdraw_op = ("sam", 100),
+        :deposit_op = ("bob", 50),
+        :deposit_op = ("sue", 0)
+    );
+
+    (copy n := 1)
+    for log next n++ do (t) {
+        std::cout << "(n)$. (describe(t))$: ";
+        try {
+            b.apply(t);
+            std::cout << "ok\n";
+        }
+        catch (e: insufficient_funds) {
+            std::cout << "refused, (e.missing())$ short (\"(e.what())$\")\n";
+        }
+        catch (e: std::exception) {
+            std::cout << "failed: (e.what())$\n";
+        }
+    }
+    std::cout << "before month end:\n";
+    b.report();
+    b.month_end();
+    std::cout << "after month end:\n";
+    b.report();
+}

@@ -1,0 +1,42 @@
+// Source: metafunctions.md @autodiff ("adds for each function and member
+// function a differentiated version") and notes/autodiff_status.md (member
+// functions and member access in forward mode): an @autodiff type with data
+// members in a namespace gets one `pt_d` type of member derivatives and one
+// derivative of each member function. The derivatives are checked against
+// central finite differences. Upstream cppfront differentiates the member
+// function but reads `a_d` from `pt` itself, which does not compile.
+#include <cmath>
+#include <iostream>
+
+geo: namespace = {
+pt: @autodiff type = {
+    public a: double = 2.0;
+    public b: double = 3.0;
+    scaled: (this, x: double) -> (r: double) = {
+        r = a * x * x + b * sin(x);
+    }
+    shifted: (this, x: double) -> (r: double) = {
+        r = scaled(x + a) * b;
+    }
+}
+}
+
+main: () = {
+    p: geo::pt = ();
+    dx: geo::pt_d = ();
+    da: geo::pt_d = ();
+    da.a_d = 1.0;
+    h := 1e-6;
+    for (0.5, 1.5) do (x) {
+        q: geo::pt = ();
+        q.a = p.a + h;
+        s: geo::pt = ();
+        s.a = p.a - h;
+        fd_x := (p.scaled(x + h) - p.scaled(x - h)) / (2.0 * h);
+        fd_a := (q.shifted(x) - s.shifted(x)) / (2.0 * h);
+        ad_x := p.scaled_d(dx, x, 1.0).r_d;
+        ad_a := p.shifted_d(da, x, 0.0).r_d;
+        std::cout << "x = " << x << ": d/dx " << (std::abs(ad_x - fd_x) < 1e-6)
+                  << ", d/da " << (std::abs(ad_a - fd_a) < 1e-5) << "\n";
+    }
+}

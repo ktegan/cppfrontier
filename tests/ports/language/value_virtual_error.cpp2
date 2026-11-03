@@ -1,0 +1,15 @@
+// Source: a Cpp1 value class given a virtual function "for extensibility",
+// and a polymorphic base given a copy constructor, ported to metafunctions.
+// metafunctions.md: @value has no protected or virtual functions;
+// @polymorphic_base has no copy or move.
+// expect-error: a value type may not have a protected or virtual function
+// expect-error: polymorphic base types may not copy or move
+point: @value type = {
+    x: int = 0;
+    norm: (virtual this) -> int = x;
+}
+base: @polymorphic_base type = {
+    operator=: (out this, that) = { }
+}
+
+main: () = { }

@@ -1,0 +1,14 @@
+// Source: objects.md "Guaranteed initialization": a local declared without a
+// value must be initialized before the end of its scope, also when that scope
+// is the body of an if, else, while or for.
+// expect-error: local variable in_then is never initialized
+// expect-error: local variable in_else is never initialized
+// expect-error: local variable in_while is never initialized
+// expect-error: local variable in_for is never initialized
+main: () = {
+    c := true;
+    if c { in_then: int; } else { in_else: int; }
+    while c { in_while: int; c = false; }
+    for (1, 2) do (i) { in_for: int; }
+    if c { fine: int; fine = 1; std::cout << fine; }
+}

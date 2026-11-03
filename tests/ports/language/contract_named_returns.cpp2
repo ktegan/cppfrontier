@@ -1,0 +1,27 @@
+// Source: functions.md "Return parameter lists" and contracts.md: a
+// precondition may read a named return value that has a default, and a
+// postcondition's `$` capture takes its value on entry, after the named
+// return values are declared, as upstream.
+divide: (a: int, b: int) -> (q: int = 0, r: int = 0)
+    pre(b != 0, "divisor (b)$")
+    pre(q == 0 && r == 0)
+    post(q$ == 0)
+    post(q * b + r == a)
+= {
+    if a < b { r = a; return; }
+    q = a / b;
+    r = a % b;
+}
+
+count: (n: int) -> (total: int = 100)
+    pre(total == 100)
+    post(total == total$ + n)
+= {
+    total += n;
+}
+
+main: () = {
+    d := divide(17, 5);
+    e := divide(3, 5);
+    std::cout << d.q << " " << d.r << " " << e.q << " " << e.r << " " << count(7) << "\n";
+}

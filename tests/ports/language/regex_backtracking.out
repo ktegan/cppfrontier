@@ -1,0 +1,18 @@
+lazy alt: 0-3
+lazy group: 0-3 0-2
+lazy empty: no
+lazy empty b: 0-3 1-2
+lazy count: 0-3
+possessive min: 0-4
+possessive min none: no
+greedy alt: 0-3 0-2
+stale: 0-7 0-6
+unset ref: no
+unset ref set: 0-3 0-1
+own ref: 0-3 1-3
+empty end: 0-0 0-0
+empty ref: 0-0 0-0
+restore: 0-2 1-2
+branch reset b: 0-2 0-1 1-2
+branch reset c: 0-2 unset 1-2
+posix: 2-6

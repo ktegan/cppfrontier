@@ -1,0 +1,56 @@
+// Source: cppreference "Fold expressions (since C++17)" examples (printer,
+// push_back_vec, all/any, comma fold, sizeof...). Exercises all four fold forms
+// (unary/binary, left/right), pack expansion in call arguments, in a braced
+// initializer, in template arguments, and `sizeof...`, with packs declared on
+// function and template parameter names as declarations.md requires.
+#include <iostream>
+#include <string>
+#include <tuple>
+#include <vector>
+
+// Binary left fold over <<.
+printer: <Args...> (args...: Args) = { (std::cout << ... << args) << "\n"; }
+
+// Unary right fold over &&, unary left fold over ||.
+all_of: <Args...> (args...: Args) -> bool = (args && ...);
+any_of: <Args...> (args...: Args) -> bool = (... || args);
+
+// Binary right fold: subtraction is not associative, so the order shows.
+sub_right: (args...) = (args - ... - 0);
+sub_left: (args...) = (0 - ... - args);
+
+// Comma fold calling a function for each argument.
+push_back_all: <T, Args...> (inout v: std::vector<T>, args...: Args) = {
+    (v.push_back(args), ...);
+}
+
+// sizeof... on a template pack and a function pack.
+count: <Ts...> (_...: Ts) -> int = sizeof...(Ts);
+
+// Pack expansion inside template arguments and a function call.
+make_tuple_of: <Ts...> (args...: Ts) -> std::tuple<Ts...> = std::tuple<Ts...>(args...);
+
+// A pack of non-type template parameters summed with a fold.
+sum_values: <Ns...: int> () -> int = (0 + ... + Ns);
+
+// Pack expansion of an expression pattern.
+sum_squares: (args...) = (0 + ... + (args * args));
+
+main: () = {
+    printer(1, " ", 2.5, " ", "three");
+    std::cout << all_of(true, 1, 'x') << any_of(false, 0) << all_of() << any_of() << "\n";
+    std::cout << sub_right(10, 4, 3) << " " << sub_left(10, 4, 3) << "\n";
+
+    v: std::vector<int> = ();
+    push_back_all(v, 6, 7, 8);
+    for v do (e) { std::cout << e << ","; }
+    std::cout << "\n";
+
+    std::cout << count() << count(1) << count(1, 'a', "b") << "\n";
+
+    t := make_tuple_of(1, std::string("two"), 3.0);
+    std::cout << std::get<1>(t) << " " << std::tuple_size_v<decltype(t)> << "\n";
+
+    std::cout << sum_values<1, 2, 3, 4>() << " " << sum_values<>() << "\n";
+    std::cout << sum_squares(1, 2, 3) << "\n";
+}

@@ -1,0 +1,27 @@
+// Members the metafunctions accept: a `@singleton` constant, `@enum` values
+// written in hexadecimal or with digit separators, and an array of `@value`
+// objects list-initialized through the generated default constructor.
+G: @singleton type = {
+    k: int == 5;
+    v: int = 42;
+    get: (this) -> int = v + k;
+}
+
+E: @enum type = {
+    a := 1'000;
+    b;
+    c := 0x10;
+    d;
+}
+
+V: @value type = {
+    public x: int = 7;
+    operator=: (out this, v: int) = { x = v; }
+}
+
+main: () = {
+    std::cout << G::instance().get() << "\n";
+    std::cout << E::b.get_raw_value() << " " << E::d.get_raw_value() << "\n";
+    a: std::array<V, 2> = ();
+    std::cout << a[0].x + a[1].x << "\n";
+}

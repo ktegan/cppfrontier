@@ -1,0 +1,46 @@
+// Source: LANGUAGE.md "Moves and last use" with experiment
+// move-only-to-known-callees: a definite last use that is a call argument is
+// moved only into a function of this program known to take it by `copy`,
+// `move` or `forward`, so `std::exchange(s, ...)` needs no `_ = s;` after it.
+// move_only_to_known_callees_default.cpp2 is the program without it.
+// flags: -experiment=move-only-to-known-callees
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
+
+noisy: type = {
+    operator=: (out this) = { }
+    operator=: (out this, that) = { std::cout << "copy "; }
+    operator=: (out this, move that) = { std::cout << "move "; }
+    consume: (move this) = { std::cout << "consumed"; }
+}
+
+take: (copy n: noisy) = { _ = n; }
+
+// `take` is known to take `n` by value, so its last use moves.
+known: (copy n: noisy) = take(n);
+
+// `consume` takes `move this`, so the receiver's last use moves.
+finish: (copy n: noisy) = n.consume();
+
+// `push_back` is not known, so its last use moves only by default.
+unknown: (copy n: noisy, inout v: std::vector<noisy>) = v.push_back(n);
+
+// `std::exchange` takes `s` by lvalue reference, so it compiles only with the experiment.
+replaced: (copy s: std::string) = { std::cout << std::exchange(s, "b"); }
+
+main: () = {
+    n: noisy = ();
+    v: std::vector<noisy> = ();
+    v.reserve(1);
+    known(n);
+    std::cout << "\n";
+    unknown(n, v);
+    std::cout << v.size() << "\n";
+    replaced("a");
+    std::cout << "\n";
+    m: noisy = ();
+    finish(m);
+    std::cout << "\n";
+}

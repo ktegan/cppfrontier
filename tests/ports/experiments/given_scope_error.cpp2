@@ -1,0 +1,13 @@
+// Experiment given: a given is declared in the trait's namespace, where the
+// trait's concept and UFCS find its functions.
+// flags: -experiment=given
+// expect-error: a given of 'lib::Show' must be declared in the namespace that declares the trait
+lib: namespace = {
+    Show: @trait type = { show: (this) -> std::string; }
+}
+app: namespace = {
+    Show_int: @given<lib::Show, int> type = {
+        show: (x: int) -> std::string = "int";
+    }
+}
+main: () = { }

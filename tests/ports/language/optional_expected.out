@@ -1,0 +1,10 @@
+12: some 12, doubled: 24, as int 12
+x7: none, doubled: too big or missing
+40: some 40, doubled: too big or missing, as int 40
+"8": half is 4, recovered 8
+"7": error not_a_number, recovered 7
+"": error empty, recovered 0
+"abc": error not_a_number, recovered 0
+"99999999999": error out_of_range, recovered 0
+n=21
+bad: not_a_number

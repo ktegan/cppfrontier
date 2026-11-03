@@ -1,0 +1,10 @@
+// Source: types.md virtual functions. A virtual function's return type must
+// be declared, since Cpp1 does not allow a virtual function to deduce it;
+// `-> int = 1;` gives an expression-bodied virtual function.
+// expect-error: a virtual function cannot deduce its return type
+shape: type = {
+    sides: (virtual this) -> int = 0;
+    area: (virtual this) = 0.0;
+    operator=: (out this) = { }
+}
+main: () = { s: shape = (); _ = s.sides(); }

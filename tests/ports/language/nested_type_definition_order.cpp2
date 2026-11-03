@@ -1,0 +1,33 @@
+// Source: hello-world.md "Order-independent by default": a data member may
+// hold a nested type defined after it, through nesting, a template, `const`
+// and a member alias the nested type names. A type held through a pointer or
+// a template argument, which need not be complete, stays in place, so two
+// nested types may refer to each other that way. Upstream emits nested types
+// in source order, and the Cpp1 compiler reports the incomplete type.
+outer: type = {
+    a: inner = ();
+    inner: type = {
+        public x: deep = ();
+        deep: type = { public k: count = 3; }
+    }
+    count: type == int;
+    f: (this) -> count = a.x.k;
+}
+templated: <T: type> type = {
+    w: const wrap = ();
+    wrap: type = { public t: val = 5; }
+    val: type == T;
+    get: (this) -> T = w.t;
+}
+linked: type = {
+    public n: node = ();
+    node: type = { public next: std::unique_ptr<leaf> = (); public v: int = 7; }
+    leaf: type = { public up: node = (); }
+}
+main: () = {
+    o: outer = ();
+    t: templated<double> = ();
+    l: linked = ();
+    l.n.next = std::make_unique<linked::leaf>();
+    std::cout << o.f() << " " << t.get() << " " << l.n.v << l.n.next*.up.v << "\n";
+}

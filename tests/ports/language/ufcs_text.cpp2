@@ -1,0 +1,108 @@
+// Source: expressions.md UFCS examples (`v.ssize()` falling back to
+// std::ssize, `stdout.fprintf(...)`, `x..f()` members only), common.md
+// "UFCS instead of user-defined literals" (`123.u8()`, a `nm` constexpr
+// function called as `123.nm()`), and a classic word-frequency tutorial
+// (split a text into words, count them in a std::map, print the top few).
+// Exercises: UFCS calls of free functions as members in chains, UFCS
+// falling back to a nonmember when no member exists, `..` calls that must find
+// a member, a free function and a member with the same name, `==`
+// functions called as literal-like suffixes, std::string/std::string_view
+// member functions, std::map and std::ranges::sort with a lambda, and C stdio
+// through UFCS.
+#include <algorithm>
+#include <cctype>
+#include <cstdio>
+#include <iostream>
+#include <map>
+#include <ranges>
+#include <string>
+#include <string_view>
+#include <vector>
+
+nanometers: @value type = {
+    public count: i64 = 0;
+    operator=: (out this, c: i64) = { count = c; }
+}
+nm: (value: i64) -> nanometers == value;
+um: (value: i64) -> nanometers == value * 1000;
+
+operator+: (a: nanometers, b: nanometers) -> nanometers = a.count + b.count;
+
+lowercase: (copy s: std::string) -> std::string = {
+    for s do (inout c) {
+        c = unchecked_narrow<char>(std::tolower(unchecked_cast<u8>(c)));
+    }
+    return s;
+}
+
+trim_punct: (s: std::string_view) -> std::string_view = {
+    first := s.find_first_not_of(".,;:!?\"'");
+    if first == std::string_view::npos { return std::string_view(); }
+    last := s.find_last_not_of(".,;:!?\"'");
+    return s.substr(first, last - first + 1);
+}
+
+split: (text: std::string_view) -> std::vector<std::string> = {
+    words: std::vector<std::string> = ();
+    pos: std::size_t = 0;
+    while pos < text.size() {
+        end := text.find(' ', pos);
+        if end == std::string_view::npos { end = text.size(); }
+        word := text.substr(pos, end - pos).trim_punct();
+        if !word.empty() {
+            words.push_back(std::string(word).lowercase());
+        }
+        pos = end + 1;
+    }
+    return words;
+}
+
+// A member `size` and a free `size` taking the type: `x.size()` and
+// `x..size()` call the member, `size(x)` the free function.
+bag: type = {
+    items: std::vector<std::string> = ();
+    add: (inout this, s: std::string) -> forward bag = {
+        items.push_back(s);
+        return this;
+    }
+    size: (this) -> int = unchecked_narrow<int>(items.size());
+}
+size: (b: bag) -> int = -b..size();
+
+main: () = {
+    // A Cpp2 type has no constexpr constructor, so `nm` and `um` cannot be
+    // used in a static_assert even though they are `==` functions.
+    assert(1.um().count == 1000);
+    d := 250.nm() + 2.um();
+    std::cout << "distance (d.count)$ nm\n";
+    // common.md: `123.u8()` needs `using` the name, else `123.cpp2::u8()`.
+    // Upstream lowers it to CPP2_UFCS(cpp2::u8), which GCC rejects.
+    using cpp2::u8;
+    std::cout << "small (123.u8() as int)$\n";
+
+    text: std::string_view = "The cat and the hat. The cat sat; a hat? THE END!";
+    words := text.split();
+    std::cout << "(words.ssize())$ words, (words.size())$ via member\n";
+
+    counts: std::map<std::string, int> = ();
+    for words do (w) { counts[w]++; }
+
+    pairs: std::vector<std::pair<std::string, int>> = (counts.begin(), counts.end());
+    std::ranges::sort(pairs, :(a, b) -> bool = {
+        if a.second != b.second { return a.second > b.second; }
+        return a.first < b.first;
+    });
+    for pairs | std::views::take(3) do (p) {
+        std::cout << p.first << ": " << p.second << "\n";
+    }
+
+    shout := std::string(text.substr(0, 7)).lowercase().append("!");
+    std::cout << shout << "\n";
+
+    b: bag = ();
+    b.add("x").add("y").add("z");
+    std::cout << "member (b.size())$, members-only (b..size())$, free (size(b))$\n";
+
+    _ = stdout.fprintf("%s has %d letters\n", "hello", 5);
+    _ = stdout.fflush();
+}

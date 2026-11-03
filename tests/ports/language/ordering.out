@@ -1,0 +1,11 @@
+a < b: true, b == c: true, a != c: true
+default date 1970-1-1
+chain d < a < b: true, a <= b <= c: true
+chain b == c == a: false
+1970-1-1 2023-12-31 2024-2-29 2024-3-1 
+Alice bob carol 
+equivalent: true, x < y: false
+1 vs 2: less
+2 vs 1: greater
+nan vs 1: unordered, nan < 1: false, nan > 1: false
+t1 < t2: true, t1 >= t2: false

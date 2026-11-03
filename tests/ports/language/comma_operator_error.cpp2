@@ -1,0 +1,15 @@
+// Cpp2 has no comma operator: a list `(a, b)` is a value only where it is a
+// list (common.md "Lists and commas"), not as an operand, argument,
+// condition or index.
+// expect-error: Cpp2 has no comma operator, and a list '(a, b)' is not one value here
+h: (x: int) -> int = x;
+
+main: () = {
+    a := 1;
+    b := 2;
+    v: std::vector<int> = (5, 6, 7);
+    std::cout << h((a, b)) << "\n";
+    c := (a, b) + 1;
+    if (a, false) { std::cout << c << "\n"; }
+    std::cout << v[(0, 1)] << "\n";
+}

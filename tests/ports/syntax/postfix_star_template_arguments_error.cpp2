@@ -1,0 +1,23 @@
+// Source: a Cpp1 `std::vector<item*>` and `std::array<int, size_pointer*>`.
+// `item*` is a dereference in Cpp2, so a template argument ending in a
+// postfix `*` is rejected; postfix_star_template_arguments.cpp2 is the
+// corrected program.
+// expect-error: 'item*' is a dereference in Cpp2; write '*item' for a pointer type, or '(item*)' for a dereference
+// expect-error: 'size_pointer*' is a dereference in Cpp2; write '*size_pointer' for a pointer type, or '(size_pointer*)' for a dereference
+#include <array>
+#include <iostream>
+#include <vector>
+
+item: @struct type = { value: int = 0; }
+
+size: int == 3;
+size_pointer: *const int == size&;
+
+main: () = {
+    a: item = (1);
+    b: item = (2);
+    pointers: std::vector<item*> = (a&, b&);
+    values: std::array<int, size_pointer*> = ();
+    for pointers do (p) std::cout << p*.value << " ";
+    std::cout << values.size() << "\n";
+}

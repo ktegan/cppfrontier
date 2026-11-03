@@ -1,0 +1,18 @@
+// Source: declarations.md: the operand of `decltype` is a Cpp2 expression, so
+// its postfix operators and `as` lower as in any other expression; `x.f()`
+// there is a member call.
+S: @struct type = { v: int = 1; get: (this) -> int = v; }
+deref: (p: *int) -> decltype(p*) = p*;
+main: () = {
+    a := 3;
+    p := a&;
+    s: S = ();
+    y: decltype(a&) = a&;
+    z: decltype(p*) = a;
+    w: decltype(s.get()) = 5;
+    u: std::vector<std::remove_reference_t<decltype(p*)>> = (1, 2);
+    v: decltype(a~) = 1;
+    q: decltype(a as long) = 8;
+    deref(p) = 9;
+    std::cout << y* << z << w << u.size() << v << q << a << "\n";
+}

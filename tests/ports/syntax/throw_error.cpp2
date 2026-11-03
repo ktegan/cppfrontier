@@ -1,0 +1,14 @@
+// Source: Cpp1 `throw;` inside a handler, mistakenly ported as `throw()`,
+// and a Cpp1 `throw a, b;` comma expression. functions.md: `throw(x)` needs
+// parentheses around the one thrown value; `throw;` rethrows.
+// expect-error: 'throw()' has no value: use 'throw(value)', or 'throw;' to rethrow the exception being handled
+// expect-error: 'throw' takes one value: use 'throw(value)'
+main: () = {
+    try {
+        throw(1);
+    }
+    catch (_) {
+        throw();
+    }
+    throw(1, 2);
+}

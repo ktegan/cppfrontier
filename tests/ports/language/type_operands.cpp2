@@ -1,0 +1,33 @@
+// Source: expressions.md; types in expressions that are not operands of an
+// operator: template arguments, sizeof, alignof, new<T>, typed values,
+// functional casts, function types, requires clauses and is/as targets.
+// None is type-as-operand.
+#include <limits>
+#include <memory>
+#include <functional>
+#include <variant>
+#include <type_traits>
+S: @struct type = { v: i32 = 0; get: <T> (this) -> T = T(v); }
+g: <T> (x: T) -> bool = std::is_same_v<T, int> && std::is_integral_v<T>;
+h: <T> (x: T) -> bool requires std::is_integral_v<T> || std::is_same_v<T, bool> = true;
+main: () = {
+    a := std::numeric_limits<i32>::max() - 1;
+    b := sizeof(int) + alignof(double) * 2;
+    c := new<int>(3)* + 1;
+    d := std::make_unique<int>(4)* * 2;
+    e: int = :int = 3 + 1;
+    f := int(a) + i32(2) - u8(3);
+    fn: std::function<(x: i32) -> i32> = :(x: i32) -> i32 = x + 1;
+    s: S = (5);
+    k := s.get<i64>() + 1;
+    m := std::get<int>(std::variant<int, double>(3)) + 1;
+    n := a is i32 && b is u64;
+    o := !(a is int);
+    p := (a as i64) + 1;
+    q := a as i64 + 1;
+    r := sizeof(i32) == 4;
+    t := std::is_same_v<decltype(a), int> == true;
+    u := :std::vector<int> = (1, 2, 3);
+    w := std::numeric_limits<double>::epsilon() * 2.0;
+    std::cout << a << " " << b << " " << c << " " << d << " " << e << " " << f << " " << fn(1) << " " << k << " " << m << " " << n << o << p << q << r << t << u.size() << (w > 0) << g(1) << h(2) << "\n";
+}

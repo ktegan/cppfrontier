@@ -1,0 +1,91 @@
+// Source: cppreference "std::optional" (and_then/transform/or_else, C++23
+// monadic operations) and "std::expected" (C++23) examples: parsing a number
+// that may fail, and chaining the steps that follow.
+// Exercises: std::optional and std::expected return types, `is`/`as` on them
+// (`o is T` is has_value, `o as T` is value), the monadic member functions
+// called with function expressions through UFCS chains, std::unexpected,
+// value_or, and an `inspect` over an optional. Upstream rejects `= inspect ...;`
+// as a function body ("only inspect expressions are currently supported").
+#include <charconv>
+#include <expected>
+#include <iostream>
+#include <optional>
+#include <string>
+#include <string_view>
+
+parse_error: @enum type = {
+    empty;
+    not_a_number;
+    out_of_range;
+}
+
+to_int: (s: std::string_view) -> std::optional<int> = {
+    value := 0;
+    result := std::from_chars(s.data(), s.data() + s.size(), value);
+    if result.ec != std::errc() || result.ptr != s.data() + s.size() {
+        return std::nullopt;
+    }
+    return value;
+}
+
+parse: (s: std::string_view) -> std::expected<int, parse_error> = {
+    if s.empty() {
+        return std::unexpected(parse_error::empty);
+    }
+    value := 0;
+    result := std::from_chars(s.data(), s.data() + s.size(), value);
+    if result.ec == std::errc::result_out_of_range {
+        return std::unexpected(parse_error::out_of_range);
+    }
+    if result.ec != std::errc() || result.ptr != s.data() + s.size() {
+        return std::unexpected(parse_error::not_a_number);
+    }
+    return value;
+}
+
+checked_half: (n: int) -> std::expected<int, parse_error> = {
+    if n % 2 != 0 { return std::unexpected(parse_error::not_a_number); }
+    return n / 2;
+}
+
+show_optional: (o: std::optional<int>) -> std::string = inspect o -> std::string {
+    is int = "some (o as int)$";
+    is _   = "none";
+};
+
+main: () = {
+    for ("12", "x7", "40") do (s) {
+        o := to_int(s);
+        std::cout << "(s)$: (show_optional(o))$";
+        doubled := o.transform(:(n: int) -> int = n * 2);
+        text := doubled
+            .and_then(:(n: int) -> std::optional<std::string> = {
+                if n > 50 { return std::nullopt; }
+                return std::to_string(n);
+            })
+            .value_or("too big or missing");
+        std::cout << ", doubled: (text)$";
+        if o is int {
+            std::cout << ", as int (o as int)$";
+        }
+        std::cout << "\n";
+    }
+
+    for ("8", "7", "", "abc", "99999999999") do (s) {
+        e := parse(s).and_then(checked_half);
+        std::cout << "\"(s)$\": ";
+        if e.has_value() {
+            std::cout << "half is (e.value())$";
+        }
+        else {
+            std::cout << "error (e.error().to_string())$";
+        }
+        recovered := parse(s).or_else(:(_: parse_error) -> std::expected<int, parse_error> = 0);
+        std::cout << ", recovered (recovered.value())$\n";
+    }
+
+    labelled := parse("21").transform(:(n: int) -> std::string = "n=(n)$");
+    std::cout << labelled.value() << "\n";
+    err := parse("x").transform_error(:(e: parse_error) -> std::string = "bad: " + e.to_string());
+    std::cout << err.error() << "\n";
+}

@@ -1,0 +1,75 @@
+// Source: cppreference "std::format", "std::print" (C++23) and "Standard format
+// specification" examples (width, fill, alignment, precision, sign, hex), plus
+// a custom std::formatter, and expressions.md string interpolation with
+// `(expr: spec)$`.
+// Exercises: interpolation with format specs, interpolation in a returned
+// value, std::format and std::println with compile-time format strings,
+// std::format_to with a back_inserter, std::vformat, a std::formatter
+// specialization written in Cpp2 for a Cpp2 type, and string_view/UFCS calls.
+#include <format>
+#include <iostream>
+#include <iterator>
+#include <print>
+#include <string>
+#include <string_view>
+#include <vector>
+
+money: @value type = {
+    cents: i64 = 0;
+    operator=: (out this, c: i64) = { cents = c; }
+    dollars: (this) -> i64 = cents / 100;
+    rest: (this) -> i64 = cents % 100;
+}
+
+// Formats a money value as $D.CC; the format spec is ignored. A formatter
+// must be semiregular, so it is a @struct (rule of zero) rather than a plain
+// type, which has no copy operations.
+money_formatter: @struct type = {
+    parse: (inout this, inout ctx: std::format_parse_context) -> std::format_parse_context::iterator == ctx.begin();
+    format: (this, m: money, inout ctx: std::format_context) -> std::format_context::iterator = {
+        return std::format_to(ctx.out(), "${}.{:02}", m.dollars(), m.rest());
+    }
+}
+
+template<> struct std::formatter<money> : money_formatter {};
+
+row: (name: std::string_view, qty: int, price: double) -> std::string =
+    "|(name:<8)$|(qty:>4)$|(price:>8.2f)$|";
+
+main: () = {
+    x := 255;
+    std::cout << "dec (x)$ hex (x:x)$ HEX (x:#X)$ oct (x:o)$ bin (x:b)$\n";
+    std::cout << "padded [(x:*^9)$] signed [(x:+)$] [(-x: )$]\n";
+    pi := 3.14159265;
+    std::cout << "pi (pi:.3f)$ sci (pi:.2e)$ wide [(pi:10.4f)$]\n";
+
+    std::cout << row("apple", 3, 0.5) << "\n";
+    std::cout << row("melon", 12, 2.25) << "\n";
+
+    s := std::format("{} + {} = {}", 2, 3, 2 + 3);
+    std::cout << s << " (size (s.size())$)\n";
+    std::println("println: {:>6}|{:<6}|{:^6}|", "r", "l", "c");
+    std::print("print: {0} {1} {0}\n", "a", "b");
+
+    buffer: std::string = ();
+    for (1, 2, 3) do (i) {
+        _ = std::format_to(std::back_inserter(buffer), "[{}]", i * i);
+    }
+    std::cout << "buffer (buffer)$\n";
+
+    fmt: std::string = "{}-{}";
+    // make_format_args takes lvalue references, so these must not be definite
+    // last uses (which would move).
+    std::cout << std::vformat(fmt, std::make_format_args(x, pi)) << "\n";
+    std::cout << "x is still (x)$, pi (pi)$, fmt (fmt)$\n";
+
+    m: money = 12345;
+    std::cout << std::format("cost {}", m) << "\n";
+    std::println("again {}", m);
+
+    words: std::vector<std::string_view> = ("alpha", "beta", "gamma");
+    for words do (w) {
+        std::cout << "(w)$ starts with a: (w.starts_with('a'))$, upper first: (unchecked_narrow<char>(std::toupper(w.front())))$\n";
+    }
+}
+

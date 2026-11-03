@@ -1,0 +1,23 @@
+// A capture outside any function body calls a member through UFCS.
+#include <functional>
+#include <iostream>
+#include <vector>
+
+values: std::vector<int> = (1, 2, 3);
+size_later: std::function<int()> = :() -> int = values.ssize()$ + values.front();
+
+scaled: (f: std::function<int()> = :() -> int = values.ssize()$ * 10;) -> int = f();
+
+holder: <T> type = {
+    public get: std::function<T()> = :() -> T = values.ssize()$ + 1;
+}
+
+reader: type = {
+    first: (this, f: std::function<int()> = :() -> int = values.front()$;) -> int = f();
+}
+
+main: () = {
+    h: holder<int> = ();
+    r: reader = ();
+    std::cout << size_later() << " " << scaled() << " " << h.get() << " " << r.first() << "\n";
+}

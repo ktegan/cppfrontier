@@ -1,0 +1,9 @@
+// Source: common.md "String interpolation" and LANGUAGE.md "Expressions": `)$`
+// always ends an interpolation; adjacent literals `")" "$"` write it literally.
+#include <iostream>
+
+main: () = {
+    n := 2;
+    std::cout << "smile :)" "$" << "\n";
+    std::cout << "(n)$ :)" "$" << "\n";
+}

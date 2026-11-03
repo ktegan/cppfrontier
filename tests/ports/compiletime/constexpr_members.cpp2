@@ -1,0 +1,16 @@
+// Source: types.md "operator=" and functions.md `==` (a compile-time
+// function): a namespace-scope constant of a type with a `==` constructor and
+// `==` member functions is evaluated right after the type, so they are
+// defined in the type rather than after all type definitions.
+P: type = {
+    public v: int = 0;
+    operator=: (out this, x: int) == { v = x; }
+    twice: (this) -> int == v * 2;
+    scaled: (this, n: int) -> int == { return v * n; }
+}
+k: P == 4;
+static_assert(k.v == 4);
+static_assert(k.twice() == 8);
+static_assert(k.scaled(3) == 12);
+
+main: () = { std::cout << k.twice() << " " << k.scaled(5) << "\n"; }

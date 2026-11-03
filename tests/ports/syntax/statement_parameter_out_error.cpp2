@@ -1,0 +1,8 @@
+// Source: declarations.md "From functions to local scopes, and back again":
+// a statement parameter is initialized by its initializer, so it cannot be
+// `out`, which would construct it (upstream: "parameters scoped to a
+// block/statement must be 'in' (the default), 'copy', or 'inout'").
+// expect-error: a statement parameter cannot be 'out'
+main: () = {
+    (out z: int = 0) { z = 1; }
+}

@@ -1,0 +1,19 @@
+// Source: expressions.md "is": `x is 0` is a value query. `true`, `false`
+// and `nullptr` are literals and `!x` begins with an operator, so after `is`
+// each is a value, as in an inspect alternative. Upstream reads the keywords
+// as type-ids and rejects `is !0` in an inspect. The value is one prefix
+// expression: `x is 0 + 1` is `(x is 0) + 1`.
+describe: (b: bool) -> std::string = inspect b -> std::string {
+    is true = "yes";
+    is false = "no";
+    is _ = "?";
+};
+main: () = {
+    x := 0;
+    p: *int = x&;
+    flag := false;
+    std::cout << describe(true) << " " << describe(false) << " " << (flag is false) << " "
+              << (p is nullptr) << " " << (x is !true) << " " << (x is not flag)
+              << " " << inspect x -> int { is !1 = 1; is _ = 2; } << " " << (x is 0 + 1) << " "
+              << (x is 1 || flag is false) << "\n";
+}

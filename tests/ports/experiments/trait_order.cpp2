@@ -1,0 +1,35 @@
+// Experiment trait: the trait's checks run after every definition, so a trait
+// function may return a type declared before or after the trait, an @impl
+// type may deduce a return type, and a checked function template may call a
+// function with a deduced return type declared after it.
+// flags: -experiment=trait
+#include <iostream>
+
+Point: @value type = {
+    public x: double = 0;
+}
+
+Shape: @trait type = {
+    origin: (this) -> Point;
+    bounds: (this) -> Rect;
+    area: (this) -> double;
+}
+
+Box: @impl<Shape> @value type = {
+    origin: (this) -> Point = Point();
+    bounds: (this) -> Rect = Rect();
+    area: (this) -> _ = 4.0;
+}
+
+Rect: @value type = {
+    public w: double = 2;
+}
+
+twice: <T: Shape> (x: T) -> double = doubled(x.area());
+doubled: (a: double) -> _ = a * 2;
+
+main: () = {
+    d: dyn_Shape = Box();
+    std::cout << d.origin().x << " " << d.bounds().w << " " << d.area() << " " << twice(Box())
+              << "\n";
+}

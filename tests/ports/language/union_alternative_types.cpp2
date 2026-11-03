@@ -1,0 +1,46 @@
+// Source: metafunctions.md "@union", with alternatives of every kind of
+// Cpp2 type: a pointer, a function pointer, a template parameter and a
+// template with several arguments. The storage size and alignment name
+// each type as a template argument, `sizeof(std::type_identity_t<*const char>)`,
+// since `sizeof(*const char)` is not an expression, and so does a typed
+// temporary `:*const char = (p)`. The accessor of a function pointer, as
+// any `-> forward` function returning one, returns a reference to one type
+// name. Upstream fails on each.
+twice: (x: int) -> int = 2 * x;
+
+pick: (inout f: *(x: int) -> int) -> forward *(x: int) -> int = f;
+
+box: @union <T: type> type = {
+    value: T;
+    text: *const char;
+    call: *(x: int) -> int;
+    table: std::map<int, T>;
+    describe: (this) -> std::string = {
+        if is_value() { return "value " + cpp2::to_string(value()); }
+        if is_text() { return "text " + std::string(text()); }
+        if is_call() { return "call " + std::to_string(call()(21)); }
+        if is_table() { return "table " + std::to_string(table().size()); }
+        return "empty";
+    }
+}
+
+main: () = {
+    b: box<double> = ();
+    std::cout << b.describe() << "\n";
+    b.set_text("hi");
+    std::cout << b.describe() << "\n";
+    b.set_call(twice&);
+    std::cout << b.describe() << "\n";
+    b.set_table();
+    b.table()[1] = 0.5;
+    copy := b;
+    std::cout << copy.describe() << "\n";
+    b.set_value(1.5);
+    std::cout << b.describe() << "\n";
+    s: std::string = "temporary";
+    p := :*const char = (s.c_str());
+    f := :*(x: int) -> int = (twice&);
+    std::cout << p << " " << f(4) << " " << pick(f)(5) << "\n";
+    pick(f) = nullptr;
+    std::cout << (f == nullptr) << "\n";
+}

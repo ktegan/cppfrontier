@@ -1,0 +1,13 @@
+// Source: common.md "unary operators": `*` and `&` after an operand are
+// postfix unless an operand follows, whatever the spacing, so `p* - -1`
+// dereferences and `a * (-1)` and `a * !b` multiply; `a *= -1` is a compound
+// assignment.
+main: () = {
+    a := 6;
+    n := 4;
+    p := n&;
+    b := false;
+    a *= -1;
+    std::cout << (p* - -1) << " " << (a * (-1)) << " " << (a * !b) << " " << (p* * a) << " "
+              << (a & (-a)) << "\n";
+}

@@ -1,0 +1,10 @@
+// Source: Cpp1 bitwise complement `~x` and `~(a | b)`. common.md: `~` is a
+// postfix operator in Cpp2, so these are `x~` and `(a | b)~`.
+main: () = {
+    x: u32 = 0xF0;
+    mask := x~ & 0xFFu;
+    std::cout << mask << "\n";
+    a := 12;
+    b := 3;
+    std::cout << (a | b)~ << " " << a~ + 1 << "\n";
+}

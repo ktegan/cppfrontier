@@ -1,0 +1,6 @@
+calls before use: 0
+hello, world
+12
+calls after use: 1
+42
+12h7

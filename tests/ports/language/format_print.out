@@ -1,0 +1,16 @@
+dec 255 hex ff HEX 0XFF oct 377 bin 11111111
+padded [***255***] signed [+255] [-255]
+pi 3.142 sci 3.14e+00 wide [    3.1416]
+|apple   |   3|    0.50|
+|melon   |  12|    2.25|
+2 + 3 = 5 (size 9)
+println:      r|l     |  c   |
+print: a b a
+buffer [1][4][9]
+255-3.14159265
+x is still 255, pi 3.141593, fmt {}-{}
+cost $123.45
+again $123.45
+alpha starts with a: true, upper first: A
+beta starts with a: false, upper first: B
+gamma starts with a: false, upper first: G

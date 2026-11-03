@@ -1,0 +1,17 @@
+// Source: Cpp1 member functions whose default arguments are lambdas, which
+// cannot capture, as in `int f(std::function<int(int)> g = [](int x) { ... })`.
+// functions.md: a function expression may be a default argument; one in a
+// member function's body still sees `this`.
+X: type = {
+    public n: int = 2;
+    f: (this, g: std::function<int(int)> = :(x: int) -> int = x + 1) -> int = {
+        add := :(x: int) -> int = x + n;
+        return add(g(n));
+    }
+    h: (this, k: int = :() -> int = 7;()) -> int = k + n;
+}
+
+main: () = {
+    x: X = ();
+    std::cout << x.f() << " " << x.h() << "\n";
+}

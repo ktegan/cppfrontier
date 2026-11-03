@@ -1,0 +1,19 @@
+// Source: safety.md "Integer mixed-sign <, <=, >, and >=": same-sign
+// comparisons, `as` conversions, `.ssize()`, suffixed literals and the
+// unchecked_cmp_* opt-outs keep compiling; the opt-outs compare
+// as Cpp1 does, converting -1 to a large unsigned value.
+#include <iostream>
+#include <vector>
+
+main: () = {
+    x: i32 = -1;
+    y: u32 = 43;
+    v: std::vector<int> = (1, 2, 3);
+    i: int = 2;
+    std::cout << (x < 42) << (y > 0u) << (y >= 43u) << "\n";
+    std::cout << (i < v.ssize()) << (x < y as i32) << (unchecked_narrow<u32>(x) > y) << "\n";
+    std::cout << (0 <= i < 3) << (v.size() > 2u >= 1u) << "\n";
+    std::cout << unchecked_cmp_less(x, y) << unchecked_cmp_less_eq(y, x)
+              << unchecked_cmp_greater(y, x) << unchecked_cmp_greater_eq(x, y) << "\n";
+    std::cout << (x == -1) << (i != 0) << "\n";
+}

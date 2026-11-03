@@ -1,0 +1,6 @@
+// Experiment type-operators: an intersection of types has no Cpp1 lowering.
+// flags: -experiment=type-operators
+// expect-error: '&' combines constraints, not types
+main: () = {
+    x: int & std::string = 1;
+}

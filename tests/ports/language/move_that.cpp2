@@ -1,0 +1,97 @@
+// Source: functions.md "Move/forward from definite last use", types.md `that`
+// (a `move that` function and memberwise defaults) and `(move x)`.
+// Exercises: in a `move that` function `that` is an ordinary `move` parameter:
+// only its definite last use moves, so a last use `that.m` moves `m` and an
+// earlier member read copies; `(move that.m)` moves explicitly; an assignment
+// to `that.m` is never moved from; a member the function does not mention is
+// moved by its generated default; a UFCS call `that.f()` as the last use gets
+// an rvalue receiver.
+// Differs from upstream cppfront, which moves `that` at every mention.
+#include <iostream>
+#include <string>
+#include <utility>
+
+part: type = {
+    public name: std::string;
+
+    operator=: (out this, n: std::string) = { name = n; }
+    operator=: (out this, that) = {
+        name = that.name;
+        std::cout << "  copy (name)$\n";
+    }
+    // The last use of `that` is the assignment, so `name` moves explicitly.
+    operator=: (out this, move that) = {
+        name = (move that.name);
+        std::cout << "  move (name)$\n";
+        that.name = "-";
+    }
+    operator=: (inout this, that) = {
+        name = that.name;
+        std::cout << "  copy-assign (name)$\n";
+    }
+    operator=: (inout this, move that) = {
+        name = (move that.name);
+        std::cout << "  move-assign (name)$\n";
+        that.name = "-";
+    }
+    who: (this) -> std::string = "lvalue";
+    who: (move this) -> std::string = "rvalue";
+}
+
+holder: type = {
+    public a: part = ("a");
+    public b: part = ("b");
+    public c: part = ("c");
+    public id: int = 0;
+
+    operator=: (out this, n: int) = { id = n; }
+    operator=: (out this, that) = { }
+    // `a` is copied, since `that` is used later; `b` is the last use and
+    // moves; `c` and `id` are not mentioned, so their generated defaults move.
+    operator=: (out this, move that) = {
+        a = that.a;
+        b = that.b;
+    }
+    // `a` is moved explicitly and `b` and `c` by their generated defaults; the
+    // last use of `that` is an assignment, which does not move.
+    operator=: (inout this, move that) = {
+        a = (move that.a);
+        id = that.id;
+        that.id = 0;
+    }
+    show: (this, label: std::string) = {
+        std::cout << label << ": " << a.name << " " << b.name << " " << c.name << " " << id << "\n";
+    }
+}
+
+// A use of `that` as a whole keeps every generated default a copy, so the
+// last use, here a UFCS call, sees the members unchanged.
+wrapper: type = {
+    public p: part = ("p");
+
+    operator=: (out this) = { }
+    operator=: (out this, that) = { }
+    operator=: (out this, move that) = {
+        std::cout << "  receiver (that.p.who())$\n";
+        std::cout << "  last use (that.report())$\n";
+    }
+    report: (move this) -> std::string = "rvalue";
+    report: (this) -> std::string = "lvalue";
+}
+
+main: () = {
+    x: holder = 7;
+    std::cout << "move construction\n";
+    y: holder = (move x);
+    x.show("source");
+    y.show("target");
+    std::cout << "move assignment\n";
+    z: holder = 1;
+    z = (move y);
+    y.show("source");
+    z.show("target");
+    std::cout << "whole use\n";
+    w: wrapper = ();
+    v: wrapper = (move w);
+    std::cout << "source: (w.p.name)$\n";
+}

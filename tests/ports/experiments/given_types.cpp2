@@ -1,0 +1,43 @@
+// Experiment given: a given's type argument is a Cpp2 type, such as a pointer
+// or a template with nested arguments; an @impl marker may precede the given;
+// and each trait function is found as a member or as a given function
+// independently.
+// flags: -experiment=given
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
+
+Show: @trait type = {
+    show: (this) -> std::string;
+    tag: (this) -> int;
+}
+
+Int_ptr_is_Show: @impl<Show, *int> type = { }
+
+Show_ptr: @given<Show, *int> type = {
+    show: (p: *int) -> std::string = "ptr " + std::to_string(p*);
+    tag: (p: *int) -> int = 1;
+}
+
+Show_map: @given<Show, std::map<int, std::vector<int>>> type = {
+    show: (m: std::map<int, std::vector<int>>) -> std::string = "map " + std::to_string(m.size());
+    tag: (m: std::map<int, std::vector<int>>) -> int = 2;
+}
+
+Point: @value type = {
+    show: (this) -> std::string = "point";
+}
+
+Show_point: @given<Show, Point> type = {
+    show: (p: Point) -> std::string = "unused";
+    tag: (p: Point) -> int = 3;
+}
+
+main: () = {
+    i := 5;
+    m: std::map<int, std::vector<int>> = ();
+    m[1] = ();
+    items: std::vector<dyn_Show> = (i&, m, Point());
+    for items do (s) { std::cout << s.show() << " " << s.tag() << "\n"; }
+}

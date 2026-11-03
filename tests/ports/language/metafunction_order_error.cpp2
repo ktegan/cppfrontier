@@ -1,0 +1,22 @@
+// Source: metafunctions.md. Metafunctions apply in the order written, so
+// `@struct` after `@value` sees the `operator=` functions `@value` added; a
+// struct has no virtual functions; `@noncopyable`, `@encapsulated` and
+// `@cpp1_rule_of_zero` check what their sections say; and the metafunctions
+// apply to types, not functions.
+// expect-error: a struct may not have a user-defined operator=
+// expect-error: a struct may not have a virtual function
+// expect-error: a @noncopyable type must not have operator= with this and that parameters
+// expect-error: an @encapsulated type must not have public data members
+// expect-error: the rule of zero requires no copy/move/destructor functions
+// expect-error: '@value' can only be applied to a type declaration
+both: @value @struct type = { x: int = 0; }
+shape: @struct type = { area: (virtual this) -> int = 0; }
+handle: @noncopyable type = {
+    operator=: (out this) = { }
+    operator=: (out this, that) = { }
+}
+account: @encapsulated type = { public balance: int = 0; }
+file: @cpp1_rule_of_zero type = { operator=: (move this) = { } }
+f: @value () = { }
+
+main: () = { }

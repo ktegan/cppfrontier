@@ -1,0 +1,39 @@
+// Experiment newtype (docs/EXPERIMENTS.md): @newtype and @quantity make
+// distinct value types over an underlying type, and @unit an alias of
+// cpp2::quantity whose `*` and `/` combine dimensions. `x as T` converts
+// between a type and its underlying type, not between two distinct types.
+// A metaclass argument may have template arguments of its own.
+// flags: -experiment=newtype
+#include <iostream>
+#include <vector>
+
+Count: @newtype<i32> type = { }
+Ids: @newtype<std::vector<i32>> type = { }
+
+Length: @quantity<double> type = { }
+Area: @quantity<double> type = { }
+operator*: (a: Length, b: Length) -> Area = Area((a as double) * (b as double));
+
+Metres: @unit<double, 1> type = { }
+Seconds: @unit<double, 0, 0, 1> type = { }
+Speed: @unit<double, 1, 0, -1> type = { }
+
+main: () -> int = {
+    c := 7 as Count;
+    d := c;
+    std::cout << (d as i32) << " " << (c == d) << " " << (c < (8 as Count)) << "\n";
+
+    l := 3.0 as Length;
+    m := l + l;
+    m -= 1.0 as Length;
+    a := l * m;
+    std::cout << (m as double) << " " << (a as double) << " " << (m / l) << " "
+              << ((2.0 * l) as double) << "\n";
+
+    ids := std::vector<i32>(3) as Ids;
+    std::cout << (ids as std::vector<i32>).ssize() << "\n";
+
+    s: Speed = (10.0 as Metres) / (4.0 as Seconds);
+    std::cout << (s as double) << "\n";
+    return 0;
+}

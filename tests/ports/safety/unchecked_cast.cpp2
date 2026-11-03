@@ -1,0 +1,21 @@
+// Source: expressions.md "Casts": every type-unsafe cast is spelled
+// `unchecked_cast<To>(from)`, including those Cpp1 writes as `reinterpret_cast`
+// (runtime/README.md).
+#include <cstdint>
+#include <iostream>
+#include <string>
+
+main: () = {
+    s: std::string = "hi";
+    pv: *void = s&;
+    ps := unchecked_cast<*std::string>(pv);
+    std::cout << ps*.size() << "\n";
+
+    i: std::uint32_t = 0x01020304u;
+    bytes := unchecked_cast<*u8>(i&);
+    back := unchecked_cast<*std::uint32_t>(bytes);
+    std::cout << (back* == i) << "\n";
+
+    address := unchecked_cast<std::uintptr_t>(pv);
+    std::cout << (unchecked_cast<*std::string>(address) == ps) << "\n";
+}

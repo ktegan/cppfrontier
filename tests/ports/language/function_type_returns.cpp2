@@ -1,0 +1,17 @@
+// Source: Cpp1 function pointers that return function pointers, as in
+// `int (*(*f)(int))(int)`.
+// functions.md: a function type `(parameters) -> R` may return any type,
+// including a pointer to a function, and a function pointer passed by
+// `inout` changes the caller's pointer.
+inc: (x: int) -> int = x + 1;
+pick: (n: int) -> *(x: int) -> int = inc&;
+pick2: (n: int) -> *(m: int) -> *(x: int) -> int = pick&;
+k: int = 5;
+kp: (n: int) -> * const int = k&;
+
+main: () = {
+    f: *(n: int) -> *(x: int) -> int = pick&;
+    g: *(n: int) -> *(m: int) -> *(x: int) -> int = pick2&;
+    h: *(n: int) -> * const int = kp&;
+    std::cout << f(1)(2) << " " << g(1)(2)(3) << " " << h(0)* << "\n";
+}

@@ -1,0 +1,38 @@
+// Experiment patterns (docs/EXPERIMENTS.md), with adt: inspect alternatives
+// destructure, bind, guard and combine types, and an inspect of an @adt that
+// covers every case needs no `is _`.
+// flags: -experiment=patterns -experiment=adt
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
+
+Shape: @adt type = {
+    Circle: (r: double);
+    Rect: (w: double, h: double);
+    Empty: ();
+}
+
+describe: (s: Shape) -> std::string = inspect s -> std::string {
+    is Shape::Circle(r) if r > 1.0 = "big circle";
+    is Shape::Circle(r) = "circle " + std::to_string(int(r * 10));
+    is Shape::Rect(w, _) as rect = "rect " + std::to_string(int(w * rect.h));
+    is Shape::Empty = "empty";
+};
+
+order: (p: std::pair<int, int>) -> int = inspect p -> int {
+    is (a, b) if a > b = a - b;
+    is (a, b) = b - a;
+};
+
+kind: (x: std::variant<int, double, std::string>) -> std::string = inspect x -> std::string {
+    is int | double = "number";
+    is _ = "text";
+};
+
+main: () = {
+    shapes: std::vector<Shape> = (Shape::Circle(2.0), Shape::Circle(0.5), Shape::Rect(2.0, 3.0), Shape::Empty());
+    for shapes do (s) { std::cout << describe(s) << "\n"; }
+    std::cout << order(std::pair(5, 2)) << order(std::pair(1, 4)) << "\n";
+    std::cout << kind(1) << " " << kind(std::string("a")) << "\n";
+}

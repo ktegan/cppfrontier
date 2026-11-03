@@ -1,0 +1,13 @@
+// Source: upstream's pointer rules (pure2-deducing-pointers-error,
+// pure2-bounds-safety-pointer-arithmetic-error): a pointer member named
+// through `this.` is checked like the bare name.
+// expect-error: = - pointer assignment from null or integer is illegal
+// expect-error: ++ - pointer arithmetic is illegal - use std::span or gsl::span instead
+X: type = {
+    p: *int;
+    operator=: (out this, q: *int) = { p = q; }
+    reset: (inout this) = { this.p = nullptr; }
+    bump: (inout this) = { this.p++; }
+}
+
+main: () = { }

@@ -1,0 +1,16 @@
+1. deposit 2000 to sue: ok
+2. withdraw 1200 from cat: ok
+3. withdraw 800 from cat: refused, 500 short ("account cat is short by 500")
+4. transfer 3000: ok
+5. withdraw 100 from sam: ok
+6. withdraw 100 from sam: failed: savings sam allows two withdrawals a month
+7. deposit 50 to bob: failed: no account bob
+8. deposit 0 to sue: failed: deposits must be positive
+before month end:
+  cat [checking account]: -700
+  sam [savings]: 6900
+  sue [savings]: 5000
+after month end:
+  cat [checking account]: -800
+  sam [savings]: 7038
+  sue [savings]: 5250

@@ -1,0 +1,27 @@
+// Source: declarations.md "deferred initialization": `decltype(x)` of a local
+// declared without an initializer is its declared type wherever `x` finds it:
+// in a statement or `for` parameter, a member of it, a later deferred local,
+// a local alias and the body of a function expression; a name that hides it
+// is unaffected.
+name: <T> () -> std::string = {
+    if constexpr std::is_same_v<T, int> { return "int"; }
+    else if constexpr std::is_same_v<T, std::string> { return "string"; }
+    else { return "other"; }
+}
+main: () = {
+    x: int;
+    s: std::vector<int>;
+    m: decltype(x);
+    A: type == std::vector<decltype(x)>;
+    (copy y: decltype(x) = 4) { std::cout << name<decltype(y)>() << y << " "; }
+    k := :() = { z: decltype(x) = 5; std::cout << name<decltype(z)>() << name<decltype(x)>() << z << " "; };
+    k();
+    h := :(x: std::string) = { y: decltype(x) = x; std::cout << name<std::remove_cvref_t<decltype(y)>>() << " "; };
+    h("t");
+    x = 1;
+    s = (2, 3);
+    for s do (e: decltype(x)) { std::cout << e; }
+    w: decltype(s)::value_type = 7;
+    m = x + w;
+    std::cout << " " << name<decltype(m)>() << m << name<A::value_type>() << "\n";
+}

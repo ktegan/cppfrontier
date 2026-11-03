@@ -1,0 +1,16 @@
+// Experiment let-else: the initializer is 'value as T', and the else block
+// must not complete normally.
+// flags: -experiment=let-else
+// expect-error: a let-else declaration's initializer is 'value as T'
+// expect-error: the 'else' block of a let-else declaration must end in 'return', 'throw', 'break', 'continue' or a call to 'std::terminate', 'std::abort', 'std::exit', 'std::quick_exit' or 'std::unreachable'
+#include <iostream>
+#include <optional>
+
+f: (o: std::optional<int>) -> int = {
+    a := o.value_or(0) else { return 0; }
+    b := o as int else { std::cout << "none"; }
+    c := o as int else { if a > 0 { return 1; } }
+    return a + b + c;
+}
+
+main: () = { }

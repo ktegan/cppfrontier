@@ -1,0 +1,46 @@
+// Source: objects.md and metafunctions.md, data members named `_` in types
+// whose members the translator generates. Each `_` member is a distinct
+// unnamed member: memberwise copies and moves copy it, a member written
+// before a base keeps its own helper base, and a leading `_ = f();` in a
+// constructor discards a value rather than initializing a member.
+// Upstream emits `_` in the generated members and fails to compile.
+side: () -> int = { std::cout << "discarded\n"; return 9; }
+Base: @struct type = { public b: int = 4; }
+Padded: type = {
+    _: int = 1;
+    _: int = 2;
+    this: Base = ();
+    public a: int = 0;
+    operator=: (out this) = { _ = side(); a = 5; }
+    operator=: (out this, that) = {}
+    sum: (this) -> int = a + b;
+}
+Value: @value type = {
+    public a: int = 1;
+    _: std::string = "pad";
+    operator=: (out this, x: int) = { a = x; }
+}
+Hashed: @hashable @ordered type = {
+    _: int = 1;
+    public a: int = 2;
+}
+Holder: @basic_value <T: type> type = {
+    _: T = ();
+    public v: T = ();
+}
+main: () = {
+    p: Padded = ();
+    q := p;
+    std::cout << p.sum() << " " << q.sum() << "\n";
+    v1: Value = 5;
+    v2 := v1;
+    v3: Value = 6;
+    std::cout << (v1 == v2) << (v1 < v3) << "\n";
+    h1: Hashed = ();
+    h2: Hashed = ();
+    std::cout << (h1.hash() == h2.hash()) << (h1 == h2) << "\n";
+    t: Holder<std::string> = ();
+    t.v = "held";
+    u := t;
+    std::cout << u.v << "\n";
+}

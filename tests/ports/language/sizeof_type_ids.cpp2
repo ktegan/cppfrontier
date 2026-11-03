@@ -1,0 +1,16 @@
+// Source: Cpp1 `sizeof(int*)`, `alignof(const int)` and `typeid(char const*)`,
+// ported. An argument of `sizeof`, `alignof` or `typeid` that begins with `*`
+// or `const` is a Cpp2 type-id, as a template argument is, also in a
+// template and for a function pointer. Upstream reads the `*` as a prefix
+// dereference and rejects it.
+F: type == *(x: int) -> int;
+size_of_pointer: <T> () -> bool = sizeof(*T) == sizeof(std::add_pointer_t<T>);
+main: () = {
+    std::cout << (sizeof(*int) == sizeof(std::add_pointer_t<int>))
+              << (alignof(const i64) == alignof(i64))
+              << (sizeof(**const char) == sizeof(std::add_pointer_t<*const char>))
+              << (sizeof(*(x: int) -> int) == sizeof(F))
+              << (typeid(*const char) == typeid(std::add_pointer_t<const char>))
+              << (typeid(const std::string) == typeid(std::string))
+              << size_of_pointer<double>() << "\n";
+}

@@ -1,0 +1,17 @@
+// Source: safety.md "Integer mixed-sign <, <=, >, and >=", with experiment
+// nonnegative-literal-comparisons (LANGUAGE.md "Comparisons"): an unsuffixed decimal
+// literal compares with an unsigned operand without a `u` suffix, and keeps its
+// value when the operand is narrower than the literal.
+// flags: -experiment=nonnegative-literal-comparisons
+#include <iostream>
+#include <vector>
+
+nonempty: (size: std::size_t) -> bool = size > 0;
+
+main: () = {
+    v: std::vector<int> = (1, 2, 3);
+    y: u32 = 43;
+    b: u8 = 200;
+    std::cout << nonempty(v.size()) << nonempty(0u) << (v.size() >= 3) << "\n";
+    std::cout << (y > 42) << (0 < y <= 43) << (b < 300) << (b > 255) << "\n";
+}

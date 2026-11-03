@@ -1,0 +1,16 @@
+word: Adam
+word: Betty
+word: Carl
+**
+**
+i is now 1
+counter: 0, word: [Adam]
+counter: 1, word: [Betty]
+counter: 2, word: [Carl]
+odd counter: 1, word: [Betty]
+01234
+first negative at 1,1
+row complete
+sum of rows up to their first negative: 10
+2^2=4 3^2=9 4^2=16 
+once with k=10

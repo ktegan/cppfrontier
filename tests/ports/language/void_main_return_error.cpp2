@@ -1,0 +1,6 @@
+// Source: review A5 and common.md "main": a `main` without a declared return
+// type returns nothing; to return a value it declares `-> int`.
+// expect-error: a 'void' 'main' cannot have a 'return' statement
+main: () = {
+    return;
+}

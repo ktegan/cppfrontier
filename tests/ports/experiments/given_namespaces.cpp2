@@ -1,0 +1,28 @@
+// Experiment given: a given's functions are free functions in the trait's
+// namespace, which UFCS finds where ordinary lookup does; a trait with the
+// same name in another namespace is a different trait.
+// flags: -experiment=given
+#include <iostream>
+#include <string>
+
+a: namespace = {
+    Show: @trait type = { show: (this) -> std::string; }
+    Show_int: @given<Show, int> type = {
+        show: (x: int) -> std::string = "int " + std::to_string(x);
+    }
+    print: () = { n := 3; std::cout << n.show() << "\n"; }
+}
+
+b: namespace = {
+    Show: @trait type = { describe: (this) -> std::string; }
+    Show_int: @given<Show, int> type = {
+        describe: (x: int) -> std::string = "b int";
+    }
+}
+
+main: () = {
+    a::print();
+    x: a::dyn_Show = 4;
+    y: b::dyn_Show = 4;
+    std::cout << x.show() << " " << y.describe() << "\n";
+}

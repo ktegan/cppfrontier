@@ -1,0 +1,37 @@
+// Experiment lazy (docs/EXPERIMENTS.md): a lazy object's initializer runs on
+// its first use, exactly once, so it may read another namespace-scope object
+// whatever the order of their definitions. Every mention reads the object,
+// default arguments included, and a lazy object may have any type, such as a
+// pointer.
+// flags: -experiment=lazy
+#include <iostream>
+#include <string>
+
+calls: int = 0;
+
+make_greeting: () -> std::string = {
+    calls++;
+    return "hello, " + name;
+}
+
+greeting: lazy std::string = make_greeting();
+name: lazy std::string = "world";
+
+Config: type = {
+    public limit: lazy int = 10 * 4 + 2;
+}
+
+length: (n: std::size_t = greeting.size()) -> std::size_t = n;
+first: (c: char = std::data(greeting)[0]) -> char = c;
+
+target: int = 7;
+pointer: lazy *const int = target&;
+
+main: () = {
+    std::cout << "calls before use: " << calls << "\n";
+    std::cout << greeting << "\n";
+    std::cout << greeting.size() << "\n";
+    std::cout << "calls after use: " << calls << "\n";
+    std::cout << Config::limit << "\n";
+    std::cout << length() << first() << pointer* << "\n";
+}

@@ -1,0 +1,10 @@
+// Source: upstream's pointer rules (pure2-bounds-safety-pointer-arithmetic-error):
+// pointer arithmetic is rejected whichever side of `+` the pointer is on.
+// Upstream accepts `1 + p`.
+// expect-error: + - pointer arithmetic is illegal - use std::span or gsl::span instead
+main: () = {
+    a := 1;
+    p: *int = a&;
+    q := 1 + p;
+    _ = q;
+}

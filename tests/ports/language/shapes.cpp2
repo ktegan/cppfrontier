@@ -1,0 +1,107 @@
+// Source: the classic Shape/Circle/Rectangle tutorial hierarchy (e.g. learncpp.com
+// "Pure virtual functions, abstract base classes, and interface classes") and the
+// cppreference "virtual function specifier" example (calls through a base,
+// final overrides, dynamic type queries).
+// Exercises: @interface, @polymorphic_base with a virtual destructor, base
+// subobjects as `this: Base`, virtual/override/final, calls through
+// std::unique_ptr in a vector, `p* is T` dynamic type queries, `p* as T`,
+// and destructor order.
+#include <iostream>
+#include <memory>
+#include <numbers>
+#include <string>
+#include <vector>
+
+shape: @interface type = {
+    area: (this) -> double;
+    name: (this) -> std::string;
+}
+
+// A polymorphic base that is also a shape: shared state and a nonvirtual helper.
+named_shape: @polymorphic_base type = {
+    this: shape = ();
+    label: std::string;
+
+    operator=: (out this, l: std::string) = { label = l; }
+    operator=: (virtual move this) = { std::cout << "~named_shape(" << label << ")\n"; }
+
+    get_label: (this) -> std::string = label;
+    describe: (this) -> std::string = "(label)$ is a (name())$ with area (area():.2f)$";
+}
+
+circle: type = {
+    this: named_shape;
+    r: double;
+
+    operator=: (out this, l: std::string, radius: double) = {
+        named_shape = l;
+        r = radius;
+    }
+    area: (override this) -> double = std::numbers::pi * r * r;
+    name: (override this) -> std::string = "circle";
+    radius: (this) -> double = r;
+}
+
+rectangle: type = {
+    this: named_shape;
+    w: double;
+    h: double;
+
+    operator=: (out this, l: std::string, width: double, height: double) = {
+        named_shape = l;
+        w = width;
+        h = height;
+    }
+    area: (override this) -> double = w * h;
+    name: (override this) -> std::string = "rectangle";
+}
+
+// `final` override: square cannot have its name overridden further.
+square: type = {
+    this: rectangle;
+
+    operator=: (out this, l: std::string, side: double) = {
+        rectangle = (l, side, side);
+    }
+    name: (final this) -> std::string = "square";
+}
+
+total_area: (shapes: std::vector<std::unique_ptr<named_shape>>) -> double = {
+    sum := 0.0;
+    for shapes do (s) {
+        sum += s*.area();
+    }
+    return sum;
+}
+
+main: () = {
+    shapes: std::vector<std::unique_ptr<named_shape>> = ();
+    shapes.push_back(new<circle>("c1", 1.0));
+    shapes.push_back(new<rectangle>("r1", 2.0, 3.0));
+    shapes.push_back(new<square>("s1", 2.0));
+
+    for shapes do (s) {
+        std::cout << s*.describe() << "\n";
+    }
+    std::cout << "total (total_area(shapes):.3f)$\n";
+
+    for shapes do (s) {
+        std::cout << s*.get_label();
+        if s* is circle { std::cout << " is a circle"; }
+        if s* is rectangle { std::cout << " is a rectangle"; }
+        if s* is square { std::cout << " is a square"; }
+        std::cout << "\n";
+    }
+
+    // Cast down through a base reference (a dynamic_cast to circle&).
+    if shapes[0]* is circle {
+        std::cout << "radius ((shapes[0]* as circle).radius())$\n";
+    }
+
+    // Call through a reference to the interface.
+    i: *shape = shapes[2].get();
+    std::cout << "via interface: (i*.name())$\n";
+
+    shapes.pop_back();
+    std::cout << "end of main\n";
+}

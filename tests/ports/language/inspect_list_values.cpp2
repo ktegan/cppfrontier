@@ -1,0 +1,20 @@
+// Source: expressions.md "inspect": an alternative's value is used as if
+// written `:Type = alternative;`, so a list initializes the result type:
+// `(a, b)` is `T{a, b}`, `()` is `T{}` and `((a, b))` is `T{{a, b}}`, as
+// in a typed value. Upstream emits the comma operator.
+#include <vector>
+#include <utility>
+digits: (n: int) -> std::vector<int> = inspect n -> std::vector<int> {
+    is 0 = ();
+    is 12 = (1, 2);
+    is (:(x) -> bool = x > 99;) = ((n / 100, n % 100));
+    is _ = (n, 0, 0);
+};
+pair: (n: int) -> std::pair<int, std::string> = inspect n -> std::pair<int, std::string> {
+    is 1 = (1, "one");
+    is _ = ();
+};
+main: () = {
+    std::cout << digits(0).ssize() << digits(12).ssize() << digits(345).ssize()
+              << digits(7).ssize() << " " << pair(1).second << pair(2).first << "\n";
+}

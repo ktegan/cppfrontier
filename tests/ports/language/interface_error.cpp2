@@ -1,0 +1,17 @@
+// Source: a Cpp1 abstract base class that mixes interface and
+// implementation (data member, a default implementation, a private hook),
+// ported to @interface. metafunctions.md: an interface has no data, and its
+// functions are public and pure virtual, so a bodyless factory without `this`
+// is rejected rather than emitted with an empty body.
+// expect-error: interfaces may not contain data objects
+// expect-error: interface functions must not have a function body
+// expect-error: interface functions must be public
+// expect-error: interface functions must be virtual, with a 'this' parameter
+shape: @interface type = {
+    sides: int = 3;
+    area: (this) -> double = 0.0;
+    private name: (this) -> std::string;
+    make: () -> int;
+}
+
+main: () = { }

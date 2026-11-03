@@ -1,0 +1,12 @@
+convert: value is [Jim] [(unknown)]
+convert: value is [John] [(unknown)]
+copy/move: value is [John] [@john]
+copy/move: value is [John] [@john]
+copy/move: value is [John] [@john]
+copy/move: value is [John] [@john]
+x: value is [] []
+y: value is [] []
+z: value is [John] [@john]
+value 1, assigned 0 times
+value 5, assigned 2 times
+value 8, assigned 0 times

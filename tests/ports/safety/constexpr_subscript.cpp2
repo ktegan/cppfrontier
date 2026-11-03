@@ -1,0 +1,25 @@
+// Source: safety.md "Subscript bounds": a checked subscript in a `==` function
+// is a constant expression when it is in bounds, and is still checked at run time.
+#include <array>
+#include <iostream>
+#include <vector>
+
+arr: type == std::array<int, 3>;
+at: (a: arr, i: std::size_t) -> int == a[i];
+middle: (a: arr) -> int == a[1];
+reversed: (a: arr) -> arr == {
+    out: arr = ();
+    (copy i: std::size_t = 0)
+    while i < 3u next i++ { out[i] = a[2u - i]; }
+    return out;
+}
+
+main: () = {
+    c: arr == (1, 2, 3);
+    static_assert(at(c, 2) == 3);
+    static_assert(middle(c) == 2);
+    static_assert(reversed(c)[0] == 3);
+    x :== at(c, 0);
+    v: std::vector<int> = (4, 5);
+    std::cout << x << middle(c) << reversed(c)[2] << v[1] << "\n";
+}

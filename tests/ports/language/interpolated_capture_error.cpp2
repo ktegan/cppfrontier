@@ -1,0 +1,7 @@
+// Source: functions.md: `x$` captures only in a function expression or a
+// postcondition, also inside a string interpolation `(...)$`.
+// expect-error: $ captures are supported only in unnamed function expressions
+main: () = {
+    x := 5;
+    std::cout << "(x$)$\n";
+}

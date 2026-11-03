@@ -1,0 +1,69 @@
+// Source: metafunctions.md @regex and notes/regex_status.md (`\G`: "Match
+// only at pos()"): `search(str, start)` and `match(str, start)` search `str`
+// from `start` as Perl does from pos(): `\G` matches at `start`, `^`, `\A`,
+// `\b` and lookbehind see the string before it, and group positions count
+// from the start of `str`. `find_all` starts each search where the previous
+// match ended, as Perl's //g, so `\G` reads consecutive tokens. As an
+// assertion `\G` applies only to its own alternative and may be quantified.
+// Each line was checked against perl 5.40 (with pos()). Upstream cppfront
+// treats `start` as the start of the string, anchors the whole search for
+// `\Gx|b` and `\G?b`, and rejects `\G` anywhere but at the start of the pattern.
+#include <iostream>
+
+show: (name: std::string, r) = {
+    std::cout << name << ":";
+    if !r.matched {
+        std::cout << " no\n";
+        return;
+    }
+    i := 0;
+    while i < cpp2::unchecked_narrow<int>(r.group_number()) next i++ {
+        std::cout << " " << r.group_start(i) << "-" << r.group_end(i);
+    }
+    std::cout << "\n";
+}
+
+m: @regex type = {
+    regex_token := R"(\G(\d+),?)";
+    regex_alternative := R"(\Gx|b)";
+    regex_optional := R"(\G?b)";
+    regex_lookbehind := R"((?<=\G.)b)";
+    regex_caret := R"(^a)";
+    regex_string_start := R"(\Aa)";
+    regex_behind_start := R"((?<=x)a)";
+    regex_boundary := R"(\ba)";
+    regex_group := R"((b))";
+    regex_at_start := R"(\Gb)";
+    regex_whole := R"(ab)";
+    regex_end := R"(b$)";
+}
+
+main: () = {
+    v: m = ();
+    text: std::string = "12,345,6x7";
+    pos: std::size_t = 0;
+    while true {
+        r := v.regex_token.search(text, pos);
+        if !r.matched { break; }
+        std::cout << "token " << r.group(1) << "\n";
+        pos = cpp2::unchecked_narrow<std::size_t>(r.group_end(0));
+    }
+    std::cout << "stopped at " << pos << "\n";
+    _ = v.regex_token.find_all(:(r) -> bool = {
+        std::cout << "found " << r.group(1) << " at " << r.group_start(0) << "\n";
+        return true;
+    }, text);
+    show("alternative", v.regex_alternative.search("ab"));
+    show("optional", v.regex_optional.search("ab"));
+    show("lookbehind", v.regex_lookbehind.search("ab"));
+    show("lookbehind later", v.regex_lookbehind.search("aab"));
+    show("caret from 1", v.regex_caret.search("xab", 1u));
+    show("string start from 1", v.regex_string_start.search("xab", 1u));
+    show("lookbehind from 1", v.regex_behind_start.search("xab", 1u));
+    show("boundary from 1", v.regex_boundary.search("xab", 1u));
+    show("group from 1", v.regex_group.search("xab", 1u));
+    show("G from 1", v.regex_at_start.search("xab", 1u));
+    show("G from 2", v.regex_at_start.search("xab", 2u));
+    show("match from 1", v.regex_whole.match("xab", 1u));
+    show("end at length", v.regex_end.search("abc", 0u, 2u));
+}

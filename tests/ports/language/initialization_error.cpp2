@@ -1,0 +1,18 @@
+// Source: Cpp1 tutorial examples of reading an uninitialized local, a
+// variable assigned on one branch only, and one assigned inside a loop.
+// objects.md: a local declared without a value must be initialized before
+// use, on every branch, and not in a loop.
+// expect-error: local variable a is used before it was initialized
+// expect-error: "if" initializes b on one branch but not the other
+// expect-error: local variable c cannot be initialized inside a loop
+flip: () -> bool = true;
+
+main: () = {
+    a: int;
+    std::cout << a;
+    b: int;
+    if flip() { b = 1; }
+    std::cout << b;
+    c: int;
+    for (1, 2) do (i) { c = i; }
+}

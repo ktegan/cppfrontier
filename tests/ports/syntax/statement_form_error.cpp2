@@ -1,0 +1,16 @@
+// Source: Cpp1 `if (x = next())` ported without parentheses, a stray `;`
+// after a block, a loop label kept from a removed `goto`, and a labeled
+// block. common.md and functions.md: a condition is not an assignment, empty
+// statements are not allowed, a named loop uses its name, and only loops have
+// names.
+// expect-error: a condition cannot be an assignment; to compare, use '=='
+// expect-error: empty statement is not allowed - remove extra semicolon
+// expect-error: outer: a named loop must have its name used
+// expect-error: expected '=' before '{' - did you mean '= {' ?
+main: () = {
+    x := 1;
+    if x = 2 { }
+    while x < 3 { x++; };
+    outer: while x < 5 next x++ { }
+    block: { x = 0; }
+}

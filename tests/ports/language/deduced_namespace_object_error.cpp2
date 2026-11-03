@@ -1,0 +1,9 @@
+// Source: objects.md and upstream's sema.h: a namespace-scope object must
+// have a declared type, since a deduced type cannot be declared before its
+// definition; a `==` constant may deduce its type.
+// expect-error: a namespace-scope object must have a declared type, not a deduced type (or be a '==' constant)
+count := 5;
+N: namespace = {
+    limit: _ is std::integral = 3;
+}
+main: () = { std::cout << count << N::limit << "\n"; }

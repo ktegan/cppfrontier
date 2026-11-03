@@ -1,0 +1,25 @@
+// Source: mixed.md side-by-side Cpp1 and Cpp2, with Cpp1 forms that look like
+// Cpp2: a multi-line macro whose continuation reads as a declaration, a Cpp1
+// label and Cpp2-looking text inside Cpp1 braces (mixed.md: not nested), and a
+// Cpp2 initializer spanning lines inside parentheses.
+#include <iostream>
+#define ADD(a, b) \
+    ((a) + (b))
+#define DECLARE(name) \
+name: int = 2;
+
+three: () -> int = (
+    :() -> int = { return ADD(1, 2); }
+)();
+
+int count_down(int n) {
+    int steps = 0;
+again:
+    if (n-- > 0) { ++steps; goto again; }
+    return steps;
+}
+
+main: () = {
+    std::cout << three() << "\n";
+    std::cout << count_down(4) << "\n";
+}

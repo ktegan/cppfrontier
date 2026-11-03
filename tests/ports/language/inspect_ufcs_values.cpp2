@@ -1,0 +1,13 @@
+// A UFCS call in an inspect alternative's value: the value's checks are
+// unevaluated, where the call's lambda cannot capture.
+Card: @struct type = { amount: (this) -> int = 150; }
+
+points: (p: std::variant<int, Card>) -> int = inspect p -> int {
+    is Card = (p as Card).amount() / 50;
+    is int = std::abs(p as int);
+    is _ = 0;
+};
+
+main: () = {
+    std::cout << points(Card()) << " " << points(-4) << "\n";
+}

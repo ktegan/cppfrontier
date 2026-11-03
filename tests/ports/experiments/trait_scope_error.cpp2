@@ -1,0 +1,7 @@
+// Experiment trait: a trait, which becomes a concept, cannot be nested in a type.
+// flags: -experiment=trait
+// expect-error: a trait can only be declared at namespace scope
+Outer: type = {
+    Shape: @trait type = { area: (this) -> double; }
+}
+main: () = { }

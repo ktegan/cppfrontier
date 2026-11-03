@@ -1,0 +1,41 @@
+// Experiment patterns: malformed alternatives are rejected, and an inspect
+// that may match no alternative needs `is _`: a @flag_enum value may combine
+// flags, a guarded tuple pattern may fail, and an enumerator written as a
+// type-id, `is Light::red`, is not the value `(Light::red)`. An alternative
+// after an unguarded `is _`, also one that binds, can never be chosen; one
+// after a guarded `is _` can.
+// flags: -experiment=patterns
+// expect-error: expected 'is pattern [(names)] [| pattern]... [as name] [if guard] = value;' in an inspect alternative
+// expect-error: '_' matches anything, so it takes no destructuring or '|' patterns
+// expect-error: a destructuring lists names and '_', as in 'is T(a, _)'
+// expect-error: a destructuring lists one or more names and '_'
+// expect-error: a destructuring cannot be combined with '|' patterns
+// expect-error: 'a' is bound twice in an inspect alternative
+// expect-error: an inspect expression must have an `is _` match-anything wildcard alternative
+// expect-error: inspect of 'Light' does not cover Light::red
+// expect-error: this alternative follows 'is _', which matches anything, so it can never be chosen
+#include <utility>
+
+Flags: @flag_enum<u8> type = { a; b; }
+Light: @enum type = { red; green; }
+
+f1: (x: int) -> int = inspect x -> int { is int as = 1; is _ = 0; };
+f2: (x: int) -> int = inspect x -> int { is _ | int = 1; is _ = 0; };
+f3: (x: std::pair<int, int>) -> int = inspect x -> int { is std::pair<int, int>(a, 1) = a; is _ = 0; };
+f4: (x: int) -> int = inspect x -> int { is int() = 1; is _ = 0; };
+f5: (x: int) -> int = inspect x -> int { is (a, b) | int = 1; is _ = 0; };
+f6: (x: std::pair<int, int>) -> int = inspect x -> int { is std::pair<int, int>(a, a) = a; is _ = 0; };
+f7: (x: Flags) -> int = inspect x -> int {
+    is (Flags::a) = 1;
+    is (Flags::b) = 2;
+    is (Flags::none) = 0;
+};
+f8: (p: std::pair<int, int>) -> int = inspect p -> int { is (a, b) if a > b = 1; };
+f9: (l: Light) -> int = inspect l -> int {
+    is Light::red = 1;
+    is (Light::green) = 2;
+};
+
+f10: (x: int) -> int = inspect x -> int { is _ if x > 0 = 1; is _ as y = y; is 2 = 2; };
+
+main: () = { }

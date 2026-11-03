@@ -1,0 +1,9 @@
+// Signature contracts and `assert` statements share one parser: each names its
+// own keyword when the condition is missing.
+// expect-error: expected 'post(condition)' or 'post(condition, message)'
+// expect-error: expected 'pre(condition)' or 'pre(condition, message)'
+// expect-error: expected 'assert(condition)' or 'assert(condition, message)'
+f: (x: i32) post() = { _ = x; }
+g: (x: i32) pre(x > 0, "a", "b") = { _ = x; }
+h: () = { assert(); }
+main: () = { }

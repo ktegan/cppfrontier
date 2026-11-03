@@ -1,0 +1,27 @@
+// Experiment sealed: a derived type may be a class template, which the base
+// befriends through its template head, so each specialization can construct
+// the base.
+// flags: -experiment=sealed
+#include <iostream>
+
+Shape: @sealed @polymorphic_base type = {
+    area: (virtual this) -> int;
+}
+
+Scaled: <T, N: int> type = {
+    this: Shape = ();
+    side: T = N;
+    area: (override this) -> int = side * side;
+}
+
+Sum: <Ts...: type> type = {
+    this: Shape = ();
+    area: (override this) -> int = sizeof...(Ts);
+}
+
+main: () = {
+    a: Scaled<int, 3> = ();
+    b: Sum<int, char> = ();
+    p: *Shape = a&;
+    std::cout << p*.area() << " " << b.area() << "\n";
+}

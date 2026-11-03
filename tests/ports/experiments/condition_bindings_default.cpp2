@@ -1,0 +1,15 @@
+// Without experiment condition-bindings, a pattern test with bindings is not
+// a condition: 'is T as n' mixes 'is' and 'as', and 'is T(a, b)' juxtaposes
+// a type and a list.
+// expect-error: mixed 'is' and 'as' are not allowed; add parentheses
+// expect-error: unexpected text '(' after an expression - is an operator or ';' missing?
+#include <utility>
+#include <variant>
+
+f: (v: std::variant<int, std::pair<int, int>>) -> int = {
+    if v is int as n { return n; }
+    if v is std::pair<int, int>(a, b) { return a + b; }
+    return 0;
+}
+
+main: () = { }

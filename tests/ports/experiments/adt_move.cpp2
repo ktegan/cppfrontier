@@ -1,0 +1,35 @@
+// Experiment adt: cases are @structs, so a case may hold a move-only field,
+// such as a std::unique_ptr of the type itself, and the type moves as Cpp1
+// does. An @adt @value default-constructs to its first case and orders its
+// cases.
+// flags: -experiment=adt -experiment=patterns
+#include <iostream>
+#include <memory>
+#include <utility>
+
+Tree: @adt type = {
+    Leaf: (v: int);
+    Node: (left: std::unique_ptr<Tree>, right: std::unique_ptr<Tree>);
+}
+
+sum: (t: Tree) -> int = inspect t -> int {
+    is Tree::Leaf(v) = v;
+    is Tree::Node(l, r) = sum(l*) + sum(r*);
+};
+
+leaf: (v: int) -> std::unique_ptr<Tree> = std::make_unique<Tree>(Tree::Leaf(v));
+
+Version: @adt @value type = {
+    Dev: ();
+    Release: (major: int, minor: int);
+}
+
+main: () = {
+    t: Tree = Tree::Node(leaf(1), std::make_unique<Tree>(Tree::Node(leaf(2), leaf(3))));
+    moved := (move t);
+    std::cout << sum(moved) << "\n";
+    d: Version = ();
+    r: Version = Version::Release(1, 2);
+    copy := r;
+    std::cout << d.is_Dev() << (d < r) << (r < Version::Release(1, 3)) << (copy == r) << "\n";
+}

@@ -1,0 +1,126 @@
+// Source: cppreference "operator overloading" examples (a 2D vector with
+// arithmetic and compound assignment, unary minus, stream insertion, a
+// function-call operator, prefix/postfix increment on a counter) and the
+// C++23 multidimensional subscript operator example (a small matrix).
+// Exercises: member `operator+=` returning `forward` this, nonmember
+// `operator+` built from `+=`, `operator*` with a scalar on either side,
+// unary `operator-`, `operator==` from @value, `operator<<` as a free function,
+// `operator()` on a functor type used with std::ranges, `operator++` written
+// once (Cpp2 generates the postfix form), and `operator[]` with two indices.
+// The docs give no way to write a conversion function such as Cpp1's
+// `operator int()`, and both translators reject one.
+#include <algorithm>
+#include <iostream>
+#include <ranges>
+#include <vector>
+
+vec2: @value type = {
+    public x: double = 0.0;
+    public y: double = 0.0;
+    operator=: (out this, x_: double, y_: double) = {
+        x = x_;
+        y = y_;
+    }
+    operator+=: (inout this, other: vec2) -> forward vec2 = {
+        x += other.x;
+        y += other.y;
+        return this;
+    }
+    operator-: (this) -> vec2 = (-x, -y);
+    operator*: (this, k: double) -> vec2 = (x * k, y * k);
+    length_squared: (this) -> double = x * x + y * y;
+}
+
+operator+: (copy a: vec2, b: vec2) -> vec2 = {
+    a += b;
+    return a;
+}
+operator*: (k: double, v: vec2) -> vec2 = v * k;
+operator<<: (inout os: std::ostream, v: vec2) -> forward std::ostream =
+    os << "(" << v.x << ", " << v.y << ")";
+
+// A functor that counts its calls.
+scaled_by: type = {
+    factor: int;
+    calls: int = 0;
+    operator=: (out this, f: int) = { factor = f; }
+    operator(): (inout this, i: int) -> int = {
+        calls++;
+        return i * factor;
+    }
+    call_count: (this) -> int = calls;
+}
+
+counter: @value type = {
+    value: int = 0;
+    operator=: (out this, v: int) = { value = v; }
+    operator++: (inout this) -> forward counter = {
+        value++;
+        return this;
+    }
+    get: (this) -> int = value;
+}
+
+matrix: type = {
+    rows: int;
+    cols: int;
+    cells: std::vector<int>;
+    operator=: (out this, r: int, c: int) = {
+        rows = r;
+        cols = c;
+        cells = std::vector<int>(unchecked_cast<std::size_t>(r * c), 0);
+    }
+    operator[]: (inout this, r: int, c: int) -> forward int = cells[r * cols + c];
+    operator[]: (this, r: int, c: int) -> int = cells[r * cols + c];
+    row_count: (this) -> int = rows;
+    col_count: (this) -> int = cols;
+}
+
+print_matrix: (m: matrix) = {
+    for 0 ..< m.row_count() do (r) {
+        for 0 ..< m.col_count() do (c) {
+            std::cout << m[r, c] << " ";
+        }
+        std::cout << "\n";
+    }
+}
+
+main: () = {
+    a: vec2 = (1.0, 2.0);
+    b: vec2 = (0.5, -1.0);
+    std::cout << "a + b = " << a + b << "\n";
+    std::cout << "-a = " << -a << "\n";
+    std::cout << "a * 3 = " << a * 3.0 << ", 2 * b = " << 2.0 * b << "\n";
+    c := a;
+    c += b;
+    c += b;
+    c += b;
+    std::cout << "c = " << c << ", |c|^2 = " << c.length_squared() << "\n";
+    std::cout << "a == a: " << (a == a) << ", a == b: " << (a == b) << "\n";
+
+    times3: scaled_by = 3;
+    std::cout << "times3(7) = " << times3(7) << "\n";
+    values: std::vector = (1, 2, 3, 4);
+    tripled: std::vector<int> = ();
+    for values do (v) { tripled.push_back(times3(v)); }
+    for tripled do (t) { std::cout << t << " "; }
+    std::cout << "\ncalls: (times3.call_count())$\n";
+
+    n: counter = 5;
+    n++;
+    // `x++` updates in place and yields the new value (common.md), so a copy
+    // of the old value is taken first.
+    old := n;
+    n++;
+    bumped := n++;
+    std::cout << "old (old.get())$, bumped (bumped.get())$, n (n.get())$\n";
+
+    m: matrix = (2, 3);
+    for 0 ..< 2 do (r) {
+        for 0 ..< 3 do (c) {
+            m[r, c] = r * 10 + c;
+        }
+    }
+    m[1, 1] = 99;
+    print_matrix(m);
+}

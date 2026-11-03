@@ -1,0 +1,7 @@
+// Source: Cpp1 `sizeof(const int&)`, ported. A type-id argument of `sizeof`
+// uses Cpp2 type syntax, as a template argument does, so a Cpp1 declarator
+// is rejected with the Cpp2 spelling.
+// expect-error: 'const int&' is a Cpp1 declarator; write the Cpp2 type 'const int'
+main: () = {
+    std::cout << sizeof(const int&) << "\n";
+}

@@ -1,0 +1,46 @@
+// Source: types.md "operator=" (an `out this` function is also an assignment;
+// an `inout this` one is an assignment only) and statements.md `return`.
+// Exercises: a `return;` that leaves an assignment early returns the assigned
+// object, in a written `inout this` assignment and in the assignment
+// generated from an `out this` constructor.
+#include <iostream>
+#include <string>
+
+counter: type = {
+    public value: int = 0;
+    public label: std::string = "";
+
+    operator=: (out this) = { }
+    // Also an assignment from an int, where `return;` must still return `*this`.
+    operator=: (out this, n: int) = {
+        value = n;
+        label = "set";
+        if n < 0 { return; }
+        label = "positive";
+    }
+    operator=: (out this, that) = {
+        value = that.value;
+        label = that.label;
+    }
+    operator=: (inout this, that) = {
+        if this& == that& { return; }
+        value = that.value;
+        label = that.label + " copy";
+    }
+}
+
+main: () = {
+    a: counter = 5;
+    b: counter = -1;
+    std::cout << a.value << " " << a.label << ", " << b.value << " " << b.label << "\n";
+    c: counter = ();
+    d: counter = ();
+    c = a;
+    d = c;
+    std::cout << c.label << ", " << d.label << "\n";
+    c = c;
+    std::cout << c.label << "\n";
+    c = -7;
+    d = 8;
+    std::cout << c.value << " " << c.label << ", " << d.value << " " << d.label << "\n";
+}

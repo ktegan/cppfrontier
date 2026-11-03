@@ -1,0 +1,45 @@
+// Source: review A3 and A4 and hello-world.md "Order-independent by default":
+// a `==` function or member that names a later type or function is defined
+// after the type definitions, and a function whose signature names a function
+// declared after the types is declared after it; a function constrained by a
+// later concept is declared after the concept. A signature or a member that
+// names a function declared after it, constexpr or not, follows that function.
+// A signature that names a type through a using-declaration follows it.
+A: type = { f: (this) -> int == B::k; }
+B: type = { k: int == 3; }
+
+f: () -> int == h(C()) + D::k;
+C: @struct type = { k: int = 3; }
+h: (c: C) -> int == c.k;
+D: type = { k: int == 1; }
+
+T: @struct type = { v: int = 4; }
+g: (t: T = ()) -> int = t.v;
+fg: () -> decltype(g()) = g();
+hg: (x: int = g()) -> int = x;
+
+twice: <U: Num> (x: U) -> int = x * 2;
+Num: <U> concept = std::integral<U>;
+
+uses_later: () -> decltype(later()) = later() + 1;
+later: () -> int = 6;
+sized: (x: std::array<int, csize()> = ()) -> std::size_t = x.size();
+holder: type = {
+    public arr: std::array<int, csize()> = ();
+    public n: int = doubled(4);
+}
+csize: () -> std::size_t == 3;
+doubled: (x: int) -> int == x * 2;
+
+N: namespace = { V: type = { public v: int = 5; } }
+M: namespace = {
+    using N::V;
+    g: (t: V) -> int = t.v;
+}
+
+main: () = {
+    a: A = ();
+    std::cout << a.f() << f() << fg() << hg() << twice(5) << "\n";
+    h: holder = ();
+    std::cout << uses_later() << sized() << h.arr.size() << h.n << M::g(N::V()) << "\n";
+}

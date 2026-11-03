@@ -1,0 +1,50 @@
+// Source: cppreference "std::integer_sequence" example (print a tuple and
+// convert an array to a tuple via std::make_index_sequence). Exercises
+// deduction of a non-type template pack from a parameter of type
+// std::index_sequence<Is...>, pack expansion of std::get<Is>(t) in call
+// arguments and in a comma fold, and std::tuple_size_v of a dependent type.
+#include <array>
+#include <iostream>
+#include <string_view>
+#include <tuple>
+#include <utility>
+
+// Fill an array-like value into a tuple.
+a2t_impl: <Array, Is...: std::size_t> (a: Array, _: std::index_sequence<Is...>) =
+    std::make_tuple(a[Is]...);
+
+a2t: <T, N: std::size_t> (a: std::array<T, N>) =
+    a2t_impl(a, std::make_index_sequence<N>());
+
+separator: (first: bool) -> std::string_view = { if first { return ""; } return ", "; }
+
+// Print a tuple with a comma fold over the indices.
+print_tuple_impl: <Tuple, Is...: std::size_t> (inout os: std::ostream, t: Tuple, _: std::index_sequence<Is...>) = {
+    os << "(";
+    ((os << separator(Is == 0) << std::get<Is>(t)), ...);
+    os << ")";
+}
+
+print_tuple: <Tuple> (t: Tuple) = {
+    print_tuple_impl(std::cout, t, std::make_index_sequence<std::tuple_size_v<Tuple>>());
+    std::cout << "\n";
+}
+
+// Reverse a tuple with an index pack.
+reverse_impl: <Tuple, Is...: std::size_t> (t: Tuple, _: std::index_sequence<Is...>) =
+    std::make_tuple(std::get<std::tuple_size_v<Tuple> - 1 - Is>(t)...);
+
+reverse: <Tuple> (t: Tuple) = reverse_impl(t, std::make_index_sequence<std::tuple_size_v<Tuple>>());
+
+// Sum an integer_sequence at compile time.
+seq_sum: <T, Ns...: T> (_: std::integer_sequence<T, Ns...>) -> T == (T() + ... + Ns);
+
+main: () = {
+    arr: std::array<int, 4> = (1, 2, 3, 4);
+    tup := a2t(arr);
+    static_assert(std::is_same_v<decltype(tup), std::tuple<int, int, int, int>>);
+    print_tuple(tup);
+    print_tuple(reverse(std::make_tuple(1, "two", 3.5)));
+    static_assert(seq_sum(std::make_integer_sequence<int, 5>()) == 10);
+    std::cout << seq_sum(std::integer_sequence<long, 10, 20, 30>()) << "\n";
+}

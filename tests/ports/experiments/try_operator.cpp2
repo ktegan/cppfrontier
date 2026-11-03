@@ -1,0 +1,43 @@
+// Experiment try-operator (docs/EXPERIMENTS.md): `e?` unwraps a std::expected
+// or std::optional, or returns its failure from the enclosing function.
+// flags: -experiment=try-operator
+// cxx-std: c++23
+#include <expected>
+#include <iostream>
+#include <optional>
+#include <string>
+#include <tuple>
+
+parse: (s: std::string) -> std::expected<int, std::string> = {
+    if s.empty() { return std::unexpected(std::string("empty")); }
+    return std::stoi(s);
+}
+
+sum: (a: std::string, b: std::string) -> std::expected<int, std::string> = {
+    x := parse(a)?;
+    y := parse(b)?;
+    return x + y;
+}
+
+half: (n: int) -> std::optional<int> = {
+    if n % 2 != 0 { return std::nullopt; }
+    return n / 2;
+}
+
+quarter: (n: int) -> std::optional<int> = half(half(n)?);
+
+make: () -> std::tuple<std::optional<std::string>> =
+    (std::optional<std::string>("a string long enough to live on the heap"));
+
+// The operand is an xvalue into a temporary tuple, which `?` moves from
+// before the temporary is destroyed.
+first: () -> std::optional<std::string> = {
+    s := std::get<0>(make())?;
+    return s;
+}
+
+main: () = {
+    std::cout << sum("2", "40").value() << " " << sum("2", "").error() << "\n";
+    std::cout << quarter(8).value() << " " << quarter(6).has_value() << "\n";
+    std::cout << first().value() << "\n";
+}

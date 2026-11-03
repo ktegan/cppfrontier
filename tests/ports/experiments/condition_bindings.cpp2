@@ -1,0 +1,54 @@
+// Experiment condition-bindings (docs/EXPERIMENTS.md), with adt: a pattern
+// test in an if or while condition's && chain binds names for the later
+// operands and the guarded body.
+// flags: -experiment=condition-bindings -experiment=adt
+#include <iostream>
+#include <optional>
+#include <queue>
+#include <string>
+#include <utility>
+#include <variant>
+
+Shape: @adt type = {
+    Circle: (r: double);
+    Rect: (w: double, h: double);
+    Empty: ();
+}
+
+area: (s: Shape) -> double = {
+    if s is Shape::Circle(r) { return 3.0 * r * r; }
+    else if s is Shape::Rect(w, h) && w > 0.0 { return w * h; }
+    return 0.0;
+}
+
+describe: (v: std::variant<int, std::string>) -> std::string = {
+    if v is int as n && n > 9 { return "big " + std::to_string(n); }
+    else if v is int as n { return "small " + std::to_string(n); }
+    else if v is std::string as s { return "text " + s; }
+    return "?";
+}
+
+ordered: (p: std::optional<std::pair<int, int>>) -> bool = {
+    if p is std::pair<int, int> as q && q is (a, b) && a < b { return true; }
+    else { return false; }
+}
+
+main: () = {
+    std::cout << area(Shape::Circle(1.0)) << " " << area(Shape::Rect(2.0, 3.0)) << " "
+              << area(Shape::Empty()) << "\n";
+    std::cout << describe(42) << ", " << describe(3) << ", " << describe("x") << "\n";
+    std::cout << ordered(std::pair(1, 2)) << ordered(std::pair(2, 1)) << ordered(std::nullopt)
+              << "\n";
+
+    // The next clause runs after each iteration; a failed test leaves the loop.
+    queue: std::queue<std::optional<int>> = ();
+    for (1, 2, 3) do (i) { queue.push(i); }
+    queue.push(std::nullopt);
+    queue.push(5);
+    sum := 0;
+    while !queue.empty() && queue.front() is int as x next queue.pop() {
+        if x == 2 { continue; }
+        sum += x;
+    }
+    std::cout << sum << " " << queue.size() << "\n";
+}

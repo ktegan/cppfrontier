@@ -1,0 +1,10 @@
+// Source: functions.md "Function with multiple/named return values". A
+// function expression has no named struct to return several values in (as
+// upstream: "currently cannot return multiple values"), and the names the
+// translator generates begin with `__cpp2_`, which Cpp2 code may not use.
+// expect-error: a function expression cannot return multiple values
+// expect-error: names beginning with `__cpp2_` are reserved for the translator
+main: () = {
+    k := :() -> (a: int, b: int) = { a = 1; b = 2; };
+    __cpp2_function_expression_0 := 1;
+}

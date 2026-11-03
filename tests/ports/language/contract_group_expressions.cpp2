@@ -1,0 +1,26 @@
+// Source: contracts.md "Contract groups": a group is any object with
+// `report_violation` and `is_active`, named by an expression such as a
+// heap group `assert<group_c*>(c)` or `pre<this>`. A group is a use of the
+// names it mentions, so `group_c` is not moved before its last assertion.
+// Upstream rejects `assert<group_c*>`.
+counter: type = {
+    public count: int = 0;
+    report_violation: (inout this, msg: * const char) = {
+        count++;
+        std::cout << "violation " << count << ": " << msg << "\n";
+    }
+    is_active: (this) -> bool = true;
+    check: (inout this, x: int) pre<this>(x > 0, "x is (x)$") = { }
+}
+
+main: () = {
+    group_c := shared.new<counter>();
+    other := group_c;
+    std::cout << "count " << other*.count << "\n";
+    assert<group_c*>(1 == 2, "heap group");
+    c: counter = ();
+    c.check(1);
+    c.check(-2);
+    assert<c>(false, "local group");
+    std::cout << c.count << " " << other*.count << "\n";
+}

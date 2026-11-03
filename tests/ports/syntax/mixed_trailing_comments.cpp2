@@ -1,0 +1,18 @@
+// Source: mixed.md side-by-side Cpp1 and Cpp2, with a block comment that
+// begins after a Cpp2 declaration and ends on a later line, where the next
+// declaration may begin. Upstream cppfront rejects a comment after a
+// definition's closing `;` or `}` as an alpha limitation.
+#include <iostream>
+first: () -> int = 8; /* opened here
+
+   and closed here */ second: () -> int = 9;
+int cpp1_after() { return 1; }
+third: () -> int = { /* inside a body
+   */ return 2; }
+fourth: () -> int = 3; /* on one line */
+int cpp1_comment() { return 4; } /* a Cpp1
+   comment */
+main: () = {
+    std::cout << first() << second() << cpp1_after() << third() << fourth()
+              << cpp1_comment() << "\n";
+}

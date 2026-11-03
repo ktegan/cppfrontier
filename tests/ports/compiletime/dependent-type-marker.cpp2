@@ -1,0 +1,49 @@
+// `type T::x` marks a dependent type wherever a type-id may appear, and a
+// local or member alias of a dependent type, including a `decltype` of a
+// generic parameter, is itself a dependent scope.
+#include <iostream>
+#include <vector>
+
+box: @struct type = {
+    x: type == int;
+    y: <U> type == std::vector<U>;
+}
+
+marked: <T> (t: T) -> int = {
+    a := sizeof(type T::x);
+    b := :type T::x = 7;
+    c := 3 as type T::x;
+    d: type T::x = 4;
+    e := (type T::x)();
+    return a + b + c + d + e;
+}
+
+aliased: <T> (t: T) -> int = {
+    A: type == T;
+    g: A::x = 5;
+    h := sizeof(type A::x);
+    i := :A::x = 2;
+    B: type == A;
+    k: B::y<int> = (1, 2, 3);
+    C: type == std::vector<T>;
+    m: C::size_type = 1;
+    return g + h + i + k.ssize() + m;
+}
+
+generic: (c) -> int = {
+    D: type == std::remove_cvref_t<decltype(c)>;
+    v: D::value_type = c[0];
+    w := :D::value_type = 2;
+    return v + w + (4 as D::value_type);
+}
+
+member: <T> type = {
+    A: type == T;
+    z: A::x = 6;
+    get: (this) -> A::x = z;
+}
+
+main: () = {
+    std::cout << marked(box()) << " " << aliased(box()) << " " << member<box>().get() << " "
+              << generic(std::vector<int>(1, 1)) << "\n";
+}

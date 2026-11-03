@@ -1,0 +1,33 @@
+// Experiment adt (docs/EXPERIMENTS.md): `is` and `as` see an @adt value's
+// case outside `inspect` too. `as` a type other than a case is the general
+// conversion, here a converting constructor, and `as` a case of an rvalue
+// moves the case out.
+// flags: -experiment=adt
+#include <memory>
+
+Event: @adt type = {
+    Key: (code: int);
+    Quit: ();
+}
+
+Wrapper: type = {
+    public code: int = 0;
+    operator=: (implicit out this, e: Event) = { if e is Event::Key { code = (e as Event::Key).code + 1; } }
+}
+
+Box: @adt type = {
+    Full: (p: std::unique_ptr<int>);
+    Empty: ();
+}
+
+main: () = {
+    e: Event = Event::Key(7);
+    if e is Event::Key { std::cout << (e as Event::Key).code << "\n"; }
+    q: Event = Event::Quit();
+    std::cout << (q is Event::Key) << (q is Event::Quit) << "\n";
+    w := e as Wrapper;
+    std::cout << w.code << "\n";
+    b: Box = Box::Full(std::make_unique<int>(5));
+    f := (move b) as Box::Full;
+    std::cout << f.p* << "\n";
+}

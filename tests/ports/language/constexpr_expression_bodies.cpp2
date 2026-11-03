@@ -1,0 +1,23 @@
+// Compile-time functions with a single-expression body `== expr;`, as the
+// members `@enum` generates: functions.md, "a function whose body is a single
+// expression `= expr;` defaults to `-> forward _ = { return expr; }`", and a
+// constructor's expression body is a statement.
+
+bits: type = {
+    v: u8;
+    operator=: (implicit out this, x: i64) == v = cpp2::unchecked_narrow<u8>(x);
+    operator|=: (inout this, that) == v |= that.v;
+    operator|: (this, that) -> bits == v | that.v;
+    raw: (this) -> u8 == v;
+}
+
+twice: (x: int) == x * 2;
+
+main: () = {
+    b: bits = 1;
+    b |= 2;
+    c := b | 4;
+    static_assert(twice(3) == 6);
+    b |= 8;
+    std::cout << (c.raw() as int) << " " << (b.raw() as int) << "\n";
+}

@@ -1,0 +1,23 @@
+// Source: expressions.md "Capture" with variadic parameters: a capture of an
+// unexpanded pack, `xs$...` or `(xs + 1)$...`, captures each element, in a
+// function expression and in a postcondition; `sizeof...(xs)$` is one value.
+// Upstream emits a single capture `_0 = xs`, which does not compile.
+sum: (xs...: int) -> int = (0 + ... + xs);
+counts: (xs...: int) -> int = {
+    l := :() -> int = sum(xs$...) * 100 + sum((xs + 1)$...) * 10 + sizeof...(xs)$;
+    return l();
+}
+joined: <Ts...: type> (forward xs...: Ts) -> std::string = {
+    l := :() -> std::string = (std::string() + ... + xs$);
+    return l();
+}
+push: (inout v: std::vector<int>, xs...: int)
+    post((0 + ... + xs$) == sum(v[v.ssize()$], v[v.ssize()$ + 1])) = {
+    (v.push_back(xs), ...);
+}
+main: () = {
+    std::cout << counts(1, 2) << " " << joined("a", std::string("b")) << "\n";
+    v: std::vector<int> = ();
+    push(v, 3, 4);
+    std::cout << v.ssize() << "\n";
+}

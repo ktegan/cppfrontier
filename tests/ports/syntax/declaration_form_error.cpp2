@@ -1,0 +1,11 @@
+// Source: Cpp1 `int x = 1, y = 2;` ported as one declaration, and a deduced
+// local without a value. objects.md: each declaration declares one name, and
+// an object of deduced type `_` takes its type from its `=` initializer.
+// expect-error: unexpected ',' - Cpp2 has no comma operator
+// expect-error: an object with a deduced type must have an = initializer
+total: _;
+main: () = {
+    x: int = 1, y: int = 2;
+    z: _;
+    z = 3;
+}

@@ -1,0 +1,14 @@
+// Experiment trait: a trait function has no default arguments, contracts or
+// 'forward' parameters, and returns void, '-> T' or '-> forward T'.
+// flags: -experiment=trait
+// expect-error: a trait function parameter cannot have a default argument
+// expect-error: a trait function cannot have contracts
+// expect-error: a trait function parameter must have a declared type and cannot be 'forward'
+// expect-error: a trait function must return void, or declare its return type with '-> T' or '-> forward T'
+Shape: @trait type = {
+    scale: (inout this, k: double = 2.0);
+    area: (this) -> double pre(true);
+    name: (this, forward prefix: std::string) -> std::string;
+    size: (this) -> _;
+}
+main: () = { }

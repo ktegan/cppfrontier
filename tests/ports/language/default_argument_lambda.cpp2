@@ -1,0 +1,18 @@
+// Source: functions.md "Parameters" (default arguments) and expressions.md
+// "Capture in function expressions".
+// Exercises: a namespace-scope function whose default argument is a function
+// expression naming a namespace-scope object declared before it, by a capture
+// `g$` and by name, and a function whose signature names that function.
+#include <functional>
+#include <iostream>
+
+base: int = 3;
+scale: int = 10;
+
+calc: (x: int, f: std::function<int(int)> = :(y: int) -> int = y * scale + base$;) -> int = f(x);
+twice: (x: int, n: int = calc(1)) -> int = 2 * x + n;
+
+main: () = {
+    std::cout << calc(1) << " " << calc(1, :(y: int) -> int = -y;) << "\n";
+    std::cout << twice(1) << "\n";
+}

@@ -1,0 +1,49 @@
+// Source: contracts.md preconditions and postconditions, on the destructor
+// `operator=: (move this)` of types.md.
+// Exercises: a destructor precondition that reads a member, with a block
+// body, an early `return` and an interpolated message; a destructor
+// postcondition with an expression body.
+grp: cpp2::contract_group = ();
+log_violation: (msg: * const char, copy _: std::source_location) = {
+    std::cout << "violation: " << msg << "\n";
+}
+
+count: int = 0;
+
+Resource: type = {
+    public open: bool = true;
+    operator=: (out this) = { }
+    close: (inout this) pre<grp>(open, "closed twice") = { open = false; }
+    operator=: (move this) pre<grp>(!open, "destroyed while open") = { }
+}
+
+Counted: type = {
+    operator=: (out this) = { }
+    operator=: (move this) post<grp>(count > 0, "counted") = count++;
+}
+
+Checked: type = {
+    public n: int = 1;
+    operator=: (out this) = { }
+    operator=: (move this) pre<grp>(n == 2, "n is (n)$") = {
+        if n > 0 { return; }
+        std::cout << "unreached\n";
+    }
+}
+
+main: () = {
+    _ = grp.set_handler(log_violation&);
+    {
+        r: Resource = ();
+        r.close();
+        r.close();
+        std::cout << r.open << "\n";
+    }
+    {
+        s: Resource = ();
+        std::cout << s.open << "\n";
+    }
+    { c: Counted = (); }
+    { k: Checked = (); }
+    std::cout << count << "\n";
+}

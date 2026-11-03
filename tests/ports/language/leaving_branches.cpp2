@@ -1,0 +1,22 @@
+// Source: objects.md "Objects": a deferred local is initialized on both
+// branches of an `if` or neither; a branch that leaves by `return`, `throw`,
+// `break` or `continue` does not reach the code after the `if`, so only the
+// other branch must initialize it.
+pick: (c: bool) -> int = {
+    x: int;
+    if c { x = 1; } else { throw(std::runtime_error("no")); }
+    return x;
+}
+sum: (v: std::vector<int>) -> int = {
+    total := 0;
+    for v do (e) {
+        y: int;
+        if e < 0 { continue; } else { y = e; }
+        if e > 100 { break; }
+        total += y;
+    }
+    return total;
+}
+main: () = {
+    std::cout << pick(true) << " " << sum(:std::vector<int> = (1, -2, 3, 200, 4)) << "\n";
+}

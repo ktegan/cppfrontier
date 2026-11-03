@@ -1,0 +1,87 @@
+// Source: cppreference "RAII" and "Move constructors" (a unique resource owner
+// whose move leaves the source empty), and the types.md `that` rules: a
+// `move that` operator= defines only the move operations, so the type is
+// move-only, and a destructor `operator=: (move this)` releases the resource.
+// Exercises: move-only types, `(move x)`, definite-last-use moves into a
+// function, std::vector of a move-only type, a defaulted memberwise move,
+// `member = _;` in an assignment, guard-prefixed locals not
+// moved, and destruction order.
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+// Owns a heap int; a moved-from std::unique_ptr is null, so a moved-from
+// handle owns nothing.
+handle: type = {
+    res: std::unique_ptr<int>;
+
+    operator=: (out this, n: int) = {
+        res = new<int>(n);
+        std::cout << "open (n)$\n";
+    }
+    // Move construction: memberwise `res = that.res;`, which moves.
+    operator=: (out this, move that) = { }
+    // Move assignment releases the current resource first; `res = _;` skips
+    // the memberwise assignment so the old value can be read.
+    operator=: (inout this, move that) = {
+        res = _;
+        if res { std::cout << "close (res*)$ on assignment\n"; }
+        res = that.res;
+    }
+    operator=: (move this) = {
+        if res { std::cout << "close (res*)$\n"; }
+    }
+    valid: (this) -> bool = res != nullptr;
+    get: (this) -> int = res*;
+}
+
+// A scope guard: runs an action when it goes out of scope.
+scope_exit: type = {
+    msg: std::string;
+    operator=: (out this, m: std::string) = { msg = m; }
+    operator=: (move this) = { std::cout << "scope exit: (msg)$\n"; }
+}
+
+consume: (move h: handle) = {
+    std::cout << "consume (h.get())$\n";
+}
+
+make: (n: int) -> handle = {
+    h: handle = n;
+    return h;   // moved out
+}
+
+pass_through: (copy h: handle) -> handle = h;
+
+main: () = {
+    guard_main: scope_exit = "main";
+
+    a: handle = 1;
+    b := (move a);
+    std::cout << "after move: a valid (a.valid())$, b valid (b.valid())$\n";
+
+    c := make(2);
+    c = (move b);   // closes 2, takes 1
+    std::cout << "c holds (c.get())$\n";
+
+    {
+        guard_inner: scope_exit = "inner";
+        d: handle = 3;
+        consume(d);   // definite last use: passed as an rvalue; `move h` binds to it
+        std::cout << "inner end\n";
+    }
+
+    v: std::vector<handle> = ();
+    v.push_back(make(4));
+    v.push_back(make(5));
+    v.emplace_back(6);
+    for v do (h) { std::cout << "in vector (h.get())$\n"; }
+
+    e := pass_through(make(7));
+    std::cout << "passed (e.get())$\n";
+
+    v.erase(v.begin());
+    std::cout << "erased first\n";
+}

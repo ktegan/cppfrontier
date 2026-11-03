@@ -1,0 +1,28 @@
+// Source: a Cpp1 `enum class` with a hidden value and a converting
+// constructor, and a tagged union with a defaulted member, ported to @enum
+// and @union. metafunctions.md: enumerators are public with deduced types, an
+// enum may not declare `operator=`, and a union alternative is public, has no
+// initializer and is not named `is_...` or `set_...`. Neither is named `_`.
+// expect-error: an enumerator cannot be protected or private
+// expect-error: an explicit underlying type should be specified as a compile-time argument to the metafunction
+// expect-error: an enum may not have a user-defined operator=
+// expect-error: a union alternative cannot have an initializer
+// expect-error: a union alternative's name cannot start with 'is_' or 'set_'
+// expect-error: a union alternative cannot be protected or private
+// expect-error: (19,5): error: an enumerator must have a name, which its value is spelled with
+// expect-error: (25,5): error: a union alternative must have a name, which its accessors use
+color: @enum type = {
+    red;
+    private green;
+    blue: int = 3;
+    operator=: (out this, raw: int) = { }
+    _;
+}
+token: @union type = {
+    name: std::string = "x";
+    is_num: int;
+    private hidden: int;
+    _: double;
+}
+
+main: () = { }

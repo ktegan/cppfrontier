@@ -1,0 +1,16 @@
+// Source: types.md "operator=": an `out this` converting constructor also
+// generates the assignment from the same value. For a constructor template,
+// the generated assignment is the same template, with its constraints.
+#include <iostream>
+#include <concepts>
+Box: type = {
+    public v: long = 0;
+    operator=: <T: std::integral> (implicit out this, x: T) requires (sizeof(T) <= 8u) = { v = x; }
+    operator=: (out this, that) = { v = that.v; }
+}
+main: () = {
+    b: Box = 3;
+    b = 'a';
+    c := b;
+    std::cout << b.v << c.v << "\n";
+}

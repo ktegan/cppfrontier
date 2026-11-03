@@ -1,0 +1,16 @@
+// Source: functions.md "parameters": a `move` parameter takes rvalues. A
+// deduced one accepts a `move` argument, a temporary and a definite last use,
+// and its own last use moves it on.
+sink: (copy s: std::string) = { std::cout << "[" << s << "]"; }
+f: <T> (move x: T) = { sink(x); }
+p: (move xs...: std::string) = { (sink(xs), ...); }
+main: () = {
+    s: std::string = "a";
+    f(move s);
+    f(std::string("b"));
+    l := :(move x: _) = sink(x);
+    t: std::string = "c";
+    l(t);
+    p(std::string("d"), std::string("e"));
+    std::cout << " " << s.empty() << "\n";
+}

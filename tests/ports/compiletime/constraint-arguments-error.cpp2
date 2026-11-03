@@ -1,0 +1,18 @@
+// Source: cppreference "Constraints and concepts": in a type-constraint
+// `C<A...>` the constrained type is the first argument, so `pair_like<int>`
+// constrains with two arguments and `pair_like<int, long>` with three; a
+// concept whose first parameter is a value cannot constrain a type, and one
+// with a defaulted parameter takes a range of arguments.
+// Upstream lets the Cpp1 compiler report both.
+// expect-error: 'pair_like' as a type constraint takes 1 template argument after the constrained type, but 2 are written
+// expect-error: 'small' as a type constraint takes at most 1 template argument after the constrained type, but 2 are written
+// expect-error: 'positive' does not take a type as its first template argument, so it cannot constrain '_'
+pair_like: <T, U> concept = std::is_same_v<T, U>;
+positive: <N: int> concept = N > 0;
+small: <T, U: type = int> concept = sizeof(T) <= sizeof(U);
+ok: (x: _ is pair_like<int>) = { }
+f: (x: _ is pair_like<int, long>) = { }
+g: (x: _ is positive) = { }
+h: (x: _ is small<long, int>) = { }
+fine: (x: _ is small<long>) = { }
+main: () = { }

@@ -1,0 +1,45 @@
+// Source: a Cpp1 concept with `requires (T& a, T const& b)`, and the C++20
+// `requires requires` and `if constexpr (requires ...)` forms.
+// Requires-expression parameters use Cpp2 syntax, with the passing style
+// giving the value category (`inout a: T` is `T& a`, `b: T` is
+// `T const& b`, `move a: T` is `T&& a`); requires_parameters_error.cpp2 has
+// the Cpp1 form. Upstream does not parse requires-expressions in Cpp2 code.
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+// A type whose values can be appended to in place and measured.
+appendable: <T> concept = requires (inout a: T, b: T) {
+    a += b;
+    { a.size() } -> std::convertible_to<std::size_t>;
+};
+
+// A type that copies from a named rvalue reference, which is an lvalue.
+copies_named: <T> concept = requires (move a: T) { T(a); };
+
+twice: <T: type> (x: T) -> T requires appendable<T> = {
+    result := x;
+    result += x;
+    return result;
+}
+
+// An ad hoc constraint, without a named concept.
+negated: <T: type> (x: T) -> T requires requires (a: T) { -a; } = -x;
+
+// 1 when `T` has a `size()`, else 0.
+sized: <T: type> (x: T) -> int = {
+    if constexpr requires (a: T) { a.size(); } {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+main: () = {
+    std::cout << twice(std::string("ab")) << "\n";
+    std::cout << appendable<std::string> << appendable<std::vector<int>> << appendable<int>;
+    std::cout << copies_named<std::string> << copies_named<std::unique_ptr<int>> << "\n";
+    std::cout << negated(2) << sized(std::string("x")) << sized(3) << "\n";
+}

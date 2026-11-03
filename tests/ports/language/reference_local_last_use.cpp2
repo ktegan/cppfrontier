@@ -1,0 +1,57 @@
+// Source: functions.md "Definite last use" with Cpp1 reference locals: a local
+// whose type is or may be a reference (`cpp1_ref<T>`, an alias of a reference,
+// `decltype` of an `inout` parameter, a template type parameter deduced from
+// a `forward` argument) is forwarded at its last use, so it moves only what it
+// owns, and so is a `copy` parameter, statement parameter or range parameter
+// of type `cpp1_ref<T>`. Upstream moves them, which empties the caller's object.
+sink: (copy s: std::string) -> std::string = s;
+Ref: type == cpp1_ref<std::string>;
+through_ref: (inout s: std::string) -> std::string = {
+    r: cpp1_ref<std::string> = s;
+    return sink(r);
+}
+through_alias: (inout s: std::string) -> std::string = {
+    r: Ref = s;
+    return sink(r);
+}
+through_decltype: (inout s: std::string) -> std::string = {
+    r: decltype(s) = s;
+    return sink(r);
+}
+through_template: <T> (forward x: T) -> std::string = {
+    r: T = x;
+    return sink(r);
+}
+owned: <T> (copy x: T) -> std::string = {
+    r: T = x;
+    return sink(r);
+}
+Noisy: type = {
+    operator=: (out this) = {}
+    operator=: (out this, that) = { std::cout << "copy "; }
+    operator=: (out this, move that) = { std::cout << "move "; }
+}
+take: (copy n: Noisy) = {}
+copied_ref: (copy r: cpp1_ref<std::string>) -> std::string = sink(r);
+ref_parameters: (inout v: std::vector<std::string>) -> std::string = {
+    r: std::string = "";
+    for v do (copy e: cpp1_ref<std::string>) { r += sink(e); }
+    (copy e: cpp1_ref<std::string> = v[0]) { r += sink(e); }
+    return r;
+}
+main: () = {
+    a: std::string = "a";
+    b: std::string = "b";
+    c: std::string = "c";
+    d: std::string = "d";
+    std::cout << through_ref(a) << through_alias(b) << through_decltype(c)
+              << through_template(d) << owned(std::string("e")) << "\n";
+    std::cout << a << b << c << d << "\n";
+    e: std::string = "e";
+    std::cout << copied_ref(e) << e << "\n";
+    v: std::vector<std::string> = ("x", "y");
+    std::cout << ref_parameters(v) << v[0] << v[1] << "\n";
+    forwarded := :<T> (copy n: T) = { m: T = n; take(m); };
+    forwarded(Noisy());
+    std::cout << "\n";
+}

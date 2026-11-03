@@ -1,0 +1,38 @@
+// `__LINE__` after function expressions whose lambdas take more lines than
+// their source: the statements after them keep their source lines, so Cpp1
+// compiler errors and debuggers see the right line (#line resynchronization).
+// Each output line is the source line of the `__LINE__` that printed it.
+#include <iostream>
+
+twice: (x: int) -> int = { m := :(z: int) -> int = { w := z; return w * 2; }; return m(x); }
+after_global: () = std::cout << __LINE__ << "\n";
+
+holder: type = {
+    k: int = 1;
+    run: (this) = {
+        add := :(x: int) -> int = { y := x + k$; return y; };
+        std::cout << __LINE__ << " " << add(1) << "\n";
+    }
+}
+
+main: () = {
+    f := :() = { a := 1; g := :(b: int) -> int = { c := b; return c; }; std::cout << g(a) << "\n"; };
+    std::cout << __LINE__ << "\n";
+    f();
+    v := 3;
+    r := inspect v -> int {
+        is 3 = 1;
+        is _ = 0;
+    };
+    std::cout << __LINE__ << " " << r << "\n";
+    nested := :() = {
+        inner := :() = { x := 1; std::cout << x << "\n"; };
+        std::cout << __LINE__ << "\n";
+        inner();
+    };
+    nested();
+    std::cout << __LINE__ << " " << twice(2) << "\n";
+    after_global();
+    h: holder = ();
+    h.run();
+}

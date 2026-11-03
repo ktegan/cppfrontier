@@ -1,0 +1,33 @@
+// Source: hello-world.md "Order-independent by default" and objects.md: a
+// namespace-scope `==` constant or object may be named by a signature or a
+// member initializer before its declaration, in the same namespace or
+// another; a constant moves before its first use together with the later
+// constants and constexpr functions it names. A namespace-scope object needs
+// a declared type unless it is a `==` constant (as upstream). A typed list
+// constant is list-initialized.
+holder: type = {
+    public first: int = base;
+    public second: int = derived;
+    public third: int = counter;
+}
+
+pick: (x: int = base, y: int = N::inner) -> int = x * 100 + y;
+
+N: namespace = {
+    twice: (x: int = inner) -> int = 2 * x;
+    inner: int == 7;
+}
+
+derived :== square(base) + 1;
+square: (x: int) -> int == x * x;
+base: _ == 3;
+counter: int = 40;
+sizes: std::array<int, 3> == (base, 5, 6);
+empty: std::array<int, 2> == ();
+
+main: () = {
+    h: holder = ();
+    std::cout << h.first << " " << h.second << " " << h.third << " " << pick() << " "
+              << N::twice() << "\n";
+    std::cout << sizes[0] << sizes[2] << empty[1] << "\n";
+}

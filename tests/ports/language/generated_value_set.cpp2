@@ -1,0 +1,77 @@
+// Source: types.md "operator= can generalize (A)ssignment from construction,
+// and (M)ove from copy".
+// Exercises: the assignment and move functions generated from a written
+// constructor keep its contracts, its `==` (constexpr) and its access, and
+// construct the constructor's `out` parameters and deferred locals.
+#include <iostream>
+#include <source_location>
+
+checks: cpp2::contract_group = ();
+log_violation: (msg: * const char, copy _: std::source_location) = {
+    std::cout << "violation: " << msg << "\n";
+}
+
+Level: type = {
+    public n: int = 0;
+    operator=: (out this, v: int)
+        pre<checks>(v >= 0, "level (v)$ is negative")
+        post<checks>(n == v)
+    = { n = v; }
+    operator=: (out this, that)
+        post<checks>(n == that.n, "copied")
+    = { }
+}
+
+Const: type = {
+    public n: int = 0;
+    operator=: (out this, v: int) == { n = v; }
+    operator=: (out this, that) == { }
+}
+
+make: () -> Const == {
+    c: Const = 1;
+    c = 4;
+    d: Const = 2;
+    d = c;
+    e := (move d);
+    return e;
+}
+
+Hidden: type = {
+    public n: int = 0;
+    private operator=: (out this, v: int) = { n = v; }
+    public operator=: (out this) = { }
+    public make: (v: int) -> Hidden = (v);
+}
+
+Split: type = {
+    public whole: int;
+    operator=: (out this, out half: int) = {
+        whole = 6;
+        if whole > 4 { half = whole / 2; } else { half = whole; }
+        rest: int;
+        rest = whole - half;
+        std::cout << "rest " << rest << "\n";
+    }
+}
+
+main: () = {
+    _ = checks.set_handler(log_violation&);
+    l: Level = 3;
+    l = 5;
+    std::cout << l.n << "\n";
+    l = -2;
+    m := l;
+    m = l;
+    m = (move l);
+    std::cout << m.n << "\n";
+    static_assert(make().n == 4);
+    std::cout << make().n << "\n";
+    // Hidden's generated assignment from int is private, as its constructor.
+    h1: int;
+    s: Split = (out h1);
+    h2: int;
+    s = (out h2);
+    std::cout << h1 << h2 << s.whole << "\n";
+    std::cout << !std::is_assignable_v<std::add_lvalue_reference_t<Hidden>, int> << Hidden::make(7).n << "\n";
+}

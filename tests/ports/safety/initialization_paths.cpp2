@@ -1,0 +1,69 @@
+// Source: objects.md "Guaranteed initialization". A path that leaves by
+// `return`, `throw`, `break` or `continue` needs nothing more initialized,
+// and an `out` argument initializes wherever it is evaluated on every path,
+// including a returned value, a loop range and every inspect alternative.
+#include <iostream>
+#include <string>
+#include <vector>
+
+set: (out a: int, v: int) -> int = { a = v; return v; }
+make: (out n: int) -> std::vector<int> = { n = 3; return (1, 2, 3); }
+
+sign: (c: bool, d: bool, out x: int) = {
+    if c {
+        if d { x = 1; return; }
+        else { x = 2; return; }
+    }
+    x = 3;
+}
+
+checked: (n: int) -> (r: std::string) = {
+    if n < 0 { throw(n); }
+    if n == 0 { r = "zero"; return; }
+    r = "positive";
+}
+
+returned: () -> int = {
+    z: int;
+    return set(out z, 4);
+}
+
+chosen: (n: int) -> int = {
+    z: int;
+    _ = inspect n -> int { is 1 = set(out z, 10); is _ = set(out z, 20); };
+    return z;
+}
+
+main: () = {
+    a: int;
+    b: int;
+    c: int;
+    sign(true, true, out a);
+    sign(true, false, out b);
+    sign(false, false, out c);
+    std::cout << a << b << c << "\n";
+    std::cout << checked(0) << " " << checked(1) << "\n";
+    try { _ = checked(-1); } catch (_) { std::cout << "thrown\n"; }
+    std::cout << returned() << " " << chosen(1) << " " << chosen(2) << "\n";
+
+    z: int;
+    for make(out z) do (e) { std::cout << e + z; }
+    std::cout << "\n";
+
+    v: std::vector<int> = (1, -2, 3);
+    for v do (e) {
+        x: int;
+        if e > 0 { x = e; } else { continue; }
+        std::cout << x;
+    }
+    std::cout << "\n";
+    i := 0;
+    do {
+        y: int;
+        if i == 1 { i++; continue; }
+        y = i;
+        std::cout << y;
+        i++;
+    } while i < 3;
+    std::cout << "\n";
+}

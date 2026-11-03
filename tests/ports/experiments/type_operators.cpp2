@@ -1,0 +1,40 @@
+// Experiment type-operators (docs/EXPERIMENTS.md): `A | B` in a type position
+// is std::variant<A, B>; in a constraint, `&` and `|` combine concepts.
+// flags: -experiment=type-operators
+#include <iostream>
+#include <string>
+
+Value: type == int | std::string;
+
+describe: (v: Value) -> std::string =
+    inspect v -> std::string {
+        is int = "int " + std::to_string(v as int);
+        is std::string = "string " + (v as std::string);
+        is _ = "?";
+    };
+
+small: <T> concept = sizeof(T) <= 4u;
+twice: <T: std::integral & small> (x: T) -> T = x * 2;
+twice: <T: std::floating_point | std::same_as<longlong>> (x: T) -> T = x + x;
+which: (x: _ is std::integral & small) -> int = 1;
+which: (x: _ is std::floating_point | std::same_as<longlong>) -> int = 2;
+Box: <T: std::integral & small> type = { public value: T = 7; }
+// A namespace-scope constant asserts its constraint after its declaration.
+m: _ is std::integral | std::floating_point == 2.5;
+
+main: () = {
+    x: Value = "hi";
+    std::cout << describe(x) << "\n";
+    x = 42;
+    std::cout << describe(x) << " " << (x is int) << "\n";
+    v: std::vector<type int | std::string> = (1, "two");
+    for v do (e) std::cout << describe(e) << "\n";
+    p: *(int | std::string) = x&;
+    std::cout << (p* as int) << "\n";
+    big: longlong = 5;
+    b: Box<i16> = ();
+    std::cout << twice(21) << " " << twice(1.5) << " " << twice(big) << " "
+              << which(7) << which(2.0) << which(big) << " " << b.value << "\n";
+    n: _ is std::integral | std::floating_point = 3;
+    std::cout << n << " " << m << "\n";
+}

@@ -1,0 +1,9 @@
+// Source: common.md "unary operators": `a * -1` reads as `(a*) - 1`, a
+// dereference, whatever the spacing; spacing that suggests multiplication is
+// an error. Upstream emits Cpp1 that dereferences `a`.
+// expect-error: this '*' is a postfix dereference of the operand before it, not a binary '*'
+main: () = {
+    a := 6;
+    b := a * -1;
+    _ = b;
+}

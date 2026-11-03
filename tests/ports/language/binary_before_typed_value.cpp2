@@ -1,0 +1,12 @@
+// Source: common.md "unary operators": `*` and `&` after an operand are binary
+// when an operand follows, and a typed value `:T = v` or a function expression
+// `:() = v;` is one, so these multiply and take a bitwise and. Upstream reads
+// the `*` and `&` as postfix and rejects them.
+main: () = {
+    a := 3;
+    x := 2;
+    x *= :() -> int = 3;();
+    p := a&;
+    std::cout << (a * :int = 4) << " " << (a & :int = 6) << " " << (a * :() -> int = 5;())
+              << " " << (p* * :int = 2) << " " << x << "\n";
+}

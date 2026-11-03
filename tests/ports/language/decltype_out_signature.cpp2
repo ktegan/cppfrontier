@@ -1,0 +1,16 @@
+// Source: declarations.md "deferred initialization": `decltype(x)` of an `out`
+// parameter is its declared type, also in the function's own signature: a
+// later parameter, the return type and the `requires` clause.
+f: (out x: int, y: std::vector<decltype(x)>) -> decltype(x) = { x = 1; return y[0] + x; }
+g: <T> (out x: T) -> T requires std::is_same_v<decltype(x), int> = { x = 2; return x; }
+main: () = {
+    a: int;
+    b: int;
+    c: int;
+    v: std::vector<int> = (5);
+    h := :(out x: int) -> decltype(x) = { x = 3; return x * 2; };
+    std::cout << f(out a, v);
+    std::cout << g(out b);
+    std::cout << h(out c);
+    std::cout << " " << a << b << c << "\n";
+}

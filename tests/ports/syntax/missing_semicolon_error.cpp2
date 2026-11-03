@@ -1,0 +1,7 @@
+// Source: a one-line function `int k() { return 1; }` ported without the
+// `;` that ends an expression body. functions.md: `k: () -> int = 1;`.
+// expect-error: expected ';' at the end of the declaration
+k: () -> int = 1
+main: () = {
+    std::cout << k() << "\n";
+}

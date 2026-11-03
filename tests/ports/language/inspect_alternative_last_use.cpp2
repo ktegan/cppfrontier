@@ -1,0 +1,25 @@
+// Source: last-use moves (functions.md "definite last use"): the values of an
+// inspect's alternatives are exclusive paths, so each one's mention of a name
+// is a definite last use, also in a nested inspect; a mention in the subject,
+// in two places of one value, or before a later use is not.
+take: (move s: std::string) -> std::string = s + "!";
+both: (a: std::string, b: std::string) -> std::string = a + b;
+f: (copy s: std::string, x: int, y: int) -> std::string = {
+    return inspect x -> std::string {
+        is 1 = inspect y -> std::string { is 1 = take(s); is _ = s + "?"; };
+        is 2 = take(s);
+        is _ = "none";
+    };
+}
+g: (copy s: std::string, x: int) -> std::string = {
+    r := inspect x -> std::string { is 1 = take(s); is _ = both(s, s); };
+    return r;
+}
+h: (copy s: std::string, x: int) -> std::string = {
+    r := inspect x -> std::string { is 1 = s + "1"; is _ = s; };
+    return r + s;
+}
+main: () = {
+    std::cout << f("a", 1, 1) << f("b", 1, 2) << f("c", 2, 0) << f("d", 3, 0) << "\n";
+    std::cout << g("e", 1) << g("f", 2) << h("g", 1) << h("h", 2) << "\n";
+}

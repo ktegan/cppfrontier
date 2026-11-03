@@ -1,0 +1,53 @@
+// Experiment next-list: a loop's next clause may be a list of expressions,
+// run in order at the end of each iteration, also after 'continue', in
+// 'while', 'do' and 'for' loops. '(x)' and '(x,)' stay one expression. An
+// overloaded 'operator,' does not change the order.
+// flags: -experiment=next-list
+#include <iostream>
+#include <vector>
+
+// A Cpp1 comma operator over two traces would also record a 0.
+struct Trace { std::vector<int> log; };
+inline auto add(Trace& t, int n) -> Trace& { t.log.push_back(n); return t; }
+inline auto operator,(Trace& a, Trace&) -> Trace& { a.log.push_back(0); return a; }
+
+main: () = {
+    i := 0;
+    j := 10;
+    while i < 3 next (i++, j -= 2) {
+        std::cout << i << " " << j << "\n";
+    }
+
+    k := 0;
+    sum := 0;
+    while k < 6 next (k++, sum += k,) {
+        if k % 2 == 0 { continue; }
+        std::cout << "odd " << k << "\n";
+    }
+    std::cout << "sum " << sum << "\n";
+
+    n := 0;
+    do {
+        std::cout << "do " << n << "\n";
+    } next (n += 1, _ = n) while n < 2;
+
+    t: Trace = ();
+    for (1, 2, 3) next (add(t, -1), add(t, -2)) do (x) {
+        if x == 2 { continue; }
+        _ = add(t, x);
+    }
+    for t.log do (x) { std::cout << x << " "; }
+    std::cout << "\n";
+
+    m := 0;
+    outer: for (1, 2) next (m += 10, m += 1) do (x) {
+        for (1, 2) do (y) {
+            if y == 2 { continue outer; }
+            std::cout << x << y << " ";
+        }
+    }
+    std::cout << "\nm " << m << "\n";
+
+    g := 0;
+    while g < 2 next (g += 1) { std::cout << "g " << g << "\n"; }
+}

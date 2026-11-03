@@ -1,0 +1,18 @@
+// A list `(a, b)` is a value after `=` and `return`, as a list item and as a
+// for range (common.md "Lists and commas").
+f: (v: std::vector<int> = (1, 2)) -> std::vector<int> = v;
+g: () -> std::vector<int> = (3, 4);
+h: () -> std::vector<int> = { return (5, 6); }
+k: <V: std::array<int, 2> = (7, 8)> () -> int = V[1];
+m: std::map<std::string, int> = (("a", 1), ("b", 2));
+S: type = { public v: std::vector<int> = (1, 2, 3); }
+
+main: () = {
+    v: std::vector<int> = (1, 2);
+    w := :std::vector<int> = (3, 4);
+    v = (9, 10, 11);
+    for (0, 1, 2) do (e) { std::cout << e; }
+    std::cout << "\n";
+    std::cout << f().size() << g()[1] << h()[0] << k() << m.size() << S().v.size() << "\n";
+    std::cout << v.size() << w[0] << "\n";
+}

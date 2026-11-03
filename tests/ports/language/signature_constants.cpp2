@@ -1,0 +1,15 @@
+// Source: hello-world.md "Order-independent by default": a function signature
+// may use namespace-scope constants and aliases, so its Cpp1 declaration must
+// follow them rather than being hoisted above them.
+N: == 3;
+limit: int = 7;
+A: type == std::array<int, N>;
+
+size_of: (a: std::array<int, N>) -> int = a.ssize();
+first: (a: A) -> int = a[0];
+clamp: (x: int, hi: int = limit) -> int = std::min(x, hi);
+
+main: () = {
+    std::cout << size_of(std::array<int, N>()) << " " << first(:A = (9, 8, 7)) << " "
+              << clamp(10) << "\n";
+}

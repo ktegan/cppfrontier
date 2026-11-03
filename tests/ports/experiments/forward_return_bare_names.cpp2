@@ -1,0 +1,25 @@
+// Source: LANGUAGE.md "Returns" (design:
+// experiments/forward-return-bare-names.md): a `-> forward` return may not refer into a local
+// or a by-value parameter, but a postfix `*` leaves it, so returning through
+// an iterator (`it*.second`) or a pointer parameter (`p*`) is accepted.
+// forward_return_bare_names_default.cpp2 has the rejected forms.
+#include <iostream>
+#include <map>
+#include <string>
+
+// The value of the first entry, as a reference into `m`.
+first_value: (inout m: std::map<int, std::string>) -> forward std::string = {
+    it := m.begin();
+    return it*.second;
+}
+
+// The element `p` points to.
+pointee: (p: *int) -> forward int = p*;
+
+main: () = {
+    m: std::map<int, std::string> = ((1, "one"), (2, "two"));
+    first_value(m) = "uno";
+    n := 1;
+    pointee(n&) = 42;
+    std::cout << m[1] << " " << n << "\n";
+}

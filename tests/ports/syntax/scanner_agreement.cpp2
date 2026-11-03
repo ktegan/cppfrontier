@@ -1,0 +1,22 @@
+// Brackets, template lists and literals that every scanner reads alike.
+
+f: (a: int = 1 < 2, b: int = 3) -> int = a + b;
+
+g: <N: int = (1 > 2)> () -> int = N;
+
+h: <N: int> () -> int requires N < 10 = N;
+
+main: () = {
+    std::cout << f() << " " << f(5) << " " << g() << " " << h<3>() << "\n";
+    k := :() -> std::vector<std::vector<int>> = std::vector<std::vector<int>>(2);
+    std::cout << k().size() << "\n";
+    total := 0;
+    for 0 ..< 1'000 do (i) total += i;
+    std::cout << total << " " << '}' << "\n";
+    try {
+        throw(std::pair<int, int>(1, 2));
+    }
+    catch (p: std::pair<int, int>) {
+        std::cout << p.first + p.second << "\n";
+    }
+}

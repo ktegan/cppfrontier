@@ -1,0 +1,63 @@
+// Source: cppreference "constexpr specifier" (factorial example) and the
+// classic recursive-template factorial/fibonacci from template tutorials.
+// Exercises function aliases (`==`, Cpp1 constexpr) with expression and block
+// bodies, recursion through a non-type template parameter with `if constexpr`,
+// object aliases, and use of the results in static_assert and array bounds.
+#include <array>
+#include <iostream>
+
+// Function aliases: side-effect-free, usable at compile time.
+factorial: (n: u64) -> u64 == { if n <= 1u { return 1; } return n * factorial(n - 1); }
+
+gcd: (a: i64, b: i64) -> i64 == { if b == 0 { return a; } return gcd(b, a % b); }
+
+is_prime: (n: i32) -> bool == {
+    if n < 2 { return false; }
+    (copy d := 2)
+    while d * d <= n next d++ {
+        if n % d == 0 { return false; }
+    }
+    return true;
+}
+
+// Recursion on a template argument.
+fib: <N: u64> () -> u64 == {
+    if constexpr N < 2u { return N; }
+    else { return fib<N - 1>() + fib<N - 2>(); }
+}
+
+// The n-th prime, computed by a loop in a function alias.
+nth_prime: (n: i32) -> i32 == {
+    count := 0;
+    (copy candidate := 1)
+    while true {
+        candidate++;
+        if is_prime(candidate) {
+            count++;
+            if count == n { return candidate; }
+        }
+    }
+}
+
+table_size: i32 == 5;
+
+main: () = {
+    static_assert(factorial(5) == 120);
+    static_assert(gcd(84, 36) == 12);
+    static_assert(fib<20>() == 6765);
+    static_assert(is_prime(97) && !is_prime(91));
+    static_assert(nth_prime(10) == 29);
+
+    primes: std::array<i32, table_size> = ();
+    (copy i := 0)
+    while i < table_size next i++ {
+        primes[i] = nth_prime(i + 1);
+    }
+    for primes do (p) { std::cout << p << " "; }
+    std::cout << "\n";
+
+    buffer: std::array<char, factorial(4)> = ();
+    std::cout << "buffer size (buffer.size())$\n";
+    std::cout << "fib<30> = (fib<30>())$\n";
+    std::cout << "gcd(1071, 462) = (gcd(1071, 462))$\n";
+}

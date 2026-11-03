@@ -1,0 +1,12 @@
+// Source: review A2 and functions.md "Capture": capturing an expression that
+// dereferences a pointer, `q*$` or `p*.size()$`, captures its value; the
+// capture is not the pointer itself, so arithmetic on it is allowed.
+main: () = {
+    n := 41;
+    q := n&;
+    f := :() = q*$ + 1;
+    v: std::vector<int> = (1, 2);
+    p := v&;
+    g := :() = p*.size()$ - 1;
+    std::cout << f() << g() << "\n";
+}

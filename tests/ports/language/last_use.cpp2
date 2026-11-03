@@ -1,0 +1,194 @@
+// Source: functions.md "Move/forward from definite last use".
+// Exercises: which uses are definite last uses, shown by a type that prints
+// how it is copied or moved: locals and `copy`, `move`, `in` and `forward`
+// parameters, the last use in each branch, uses in and around loops, two uses
+// in one statement, member access and UFCS calls, `$` captures, a later
+// compile-time mention, a postcondition, `return`, expression bodies,
+// statement parameters, and uses before a `return`, `throw`, `break` or
+// `continue` and in a `catch` handler.
+#include <iostream>
+#include <string>
+#include <utility>
+
+item: type = {
+    public name: std::string;
+
+    operator=: (out this, n: std::string) = { name = n; }
+    operator=: (out this, that) = {
+        name = that.name;
+        std::cout << "  copy (name)$\n";
+    }
+    operator=: (out this, move that) = {
+        std::cout << "  move (name)$\n";
+    }
+    // Which overload a UFCS call picks shows whether the receiver was moved.
+    who: (this) = std::cout << "  lvalue (name)$\n";
+    who: (move this) = std::cout << "  rvalue (name)$\n";
+}
+
+holder: @struct type = {
+    part: item;
+}
+
+sink: (copy x: item) = { }
+sink2: (copy x: item, copy y: item) = { }
+look: (x: item) = { }
+
+local: () = {
+    std::cout << "local\n";
+    a: item = "a";
+    sink(a);    // not the last use
+    sink(a);    // moved
+}
+
+parameters: (copy c: item, move m: item, in i: item) = {
+    std::cout << "parameters\n";
+    sink(c);
+    sink(m);
+    sink(i);    // an `in` parameter is never moved
+}
+
+forwarded: (forward f: item) = sink(f);
+
+branches: (b: bool) = {
+    std::cout << "branches (b)$\n";
+    x: item = "x";
+    look(x);
+    if b { sink(x); }
+    else { look(x); sink(x); }
+}
+
+loops: () = {
+    std::cout << "loops\n";
+    outer: item = "outer";
+    i := 0;
+    while i < 2 next i++ {
+        sink(outer);    // inside a loop: never moved
+        inner: item = "inner";
+        sink(inner);    // declared in the loop body: moved
+    }
+    cond: item = "cond";
+    while cond.name.ssize() > 5 { }
+    sink(cond);         // after the loop: moved
+}
+
+twice: () = {
+    std::cout << "twice\n";
+    x: item = "x";
+    sink2(x, x);    // two uses in one statement: neither is moved
+}
+
+members: () = {
+    std::cout << "members\n";
+    h: holder = (item("h.part"));
+    sink(h.part);   // the last use of `h` moves its member
+    u: item = "u";
+    u.who();
+    u.who();        // moved: picks the `move this` overload
+}
+
+captured: () = {
+    std::cout << "captured\n";
+    x: item = "x";
+    look(x);
+    l := :() = look(x$);    // the capture is the last use
+    l();
+}
+
+compile_time: () = {
+    std::cout << "compile time\n";
+    x: item = "x";
+    sink(x);                // moved: sizeof is not a use
+    _ = sizeof(x);
+}
+
+checked: (copy x: item) post(!x.name.empty()) = {
+    std::cout << "checked\n";
+    sink(x);    // the postcondition is a later use
+}
+
+returned: (copy x: item) -> item = {
+    std::cout << "returned\n";
+    return x;
+}
+
+expression_body: (copy x: item) -> item = x;
+
+statement_parameter: () = {
+    std::cout << "statement parameter\n";
+    (copy s: item = item("s")) {
+        sink(s);
+    }
+}
+
+exits: (b: bool) = {
+    std::cout << "exits (b)$\n";
+    x: item = "x";
+    if b {
+        sink(x);    // moved: no path after the `return` mentions x
+        return;
+    }
+    look(x);
+    sink(x);
+}
+
+jumps: () = {
+    std::cout << "jumps\n";
+    outer: item = "outer";
+    i := 0;
+    while i < 3 next i++ {
+        y: item = "y";
+        if i == 0 {
+            sink(y);        // moved: `continue` leaves the scope of y
+            continue;
+        }
+        if i == 2 {
+            sink(outer);    // inside a loop: never moved, even before `break`
+            break;
+        }
+        sink(y);
+    }
+}
+
+thrown: (b: bool) = {
+    std::cout << "thrown (b)$\n";
+    x: item = "x";
+    h: item = "h";
+    try {
+        if b {
+            sink(x);    // moved: the handler does not mention x
+            sink(h);    // the handler mentions h: copied
+            throw(1);
+        }
+        look(x);
+    }
+    catch (_) {
+        sink(h);        // moved: the handler's last use
+    }
+}
+
+main: () = {
+    local();
+    parameters(item("c"), item("m"), item("i"));
+    std::cout << "forwarded\n";
+    f: item = "f";
+    forwarded(f);   // an lvalue: copied
+    look(f);
+    forwarded(item("f2"));
+    branches(true);
+    branches(false);
+    loops();
+    twice();
+    members();
+    captured();
+    compile_time();
+    checked(item("checked"));
+    _ = returned(item("r"));
+    std::cout << "expression body\n";
+    _ = expression_body(item("e"));
+    statement_parameter();
+    exits(true);
+    exits(false);
+    jumps();
+    thrown(true);
+}

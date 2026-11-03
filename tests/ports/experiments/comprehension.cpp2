@@ -1,0 +1,31 @@
+// Experiment comprehension (docs/EXPERIMENTS.md): `for range do (x) [if guard]
+// yield value` is a lazy view over a range, or a monadic chain over an optional
+// or expected; `for ...` in place of `yield` nests a generator.
+// flags: -experiment=comprehension
+#include <iostream>
+#include <optional>
+#include <ranges>
+#include <vector>
+
+half: (n: int) -> std::optional<int> = {
+    if n % 2 == 0 { return n / 2; }
+    return std::nullopt;
+}
+
+main: () = {
+    xs: std::vector<int> = (1, 2, 3, 4);
+    ys: std::vector<int> = (10, 20);
+    for (for xs do (x) if x % 2 == 0 yield x * x) do (v) std::cout << v << " ";
+    std::cout << "\n";
+    for (for xs do (x) for ys do (y) yield x + y) do (v) std::cout << v << " ";
+    std::cout << "\n";
+    quarter := for half(8) do (h) for half(h) do (q) yield q;
+    std::cout << quarter.value_or(-1) << " ";
+    odd := for half(3) do (h) yield h + 1;
+    std::cout << odd.value_or(-1) << "\n";
+    // A local that the bound name hides is not read.
+    x: int;
+    count := std::ranges::distance(for xs do (x) yield x);
+    x = 0;
+    std::cout << count + x << "\n";
+}

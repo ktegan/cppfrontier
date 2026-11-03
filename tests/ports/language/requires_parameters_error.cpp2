@@ -1,0 +1,12 @@
+// Source: a Cpp1 concept with `requires (T& a, T const& b)`. The parameters of
+// a requires-expression use Cpp2 syntax, so each Cpp1 parameter is rejected;
+// requires_parameters.cpp2 is the program in Cpp2 syntax.
+// expect-error: a requires-expression parameter uses Cpp2 syntax, as in 'a: T' or 'inout a: T'
+appendable: <T> concept = requires (T& a, T const& b) {
+    a += b;
+    { a.size() } -> std::convertible_to<std::size_t>;
+};
+
+copies_named: <T> concept = requires (T&& a) { T(a); };
+
+main: () = { }

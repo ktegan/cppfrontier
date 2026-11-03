@@ -1,0 +1,20 @@
+diamonds = 9
+hearts = 10
+clubs = 12
+null = 23
+hearts < spades: 1
+from_string(grand): 20
+janus starts at past (raw 0), flips to future, and back to past
+step 1: red for 30s
+step 2: green for 25s
+step 3: yellow for 5s
+step 4: red for 30s
+f = (cached)
+after set: (cached, obsolete), raw 5
+has cached: true, has current: false
+after clear: (obsolete)
+both == cached_and_current: true
+none: (none)
+empty
+name xyzzy
+number 120, plus 3 is 123

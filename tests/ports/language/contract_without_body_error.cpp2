@@ -1,0 +1,14 @@
+// Source: contracts.md preconditions and types.md virtual functions.
+// Contracts are checked in a function's body, so a pure virtual function, an
+// `@interface` function and a defaulted `operator==` cannot have them; an
+// override that has a body can. Upstream drops them silently.
+// expect-error: a function without a body cannot have contracts
+shape: @interface type = {
+    scale: (inout this, factor: double) pre(factor > 0.0);
+}
+circle: type = {
+    this: shape;
+    radius: double = 1.0;
+    scale: (override inout this, factor: double) pre(factor > 0.0) = { radius *= factor; }
+}
+main: () = { }

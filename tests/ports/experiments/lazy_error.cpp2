@@ -1,0 +1,6 @@
+// Experiment lazy: a lazy object cannot be a local.
+// flags: -experiment=lazy
+// expect-error: a lazy object must be declared at namespace or type scope
+main: () = {
+    x: lazy int = 1;
+}

@@ -1,0 +1,30 @@
+// Experiment adt (docs/EXPERIMENTS.md): an @adt type's bodyless function
+// members are its cases, nested types held in a std::variant, which `is`,
+// `as` and `inspect` see through.
+// flags: -experiment=adt
+#include <iostream>
+#include <string>
+#include <vector>
+
+Shape: @adt type = {
+    Circle: (r: double);
+    Rect: (w: double, h: double);
+    Empty: ();
+    area: (this) -> double = {
+        if is_Circle() { return 3.0 * as_Circle().r * as_Circle().r; }
+        if is_Rect() { return as_Rect().w * as_Rect().h; }
+        return 0.0;
+    }
+}
+
+describe: (s: Shape) -> std::string = inspect s -> std::string {
+    is Shape::Circle = "circle";
+    is Shape::Rect = "rect";
+    is _ = "empty";
+};
+
+main: () = {
+    shapes: std::vector<Shape> = (Shape::Circle(1.0), Shape::Rect(2.0, 3.0), Shape::Empty());
+    for shapes do (s) { std::cout << describe(s) << " " << s.area() << "\n"; }
+    std::cout << (shapes[0] == Shape(Shape::Circle(1.0))) << (shapes[1] is Shape::Circle) << "\n";
+}

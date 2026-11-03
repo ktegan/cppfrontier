@@ -1,0 +1,29 @@
+// Source: to_cpp1.h (upstream's message for a local `_ := f();`).
+// An object named `_` needs a declared type: `_ := f();` would keep the
+// result alive, one character from `_ = f();`, which discards it. The rule
+// applies at every scope, to `_: _` and `_: const _`, and to statement
+// parameters; it is reported at the name.
+// expect-error: (17,1): error: an object can have an anonymous name or an anonymous type, but not both at the same time (rationale: if '_ := f();' were allowed to keep the returned object alive
+// expect-error: (19,5): error: an object can have an anonymous name or an anonymous type
+// expect-error: (20,5): error: an object can have an anonymous name or an anonymous type
+// expect-error: (23,5): error: an object can have an anonymous name or an anonymous type
+// expect-error: (24,5): error: an object can have an anonymous name or an anonymous type
+// expect-error: (25,5): error: an object can have an anonymous name or an anonymous type
+// expect-error: (26,12): error: an object can have an anonymous name or an anonymous type
+// expect-error: (27,6): error: an object can have an anonymous name or an anonymous type
+// expect-error: (28,18): error: an object can have an anonymous name or an anonymous type
+f: () -> int = 1;
+
+_ := f();
+t: type = {
+    _ := 1;
+    _: _ = 2;
+}
+main: () = {
+    _ := f();
+    _: _ = f();
+    _: const _ = f();
+    static _ := f();
+    (_ := 1) while false { }
+    l := :() = { _ := 3; };
+}

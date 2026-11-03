@@ -1,0 +1,35 @@
+// Source: mixed.md side-by-side Cpp1 and Cpp2, with Cpp1 forms the line
+// classifier must leave to Cpp1: `using enum`, a using-declaration list, an
+// alias whose `=` is on the next line, braces in both branches of an
+// `#ifdef`/`#elif`/`#else` (only the first branch is counted), and a
+// conditional expression whose `a : b` continues the line before it.
+#include <iostream>
+enum class Color { red, green };
+using enum Color;
+using std::cout, std::endl;
+using Callback
+    = void(*)(int);
+void callback(int x) { cout << "callback " << x << endl; }
+
+#ifdef MIXED_CPP1_FORMS_WIDE
+int widen(long x) {
+#elif defined(MIXED_CPP1_FORMS_OTHER)
+int widen(short x) {
+#else
+int widen(int x) {
+#endif
+    return x + 1;
+}
+
+const bool wide = false;
+const int narrow = 4, broad = 8;
+const int chosen = wide ?
+    broad : narrow;
+
+call: (c: Callback) = { c(widen(2)); }
+color: () -> bool = green == Color::green;
+
+int main() {
+    call(callback);
+    cout << color() << chosen << endl;
+}

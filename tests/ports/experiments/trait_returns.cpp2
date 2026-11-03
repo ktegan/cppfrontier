@@ -1,0 +1,55 @@
+// Experiment trait: a void trait function may be implemented by one that
+// returns a value, which dyn_Tick discards; a '-> forward T' function returns
+// a reference, const for 'this', which a function returning a value does not
+// satisfy; dyn_Peek holds only copyable types; and the generated declarations
+// do not clash with a namespace scope object named like a trait function.
+// flags: -experiment=trait
+#include <iostream>
+#include <memory>
+#include <string>
+
+Tick: @trait type = {
+    tick: (inout this);
+    count: (inout this) -> forward int;
+    name: (this) -> std::string;
+}
+
+Counter: @impl<Tick> @value type = {
+    public n: int = 0;
+    tick: (inout this) -> int = { n++; return n; }
+    count: (inout this) -> forward int = n;
+    name: (this) -> std::string = "counter";
+}
+
+Peek: @trait type = {
+    peek: (this) -> forward int;
+}
+
+Cell: @value type = {
+    public v: int = 3;
+    peek: (this) -> forward int = v;
+}
+
+Number: @value type = {
+    peek: (this) -> int = 4;
+}
+
+Handle: type = {
+    p: std::unique_ptr<int> = std::make_unique<int>(5);
+    operator=: (out this) = { }
+    operator=: (out this, move that) = { p = that.p; }
+    peek: (this) -> forward int = p*;
+}
+
+name: std::string = "global";
+
+main: () = {
+    d: dyn_Tick = Counter();
+    d.tick();
+    d.tick();
+    d.count() += 10;
+    std::cout << d.name() << " " << d.count() << " " << name << "\n";
+    c: dyn_Peek = Cell();
+    std::cout << c.peek() << " " << Peek<Cell> << Peek<Number> << Peek<Handle>
+              << std::constructible_from<dyn_Peek, Handle> << "\n";
+}

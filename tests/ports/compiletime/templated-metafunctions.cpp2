@@ -1,0 +1,83 @@
+// Source: metafunctions.md (@value, @struct, @enum, @union with template
+// parameters: `name_or_other: @union <T:type> type`), and the cppreference
+// std::pair/optional-style class template examples. Exercises metafunctions
+// on class templates, an @enum nested in a class template, the generated
+// comparisons used in templated code, and a constrained templated @value.
+#include <iostream>
+#include <string>
+#include <array>
+#include <concepts>
+
+// @value on a class template: copyable, default constructible, ordered.
+pair_of: @value <T, U> type = {
+    public first: T = ();
+    public second: U = ();
+    operator=: (out this, a: T, b: U) = { first = a; second = b; }
+}
+
+// @struct with a non-type template parameter.
+vec: @struct <T, N: int> type = {
+    data: std::array<T, N> = ();
+    sum: (this) -> T = {
+        s: T = ();
+        for data do (e) { s += e; }
+        return s;
+    }
+}
+
+// An @enum nested in a class template.
+traffic: <T> type = {
+    light: @enum type = { red; amber; green; }
+    payload: T = ();
+    state: light = light::red;
+    operator=: (out this, p: T) = { payload = p; }
+    next: (inout this) = {
+        if state == light::red { state = light::green; }
+        else if state == light::green { state = light::amber; }
+        else { state = light::red; }
+    }
+    describe: (this) -> std::string = "(state.to_string())$ carrying (payload)$";
+}
+
+// @union with a template parameter, as documented.
+name_or_other: @union <T> type = {
+    name: std::string;
+    other: T;
+    to_string: (this) -> std::string = {
+        if is_name() { return name(); }
+        else if is_other() { return other() as std::string; }
+        else { return "invalid value"; }
+    }
+}
+
+// A constrained @value template.
+bounded: @value <T> type requires std::integral<T> = {
+    v: T = ();
+    operator=: (out this, x: T) = { v = x; }
+    get: (this) -> T = v;
+}
+
+main: () = {
+    a: pair_of<int, std::string> = (1, "one");
+    b: pair_of<int, std::string> = (1, "two");
+    std::cout << (a < b) << (a == a) << " " << b.second << "\n";
+
+    v: vec<int, 3> = ();
+    v.data = (1, 2, 3);
+    std::cout << v.sum() << "\n";
+
+    t: traffic<int> = 5;
+    t.next();
+    std::cout << t.describe() << "\n";
+    std::cout << traffic<char>::light::amber.to_string() << "\n";
+
+    x: name_or_other<int> = ();
+    x.set_name("xyzzy");
+    std::cout << x.to_string() << "\n";
+    x.set_other(42);
+    std::cout << x.to_string() << "\n";
+
+    c1: bounded<long> = 3;
+    c2 := c1;
+    std::cout << (c1 <=> c2 == 0) << c2.get() << "\n";
+}

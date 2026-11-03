@@ -1,0 +1,14 @@
+// Source: Cpp1 early returns ported with the value dropped, and a void
+// function returning a value. functions.md: a function returning a value of
+// type X returns it from every return statement; `-> void` returns none.
+// expect-error: return statement must have an expression in a function with a single anonymous return value
+// expect-error: return statement with expression must be in a function with a single anonymous return value
+first: (v: std::vector<int>) -> int = {
+    if v.empty() { return; }
+    return v[0];
+}
+print: (x: int) = {
+    std::cout << x;
+    return x;
+}
+main: () = { }

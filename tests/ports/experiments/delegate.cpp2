@@ -1,0 +1,33 @@
+// Experiment delegate (docs/EXPERIMENTS.md): @delegate<member> forwards the
+// public functions of a data member's type; a function the type declares
+// itself is kept, and @delegate<member, f> forwards only `f`.
+// flags: -experiment=delegate
+#include <iostream>
+#include <string>
+
+Counter: type = {
+    count: i32 = 0;
+    operator=: (out this) = { }
+    add: (inout this, n: i32) = { count += n; }
+    get: (this) -> i32 = count;
+    name: (this) -> std::string = "counter";
+}
+
+Logger: type = {
+    log: (this, s: std::string) = { std::cout << "log: " << s << "\n"; }
+}
+
+Service: @delegate<counter> @delegate<logger, log> type = {
+    counter: Counter = ();
+    logger: Logger = ();
+    operator=: (out this) = { }
+    name: (this) -> std::string = "service";
+}
+
+main: () -> int = {
+    s: Service = ();
+    s.add(3);
+    s.add(4);
+    s.log(s.name() + " " + std::to_string(s.get()));
+    return 0;
+}

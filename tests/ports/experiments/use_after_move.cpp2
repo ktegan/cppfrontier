@@ -1,0 +1,21 @@
+// Experiment use-after-move (docs/EXPERIMENTS.md): a name explicitly moved
+// may be used again once it is assigned; this program does so and runs.
+// use_after_move_error.cpp2 is the rejected case.
+// flags: -experiment=use-after-move
+#include <iostream>
+#include <string>
+#include <vector>
+
+keep: (inout all: std::vector<std::string>, move s: std::string) = { all.push_back(s); }
+
+main: () -> int = {
+    all: std::vector<std::string> = ();
+    s: std::string = "first";
+    keep(all, move s);
+    s = "second";
+    keep(all, move s);
+    for all do (x) {
+        std::cout << x << "\n";
+    }
+    return 0;
+}

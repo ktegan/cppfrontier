@@ -1,0 +1,25 @@
+// Source: objects.md "Guaranteed initialization": a list assigned to a
+// deferred local or an uninitialized `out` parameter constructs the object
+// in place, so a type with no copy or move (here a two-argument converting
+// `operator=`) can be initialized from a list. An `out` parameter that is
+// already initialized is assigned instead.
+W2: type = {
+    public v: int = 0;
+    operator=: (out this, a: int, b: int) = { v = a + b; }
+}
+
+make: (out w: W2) = { w = (3, 4); }
+
+fill: (out p: std::pair<int, int>) = { p = (5, 6); }
+
+main: () = {
+    a: W2;
+    a = (1, 2);
+    b: W2;
+    make(out b);
+    p: std::pair<int, int>;
+    fill(out p);
+    q: std::pair<int, int> = (0, 0);
+    fill(out q);
+    std::cout << a.v << " " << b.v << " " << p.second << " " << q.first << "\n";
+}

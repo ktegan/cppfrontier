@@ -1,0 +1,10 @@
+// A support function called with UFCS is called as `cpp2::name(x, args)`,
+// with its template arguments, since it is never a member (expressions.md
+// "unchecked_*").
+main: () = {
+    a: i32 = 7;
+    std::cout << a.unchecked_div(2) << " " << unchecked_div(a, 2) << "\n";
+    x: i64 = 300;
+    y: double = 2.5;
+    std::cout << (x.unchecked_narrow<u8>() as int) << " " << y.unchecked_cast<int>() << "\n";
+}

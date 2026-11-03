@@ -1,0 +1,23 @@
+// Source: functions.md "Function with multiple/named return values": a single
+// named return value is returned as the value itself, here from function
+// expressions, whose lowered text names `_ret` and nested lambdas; a generic
+// `==` function expression is a generic lambda. A user name
+// like a generated loop flag is not shadowed. Upstream rejects a named return
+// on a function expression ("currently cannot return multiple values") even
+// when there is only one.
+main: () = {
+    g := :() -> (r: int) = { r = 5; };
+    h := :(x: int) -> (r: int) = {
+        r = :(y: int) -> (s: int) = { s = y * 2; }(x);
+    };
+    inc := :<T> (x: T) -> T == x + 1;
+    static_assert(inc(1) == 2);
+    text := "g() returns (g())$, inc(1.5) is (inc(1.5))$";
+    std::cout << text << ", h(4) is (h(4))$\n";
+    std::cout << "__cpp2_function_expression_0 stays text\n";
+    cpp2_for_break_19 := 1;
+    for (1, 2, 3) next cpp2_for_break_19++ do (i) {
+        if i == 3 { break; }
+    }
+    std::cout << cpp2_for_break_19 << "\n";
+}

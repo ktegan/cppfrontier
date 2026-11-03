@@ -1,0 +1,14 @@
+// Source: Cpp1 lambdas that capture an element, a dereference and an address
+// by value, as in `[v0 = v[0], p0 = *p]`.
+// functions.md: `x$` captures the value of a postfix expression `x`, inside
+// and outside a string interpolation `(...)$`; `p*$` captures what `p`
+// points to.
+main: () = {
+    v: std::vector<int> = (1, 2, 3);
+    x := 5;
+    p := x&;
+    a := :() = { std::cout << "(v[0]$)$ (v.size()$)$ (p*$)$ (x&$*)$ (std::ssize(v)$)$\n"; };
+    b := :() = { std::cout << v[1]$ << " " << p*$ << " " << x&$* << "\n"; };
+    a();
+    b();
+}

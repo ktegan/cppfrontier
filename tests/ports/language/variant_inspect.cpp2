@@ -1,0 +1,78 @@
+// Source: cppreference "std::variant" and "std::visit" examples (a value that
+// is an int, a double or a string, and visiting it), and the expressions.md
+// `is`/`as`/`inspect` rules.
+// Exercises: `v is T` and `v as T` on std::variant, `inspect` with type, value
+// and predicate alternatives and a required `is _`, an inspect used as a
+// function's expression body, std::visit with a generic function expression,
+// std::any with `is`/`as`, and std::get_if. Upstream rejects `= inspect ...;` as
+// a function body ("only inspect expressions are currently supported").
+#include <any>
+#include <iostream>
+#include <string>
+#include <variant>
+#include <vector>
+
+value: type == std::variant<int, double, std::string>;
+
+describe: (v: value) -> std::string = inspect v -> std::string {
+    is int         = "int " + std::to_string(v as int);
+    is double      = "double";
+    is std::string = "string \"" + (v as std::string) + "\"";
+    is _           = "empty";
+};
+
+in_range: (lo: int, hi: int) = :(x) -> bool = lo$ <= x && x <= hi$;
+
+classify_int: (n: int) -> std::string = inspect n -> std::string {
+    is 0                 = "zero";
+    is (in_range(1, 9))  = "small";
+    is (in_range(10, 99)) = "medium";
+    is _                 = "large or negative";
+};
+
+any_name: (a: std::any) -> std::string = {
+    if a is int { return "any int (a as int)$"; }
+    if a is std::string { return "any string (a as std::string)$"; }
+    if !a.has_value() { return "empty any"; }
+    return "any other";
+}
+
+number_or_zero: (x: int) -> double = x;
+number_or_zero: (x: double) -> double = x;
+number_or_zero: (_: std::string) -> double = 0.0;
+
+main: () = {
+    values: std::vector<value> = (42, 3.5, std::string("hi"));
+    for values do (v) {
+        std::cout << describe(v) << "\n";
+    }
+
+    // std::visit with a generic function expression.
+    total := 0.0;
+    for values do (v) {
+        std::visit(:(x) = { total&$* += number_or_zero(x); }, v);
+    }
+    std::cout << "sum of numbers (total)$\n";
+
+    v: value = 7;
+    std::cout << "v is int: (v is int)$, v is double: (v is double)$\n";
+    v = "seven";
+    std::cout << "now a string: (v is std::string)$, index (v.index())$\n";
+    p := std::get_if<std::string>(v&);
+    if p != nullptr {
+        std::cout << "get_if found (p*)$\n";
+    }
+
+    for (0, 5, 42, 1000, -3) do (n) {
+        std::cout << "(n)$ is (classify_int(n))$\n";
+    }
+
+    a: std::any = 5;
+    std::cout << any_name(a) << "\n";
+    a = std::string("text");
+    std::cout << any_name(a) << "\n";
+    a.reset();
+    std::cout << any_name(a) << "\n";
+    a = 2.5;
+    std::cout << any_name(a) << "\n";
+}

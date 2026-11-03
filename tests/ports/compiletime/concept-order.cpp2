@@ -1,0 +1,21 @@
+// Source: hello-world.md "Order-independent by default": a concept may name a
+// type declared after it, and a type may be constrained by a concept
+// declared after it, and a concept may name a concept declared after it,
+// also across namespaces.
+shape: <T> concept = std::derived_from<T, base> || std::same_as<T, geo::point>;
+boxed: <T: small> type = { public t: T = (); }
+holder: <T> type requires geo::flat<T> = { public t: T = (); }
+base: type = { public id: int = 1; }
+square: type = { this: base = (); }
+geo: namespace = {
+    point: @struct type = { x: int = 2; }
+    flat: <T> concept = sizeof(T) <= sizeof(long);
+}
+small: <T> concept = tiny<T> || geo::flat<T>;
+tiny: <T> concept = sizeof(T) <= 4u;
+describe: <T: shape> (x: T) -> std::size_t = sizeof(T);
+main: () = {
+    b: boxed<int> = ();
+    h: holder<geo::point> = ();
+    std::cout << describe(square()) << describe(geo::point()) << b.t << h.t.x << "\n";
+}

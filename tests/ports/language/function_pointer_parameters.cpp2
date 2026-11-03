@@ -1,0 +1,23 @@
+// Source: Cpp1 examples that pass a function pointer by reference to
+// rebind it, and that take one as an out, move, forward or in_ref parameter.
+// functions.md: each passing style applies to a function pointer parameter
+// as to any other type, so `inout` changes the caller's pointer.
+inc: (x: int) -> int = x + 1;
+dec: (x: int) -> int = x - 1;
+reset: (inout g: *(x: int) -> int) = { g = dec&; }
+make: (out g: *(x: int) -> int) = { g = dec&; }
+take: (move g: *(x: int) -> int) -> int = g(1);
+pass: (forward g: *(x: int) -> int) -> int = g(2);
+peek: (in_ref g: *(x: int) -> int) -> int = g(3);
+call: (g: *(x: int) -> int) -> int = g(4);
+
+main: () = {
+    p: *(x: int) -> int = inc&;
+    reset(p);
+    std::cout << p(10) << "\n";
+    q: *(x: int) -> int;
+    make(out q);
+    std::cout << q(10) << "\n";
+    std::cout << take(inc&) << " " << pass(p) << " " << pass(inc&) << " " << peek(p)
+              << " " << call(p) << "\n";
+}

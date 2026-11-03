@@ -1,0 +1,38 @@
+// Source: metafunctions.md @autodiff and notes/autodiff_status.md (member
+// functions, member function calls, while loops, if else): a function of one
+// @autodiff type calls a member function of another @autodiff type, whose own
+// metafunction has generated `poly_d` and `eval_d`, so they are not generated
+// again. The derivatives are checked against central finite differences.
+// Upstream cppfront generates `eval_d` a second time, which does not compile.
+#include <cmath>
+#include <iostream>
+
+ns: namespace = {
+poly: @autodiff type = {
+    public c: double = 1.5;
+    eval: (this, x: double) -> (r: double) = { r = c * x * x; }
+}
+user: @autodiff type = {
+    f: (x: double) -> (r: double) = {
+        p: poly = ();
+        r = p.eval(x) * x;
+    }
+    g: (x: double) -> (r: double) = {
+        r = x;
+        i := 0;
+        while i < 3 next i++ {
+            if r > 2.0 { r = r * 0.5 + x; } else { r = r * r + sin(x); }
+        }
+    }
+}
+}
+
+main: () = {
+    h := 1e-6;
+    for (0.4, 1.2) do (x) {
+        fd_f := (ns::user::f(x + h) - ns::user::f(x - h)) / (2.0 * h);
+        fd_g := (ns::user::g(x + h) - ns::user::g(x - h)) / (2.0 * h);
+        std::cout << "x = " << x << ": f " << (std::abs(ns::user::f_d(x, 1.0).r_d - fd_f) < 1e-5)
+                  << ", g " << (std::abs(ns::user::g_d(x, 1.0).r_d - fd_g) < 1e-5) << "\n";
+    }
+}

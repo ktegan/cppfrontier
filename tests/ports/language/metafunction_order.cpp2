@@ -1,0 +1,33 @@
+// Source: metafunctions.md "cpp1_rule_of_zero", "noncopyable",
+// "encapsulated" and "struct": a rule-of-zero type keeps the Cpp1 copy and
+// move operations; `@struct` before `@value` is accepted, as the struct is
+// then given the value operations; a noncopyable or encapsulated type is an
+// ordinary type that passes their checks.
+pair: @cpp1_rule_of_zero type = {
+    public first: std::string = "a";
+    public second: int = 1;
+}
+
+point: @struct @value type = {
+    x: int = 0;
+    y: int = 0;
+}
+
+counter: @noncopyable @encapsulated type = {
+    count: int = 0;
+    operator=: (out this) = { }
+    next: (inout this) = { count++; }
+    get: (this) -> int = count;
+}
+
+main: () = {
+    p: pair = ();
+    q := p;
+    q.second = 2;
+    a: point = ();
+    b := a;
+    c: counter = ();
+    c.next();
+    c.next();
+    std::cout << q.first << q.second << p.second << " " << (a == b) << " " << c.get() << "\n";
+}

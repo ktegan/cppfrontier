@@ -1,0 +1,32 @@
+// Experiment interface-defaults (docs/EXPERIMENTS.md): an @interface function
+// with a body is virtual with that body as its default; a bodyless one stays
+// pure virtual.
+// flags: -experiment=interface-defaults
+#include <iostream>
+#include <string>
+
+Greeter: @interface type = {
+    name: (this) -> std::string;
+    greeting: (this) -> std::string = "hello";
+    greet: (this) -> std::string = greeting() + ", " + name();
+}
+
+Polite: type = {
+    this: Greeter = ();
+    name: (override this) -> std::string = "world";
+}
+
+Formal: type = {
+    this: Greeter = ();
+    name: (override this) -> std::string = "sir";
+    greeting: (override this) -> std::string = "good day";
+}
+
+say: (g: Greeter) = std::cout << g.greet() << "\n";
+
+main: () = {
+    p: Polite = ();
+    f: Formal = ();
+    say(p);
+    say(f);
+}

@@ -1,0 +1,25 @@
+open 1
+after move: a valid false, b valid true
+open 2
+close 2 on assignment
+c holds 1
+open 3
+consume 3
+inner end
+close 3
+scope exit: inner
+open 4
+open 5
+open 6
+in vector 4
+in vector 5
+in vector 6
+open 7
+passed 7
+close 4 on assignment
+erased first
+close 7
+close 5
+close 6
+close 1
+scope exit: main

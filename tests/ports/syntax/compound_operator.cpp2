@@ -1,0 +1,15 @@
+// Source: a Cpp1 class with `operator*=`, written without a space before `=`.
+// types.md: a type's members include operator functions; `operator*=:` is
+// one name, as `operator *=:` is. Also an interpolation containing a
+// character literal `')'` (expressions.md: `(expr)$`).
+scaled: type = {
+    public value: int = 1;
+    operator=: (out this, x: int) = { value = x; }
+    operator*=: (inout this, y: int) = { value *= y; }
+}
+
+main: () = {
+    n: scaled = 3;
+    n *= 4;
+    std::cout << "(n.value)$ (')')$\n";
+}

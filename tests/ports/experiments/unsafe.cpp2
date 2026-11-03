@@ -1,0 +1,22 @@
+// Experiment unsafe (docs/EXPERIMENTS.md): an `unsafe` block renders its
+// statements without subscript, null, division and comparison checks; checks
+// resume after it.
+// flags: -experiment=unsafe
+#include <iostream>
+#include <vector>
+
+sum: (v: std::vector<int>) -> int = {
+    total := 0;
+    unsafe {
+        i: std::size_t = 0;
+        while i < v.size() next i++ { total += v[i]; }
+    }
+    return total / v.ssize();
+}
+
+main: () = {
+    v: std::vector<int> = (2, 4, 6);
+    std::cout << sum(v) << "\n";
+    unsafe := 1;
+    std::cout << unsafe << "\n";
+}

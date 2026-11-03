@@ -1,0 +1,25 @@
+// Source: a Cpp1 habit from pre-C++20 tutorials: a three-way compare that
+// returns an int (like strcmp), and equality and less-than that return int.
+// types.md requires `operator==` to return bool and `operator<=>` to return
+// one of the standard ordering types; every comparison operator, member or
+// not, is checked, and `!=`, `<`, `<=`, `>` and `>=` return bool too.
+// expect-error: operator<=> must return std::strong_ordering, std::weak_ordering, or std::partial_ordering
+// expect-error: operator== must return bool
+// expect-error: operator< must return bool
+version: type = {
+    major: int = 0;
+    minor: int = 0;
+    operator<=>: (this, that) -> int = {
+        if major != that.major { return major - that.major; }
+        return minor - that.minor;
+    }
+    operator==: (this, that) -> int = major == that.major && minor == that.minor;
+}
+
+operator<: (a: version, b: version) -> int = a.major - b.major;
+
+main: () = {
+    a: version = ();
+    b: version = ();
+    std::cout << (a == b) << "\n";
+}

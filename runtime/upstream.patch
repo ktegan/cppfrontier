@@ -1,0 +1,68 @@
+--- a/include/cpp2util.h
++++ b/include/cpp2util.h
+@@ -505,7 +505,12 @@
+ constexpr auto unchecked_cast( X&& x ) noexcept 
+     -> decltype(auto)
+ {
+-    return static_cast<C>(CPP2_FORWARD(x));
++    if constexpr (requires { static_cast<C>(CPP2_FORWARD(x)); }) {
++        return static_cast<C>(CPP2_FORWARD(x));
++    }
++    else {
++        return reinterpret_cast<C>(CPP2_FORWARD(x));
++    }
+ }
+ 
+ 
+@@ -1224,14 +1229,14 @@
+         if constexpr (std::is_signed_v<CPP2_TYPEOF(arg)>) { return std::ssize(x); } \
+         else { return std::size(x); } \
+     }; \
+-    auto msg = "out of bounds access attempt detected - attempted access at index " + std::to_string(arg) + ", "; \
+-    if (max() > 0 ) { \
+-        msg += "[min,max] range is [0," + std::to_string(max()-1) + "]"; \
+-    } \
+-    else { \
+-        msg += "but container is empty"; \
+-    } \
+     if (!(0 <= arg && arg < max())) { \
++        auto msg = "out of bounds access attempt detected - attempted access at index " + std::to_string(arg) + ", "; \
++        if (max() > 0 ) { \
++            msg += "[min,max] range is [0," + std::to_string(max()-1) + "]"; \
++        } \
++        else { \
++            msg += "but container is empty"; \
++        } \
+         bounds_safety.report_violation(msg.c_str()  CPP2_SOURCE_LOCATION_ARG); \
+     } \
+     return CPP2_FORWARD(x) [ arg ]; \
+@@ -1493,6 +1498,9 @@
+     constexpr auto value()     noexcept -> T& { cpp2_default.enforce(init);  return t(); }
+ 
+     constexpr auto construct(auto&& ...args) -> void { cpp2_default.enforce(!init);  new (&data) T{CPP2_FORWARD(args)...};  init = true; }
++
++    //  Constructs from the prvalue `make()` returns, which needs no copy or move
++    constexpr auto construct_from(auto&& make) -> void { cpp2_default.enforce(!init);  new (&data) T(make());  init = true; }
+ };
+ 
+ 
+@@ -1561,6 +1569,19 @@
+         }
+     }
+ 
++    constexpr auto construct_from(auto&& make) -> void {
++        if (!has_t && !called_construct() && !dt->init) {
++            dt->construct_from(make);
++            called_construct() = true;
++        }
++        else if constexpr (requires { *t = make(); }) {
++            value() = make();
++        }
++        else {
++            cpp2_default.report_violation("attempted to copy assign, but copy assignment is not available");
++        }
++    }
++
+     constexpr auto value() noexcept -> T& {
+         if (has_t) {
+             cpp2_default.enforce( t );

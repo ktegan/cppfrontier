@@ -1,0 +1,34 @@
+// Source: metafunctions.md @regex and notes/regex_status.md (Perl syntax and
+// semantics, perlre): `^`, `$` and `\Z` inside a lookbehind test the same
+// position in the string as outside it, also with the `m` flag, and `^` with
+// `m` does not match after a newline that ends the string. Each line was
+// checked against perl 5.40. Upstream cppfront reads the character on the
+// wrong side of the position inside a lookbehind and differs on most lines.
+#include <iostream>
+
+show: (name: std::string, r) = {
+    std::cout << name << ":";
+    if r.matched { std::cout << " " << r.group_start(0) << "-" << r.group_end(0) << "\n"; }
+    else { std::cout << " no\n"; }
+}
+
+m: @regex type = {
+    regex_start := R"(/(?<=^a)b/m)";
+    regex_start_empty := R"(/(?<=^)a/m)";
+    regex_not_start := R"(/(?<!^)a/m)";
+    regex_end := R"(/(?<=a$)\n/m)";
+    regex_end_before_newline := R"(/(?<=a\Z)\n/)";
+    regex_end_of_string := R"(/\n^/m)";
+}
+
+main: () = {
+    v: m = ();
+    show("start", v.regex_start.search("x\nab"));
+    show("start empty", v.regex_start_empty.search("x\nab"));
+    show("not start", v.regex_not_start.search("x\nab"));
+    show("not start ba", v.regex_not_start.search("ba"));
+    show("end", v.regex_end.search("a\nb"));
+    show("end before newline", v.regex_end_before_newline.search("a\n"));
+    show("end of string", v.regex_end_of_string.search("a\n"));
+    show("end of string b", v.regex_end_of_string.search("a\nb"));
+}

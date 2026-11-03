@@ -1,0 +1,35 @@
+// Source: functions.md captures ("capture a name by value with `$`") applied
+// to the `that` parameter of types.md's `operator=`: a function expression in
+// a copy or move function captures `that.member$` or `that$` like any other
+// parameter. Upstream cppfront crashes on these captures.
+#include <iostream>
+#include <string>
+
+widget: type = {
+    public name: std::string = "w";
+    public log: std::string = "";
+
+    operator=: (out this) = { }
+    operator=: (out this, that) = {
+        name = that.name + "'";
+        describe := :() -> std::string = "from " + that.name$;
+        log = describe();
+    }
+    operator=: (inout this, that) = {
+        name = that.name;
+        copied := :() -> std::string = "(that$.name)$ assigned";
+        log = copied();
+    }
+}
+
+main: () = {
+    a: widget = ();
+    a.name = "a";
+    b := a;
+    std::cout << b.name << ": " << b.log << "\n";
+    c: widget = ();
+    c = b;
+    std::cout << c.name << ": " << c.log << "\n";
+    d := (move c);
+    std::cout << d.name << ": " << d.log << "\n";
+}

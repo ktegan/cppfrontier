@@ -1,0 +1,4 @@
+copy move 
+move copy 1
+a
+move consumed

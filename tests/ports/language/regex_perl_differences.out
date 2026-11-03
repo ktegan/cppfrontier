@@ -1,0 +1,5 @@
+loop: 0-2 0-1
+loop prefix: 0-3 1-2
+branch reset: 0-3 0-1 1-2
+optional lookahead: 0-1 unset
+negative lookahead: 0-1 unset
